@@ -42,7 +42,13 @@
         </activity>
         <activity android:name=".messenger" />
         <activity android:name=".ShowMap" />
-        <activity android:name=".register"></activity>
+        <activity
+            android:name=".register"
+            android:theme="@style/Theme.AppCompat.Light.Dialog" />
+        <activity
+            android:name=".AddMate"
+            android:theme="@style/Theme.AppCompat.Light.Dialog" />
+        <activity android:name=".AddGroup"></activity>
     </application>
 
 </manifest>
