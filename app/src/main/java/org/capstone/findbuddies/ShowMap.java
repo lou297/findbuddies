@@ -4,21 +4,17 @@ import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class ShowMap extends AppCompatActivity {
@@ -44,14 +40,15 @@ public class ShowMap extends AppCompatActivity {
             }
         });
         MapsInitializer.initialize(this);
+        requestMyLocation();
 
-        Button button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestMyLocation();
-            }
-        });
+//        Button button = (Button) findViewById(R.id.button);
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                requestMyLocation();
+//            }
+//        });
 
     }
 
@@ -74,7 +71,7 @@ public class ShowMap extends AppCompatActivity {
     }
 
     public void requestMyLocation(){
-        long minTime = 10000;
+        long minTime = 1000;
         float minDistance = 0;
         LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         manager.requestLocationUpdates(

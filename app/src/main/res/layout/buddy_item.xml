@@ -11,30 +11,36 @@
         android:src="@mipmap/ic_launcher" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="215dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:orientation="vertical">
 
         <TextView
-            android:id= "@+id/textView"
+            android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:text="Buddy"
-            android:textSize="18dp"
-            android:textColor="@color/colorPrimaryDark"/>
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="18dp" />
 
         <TextView
-            android:id= "@+id/textView2"
+            android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="phone"
-            android:textSize="12dp"
-            android:textColor="@android:color/holo_orange_dark"/>
+            android:textColor="@android:color/holo_orange_dark"
+            android:textSize="12dp" />
 
 
-        
     </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/checked"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:visibility="invisible" />
 
 </LinearLayout>

@@ -17,6 +17,7 @@ public class BuddyItemView extends LinearLayout {
     TextView textView;
     TextView textView2;
     ImageView imageView;
+    
 
     public BuddyItemView(Context context) {
         super(context);

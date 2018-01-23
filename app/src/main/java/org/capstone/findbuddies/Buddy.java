@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -23,12 +24,13 @@ public class Buddy extends Fragment {
     @Nullable
 //    @Override
     private static Context context;
+    CheckBox addcheck;
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Buddy.context = getContext();
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.buddy,container,false);
 
         Button addmate = (Button)rootView.findViewById(R.id.addbuddy);
-
+        addcheck = (CheckBox)rootView.findViewById(R.id.checked);
         addmate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -55,6 +57,9 @@ public class Buddy extends Fragment {
 
     static class BuddyAdapter extends BaseAdapter {
         ArrayList<BuddyItem> buddies = new ArrayList<BuddyItem>();
+        public void addch(){
+
+        }
 
         @Override
         public int getCount() {
