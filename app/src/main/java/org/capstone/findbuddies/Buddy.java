@@ -57,9 +57,7 @@ public class Buddy extends Fragment {
 
     static class BuddyAdapter extends BaseAdapter {
         ArrayList<BuddyItem> buddies = new ArrayList<BuddyItem>();
-        public void addch(){
 
-        }
 
         @Override
         public int getCount() {

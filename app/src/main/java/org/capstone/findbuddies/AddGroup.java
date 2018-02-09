@@ -30,8 +30,8 @@ public class AddGroup extends AppCompatActivity {
         buddyitem.add(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
         buddyitem.add(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
 
-
         final ArrayAdapter<BuddyItem> adapter = new ArrayAdapter<BuddyItem>(this, android.R.layout.simple_list_item_multiple_choice,buddyitem);
+
 //        adapter = new Buddy.BuddyAdapter();
 //        adapter.addbuddy(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
 //        adapter.addbuddy(new BuddyItem("딸","010-2345-1234",R.drawable.girl));
@@ -53,6 +53,4 @@ public class AddGroup extends AppCompatActivity {
         });
 //
     }
-
-
 }

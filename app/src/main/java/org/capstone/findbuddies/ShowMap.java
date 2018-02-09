@@ -7,6 +7,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -71,6 +72,7 @@ public class ShowMap extends AppCompatActivity {
     }
 
     public void requestMyLocation(){
+        Toast.makeText(getApplicationContext(),"requestlocation",Toast.LENGTH_LONG).show();
         long minTime = 1000;
         float minDistance = 0;
         LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -103,9 +105,10 @@ public class ShowMap extends AppCompatActivity {
     }
 
     public void showCurrentLocation(Location location) {
+        Toast.makeText(getApplicationContext(),"showcurrent",Toast.LENGTH_LONG).show();
         LatLng curPoint = new LatLng(location.getLatitude(), location.getLongitude());
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(curPoint, 15));
-
+//        map.animateCamera(CameraUpdateFactory.newLatLngZoom(curPoint, 15));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(curPoint,15));
         showMarker(location);
     }
 
@@ -126,8 +129,11 @@ public class ShowMap extends AppCompatActivity {
             map.addMarker(marker2);
         }
         else {
+
             marker.position(new LatLng(location.getLatitude() + 0.01, location.getLongitude() - 0.005));
             marker2.position(new LatLng(location.getLatitude(), location.getLongitude() ) );
+            map.addMarker(marker);
+            map.addMarker(marker2);
         }
 
     }
