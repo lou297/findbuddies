@@ -1,15 +1,22 @@
 package org.capstone.findbuddies;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 public class messenger extends AppCompatActivity {
     Buddy buddy;
     Group group;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,9 +25,12 @@ public class messenger extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("messenger");
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowCustomEnabled(false);
+
+        mAuth = FirebaseAuth.getInstance();
 
         buddy = new Buddy();
         group = new Group();
@@ -56,5 +66,22 @@ public class messenger extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_message,menu);
+        return true;
+//        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        mAuth.signOut();
+        finish();
+        Intent intent = new Intent(getApplication(),MainActivity.class);
+        startActivity(intent);
+        return super.onOptionsItemSelected(item);
     }
 }
