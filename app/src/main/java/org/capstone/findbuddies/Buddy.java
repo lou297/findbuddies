@@ -25,6 +25,7 @@ public class Buddy extends Fragment {
 //    @Override
     private static Context context;
     CheckBox addcheck;
+    BuddyAdapter adapter;
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Buddy.context = getContext();
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.buddy,container,false);
@@ -42,7 +43,7 @@ public class Buddy extends Fragment {
 
         ListView listview = (ListView) rootView.findViewById(R.id.listView);
 
-        BuddyAdapter adapter = new BuddyAdapter();
+        adapter = new BuddyAdapter();
         adapter.addbuddy(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
         adapter.addbuddy(new BuddyItem("딸","010-2345-1234",R.drawable.girl));
         adapter.addbuddy(new BuddyItem("친구1","010-5324-1234",R.drawable.friend));

@@ -2,19 +2,21 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="225dp"
-    android:layout_height="160dp"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
     tools:context="org.capstone.findbuddies.AddMate">
-
+    <!--전체 크기는 width = 300dp height = 250dp 인 상태. (이것은 검색 한 후)-->
     <EditText
         android:id="@+id/search_id"
         android:layout_width="175dp"
         android:layout_height="wrap_content"
-        android:layout_margin="25dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="15dp"
         android:ems="10"
         android:hint="아이디를 검색하세요."
         android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/search"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -23,12 +25,80 @@
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="15dp"
         android:text="검색"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textview1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="30dp"
+        android:text="ID"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/search_id" />
+
+    <TextView
+        android:id="@+id/textview2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="80dp"
+        android:layout_marginTop="30dp"
+        android:text="NickName"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@+id/textview1"
+        app:layout_constraintTop_toBottomOf="@+id/search_id" />
+
+    <TextView
+        android:id="@+id/searched_id"
+        android:layout_width="90dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:text="Searched_Id"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textview1" />
+
+    <TextView
+        android:id="@+id/searched_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Searched_Name"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@+id/searched_id"
+        app:layout_constraintTop_toBottomOf="@+id/textview2" />
+
+    <ImageButton
+        android:id="@+id/Add"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@+id/searched_name"
+        app:layout_constraintTop_toBottomOf="@+id/textview2"
+        app:srcCompat="@drawable/plus" />
+    
+
+    <TextView
+        android:id="@+id/explain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
+        android:text="찾으시는 버디가 아니라면 다시 검색해주세요."
+        android:textColorLink="?attr/colorError"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searched_name" />
+
+
 
 </android.support.constraint.ConstraintLayout>

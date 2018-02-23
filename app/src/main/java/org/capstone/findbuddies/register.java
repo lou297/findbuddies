@@ -126,6 +126,7 @@ public class register extends AppCompatActivity {
         SaveRegist.S_email = email;
         SaveRegist.S_pwd = pwd;
         database.getReference().child("UserInfo").push().setValue(SaveRegist);
+//        database.getReference().child("UserBuddy").push().setValue(SaveRegist.S_id);
     }
 
     @Override

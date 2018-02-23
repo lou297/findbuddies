@@ -31,8 +31,8 @@ public class MainActivity extends AppCompatActivity {
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Id = findViewById(R.id.id_field);
-                pwd = findViewById(R.id.pwd_field);
+                Id = findViewById(R.id.id);
+                pwd = findViewById(R.id.pwd);
                 String email = Id.getText().toString();
                 String password = pwd.getText().toString();
                 LoginCheck(email,password);
@@ -55,12 +55,13 @@ public class MainActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
+
                     // User is signed in
                     Toast.makeText(getApplicationContext(),"zzz",Toast.LENGTH_LONG).show();
-//                    Intent intent = new Intent(getApplicationContext(),messenger.class);
-//                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    startActivity(intent);
-//                    finish();
+                    Intent intent = new Intent(getApplicationContext(),messenger.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
 //                Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 } else {
                     Toast.makeText(getApplicationContext(),"dddd",Toast.LENGTH_LONG).show();
