@@ -20,22 +20,26 @@ public class MainActivity extends AppCompatActivity {
     EditText Id;
     EditText pwd;
     private FirebaseAuth mAuth;
+    FirebaseUser User;
     private FirebaseAuth.AuthStateListener mAuthListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
-
+        User = mAuth.getCurrentUser();
         Button start = (Button)findViewById(R.id.login);
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Id = findViewById(R.id.id);
                 pwd = findViewById(R.id.pwd);
-                String email = Id.getText().toString();
-                String password = pwd.getText().toString();
-                LoginCheck(email,password);
+                if(Id.getText()!=null && pwd.getText()!=null){
+                    String email = Id.getText().toString();
+                    String password = pwd.getText().toString();
+                    LoginCheck(email,password);
+                }
+
             }
         });
 

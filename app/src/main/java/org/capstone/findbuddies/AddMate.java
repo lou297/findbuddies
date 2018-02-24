@@ -3,12 +3,13 @@ package org.capstone.findbuddies;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -16,21 +17,24 @@ import com.google.firebase.database.ValueEventListener;
 
 public class AddMate extends AppCompatActivity {
     private FirebaseDatabase database;
+    private FirebaseAuth mAuth;
+    FirebaseUser User;
     int SET = 0;//ON = 1 OFF = 0
 
     TextView searched_id;
     TextView searched_name;
     TextView SearchId;
+    String MyID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         setContentView(R.layout.activity_add_mate);
 
         database = FirebaseDatabase.getInstance();
-//        SET = 0;
-//        OnOffContents(SET);
+        mAuth = FirebaseAuth.getInstance();
+        User = mAuth.getCurrentUser();
 
         searched_id = (TextView)findViewById(R.id.searched_id);
         searched_name = (TextView)findViewById(R.id.searched_name);
@@ -41,15 +45,15 @@ public class AddMate extends AppCompatActivity {
             public void onClick(View v) {
 //                검색버튼 클릭
                 CheckUser();
+            }
+        });
 
-//                if(database.getReference().child("UserBuddy").child(String.valueOf(SearchId))!=null ){
-//                    Toast.makeText(AddMate.this, "있는 존재", Toast.LENGTH_SHORT).show();
-//                }
-//                else {
-//                    Toast.makeText(AddMate.this, "없다네", Toast.LENGTH_SHORT).show();
-//                }
-
-
+        ImageButton AddButton = findViewById(R.id.Add);
+        AddButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AddFriend(SearchId.getText().toString());
+//                Toast.makeText(AddMate.this, "ddd", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -94,9 +98,16 @@ public class AddMate extends AppCompatActivity {
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         SaveRegist value = snapshot.getValue(SaveRegist.class);
                         if( (value.getS_id()) .equals(SearchId.getText().toString())){
-                            Toast.makeText(AddMate.this, "있는 존재", Toast.LENGTH_SHORT).show();
-                            SET = 1;
-                            OnOffContents(SET,value.getS_id(),value.getS_name());
+
+                            if( (User.getEmail()).equals(value.getS_email()) ){
+                                Toast.makeText(AddMate.this, "본인의 ID", Toast.LENGTH_SHORT).show();
+                            }
+                            else{
+                                Toast.makeText(AddMate.this, "있는 존재", Toast.LENGTH_SHORT).show();
+                                SET = 1;
+                                OnOffContents(SET,value.getS_id(),value.getS_name());
+                            }
+
                         }
 
                     }
@@ -116,23 +127,30 @@ public class AddMate extends AppCompatActivity {
         }
     }
 
-    public void AddMate(final String MyID, String BuddyID){
+    public void AddFriend(String BuddyID){
+        final String MyEmail = User.getEmail();
+
+
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if( (value.getS_email()).equals(MyEmail) ){
+                        MyID = value.getS_id();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        //////////해결 안된 부분!!!! 해결 하자..
+
         database.getReference().child("UserBuddy").child(MyID).push().setValue(BuddyID);
-//        database.getReference().child("UserBuddy").addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-//                    String value = snapshot.getValue().toString();
-//                    if(value.equals(MyID)){
-//
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
+
     }
 }
