@@ -33,6 +33,9 @@ public class BuddyItemView extends LinearLayout {
 
     private void init(Context context) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        //??
+        assert inflater != null;
+        //??
         inflater.inflate(R.layout.buddy_item,this,true);
         textView = (TextView)findViewById(R.id.textView);
         textView2 = (TextView)findViewById(R.id.textView2);

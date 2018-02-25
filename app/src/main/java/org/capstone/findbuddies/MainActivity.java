@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         mAuth.addAuthStateListener(mAuthListener);
 //        FirebaseUser currentUser = mAuth.getCurrentUser();
 //        updateUI(currentUser);
+
     }
 
     @Override

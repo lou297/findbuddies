@@ -25,6 +25,7 @@ public class messenger extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //noinspection ConstantConditions
         getSupportActionBar().setTitle("messenger");
 
         ActionBar actionBar = getSupportActionBar();

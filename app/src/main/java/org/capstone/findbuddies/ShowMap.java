@@ -76,32 +76,34 @@ public class ShowMap extends AppCompatActivity {
         long minTime = 1000;
         float minDistance = 0;
         LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        manager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                minTime,
-                minDistance,
-                new LocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location) {
-                        showCurrentLocation(location);
+        if (manager != null) {
+            manager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    minTime,
+                    minDistance,
+                    new LocationListener() {
+                        @Override
+                        public void onLocationChanged(Location location) {
+                            showCurrentLocation(location);
+                        }
+
+                        @Override
+                        public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                        }
+
+                        @Override
+                        public void onProviderEnabled(String s) {
+
+                        }
+
+                        @Override
+                        public void onProviderDisabled(String s) {
+
+                        }
                     }
-
-                    @Override
-                    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-                    }
-
-                    @Override
-                    public void onProviderEnabled(String s) {
-
-                    }
-
-                    @Override
-                    public void onProviderDisabled(String s) {
-
-                    }
-                }
-        );
+            );
+        }
     }
 
     public void showCurrentLocation(Location location) {

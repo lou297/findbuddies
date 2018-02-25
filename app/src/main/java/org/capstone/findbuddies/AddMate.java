@@ -20,11 +20,11 @@ public class AddMate extends AppCompatActivity {
     private FirebaseAuth mAuth;
     FirebaseUser User;
     int SET = 0;//ON = 1 OFF = 0
+    String MyMail;
 
     TextView searched_id;
     TextView searched_name;
     TextView SearchId;
-    String MyID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +35,10 @@ public class AddMate extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
         User = mAuth.getCurrentUser();
+
+        if(User!=null){
+            MyMail = User.getEmail();
+        }
 
         searched_id = (TextView)findViewById(R.id.searched_id);
         searched_name = (TextView)findViewById(R.id.searched_name);
@@ -52,7 +56,8 @@ public class AddMate extends AppCompatActivity {
         AddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AddFriend(SearchId.getText().toString());
+                MakeFriendInfoList(SearchId.getText().toString());
+                finish();
 //                Toast.makeText(AddMate.this, "ddd", Toast.LENGTH_SHORT).show();
             }
         });
@@ -97,18 +102,23 @@ public class AddMate extends AppCompatActivity {
 
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         SaveRegist value = snapshot.getValue(SaveRegist.class);
-                        if( (value.getS_id()) .equals(SearchId.getText().toString())){
+                        if(value!=null){
 
-                            if( (User.getEmail()).equals(value.getS_email()) ){
-                                Toast.makeText(AddMate.this, "본인의 ID", Toast.LENGTH_SHORT).show();
-                            }
-                            else{
-                                Toast.makeText(AddMate.this, "있는 존재", Toast.LENGTH_SHORT).show();
-                                SET = 1;
-                                OnOffContents(SET,value.getS_id(),value.getS_name());
+                            if( (value.getS_id()) .equals(SearchId.getText().toString())){
+
+                                if( (MyMail).equals(value.getS_email()) ){
+                                    Toast.makeText(AddMate.this, "본인의 ID", Toast.LENGTH_SHORT).show();
+                                }
+                                else{
+                                    Toast.makeText(AddMate.this, "있는 존재", Toast.LENGTH_SHORT).show();
+                                    SET = 1;
+                                    OnOffContents(SET,value.getS_id(),value.getS_name());
+                                }
+
                             }
 
                         }
+
 
                     }
                     if(SET==0){
@@ -127,17 +137,22 @@ public class AddMate extends AppCompatActivity {
         }
     }
 
-    public void AddFriend(String BuddyID){
+    public void MakeFriendInfoList(final String BuddyID){
         final String MyEmail = User.getEmail();
-
 
         database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     SaveRegist value = snapshot.getValue(SaveRegist.class);
-                    if( (value.getS_email()).equals(MyEmail) ){
-                        MyID = value.getS_id();
+                    if(value!=null){
+
+                        if( (value.getS_id()).equals(BuddyID) ){
+                            String FriendID = value.getS_id();
+                            String FriendName = value.getS_name();
+                            AddFriendList(MyEmail,FriendID,FriendName);
+                        }
+
                     }
                 }
             }
@@ -148,9 +163,15 @@ public class AddMate extends AppCompatActivity {
             }
         });
 
-        //////////해결 안된 부분!!!! 해결 하자..
+    }
 
-        database.getReference().child("UserBuddy").child(MyID).push().setValue(BuddyID);
+    public void AddFriendList(String MyEmail,String FriendID,String FriendName){
+        SaveFriends saveFriends = new SaveFriends();
+        saveFriends.MyEmail = MyEmail;
+        saveFriends.FriendID = FriendID;
+        saveFriends.FriendName = FriendName;
 
+        database.getReference().child("UserBuddy").push().setValue(saveFriends);
+        Toast.makeText(this, "친구 등록 완료", Toast.LENGTH_SHORT).show();
     }
 }
