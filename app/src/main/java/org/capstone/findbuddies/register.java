@@ -120,12 +120,16 @@ public class register extends AppCompatActivity {
     }
 
     public void UploadData(String id,String name, String email,String pwd){
-        SaveRegist SaveRegist = new SaveRegist();
-        SaveRegist.S_id = id;
-        SaveRegist.S_name = name;
-        SaveRegist.S_email = email;
-        SaveRegist.S_pwd = pwd;
-        database.getReference().child("UserInfo").push().setValue(SaveRegist);
+        SaveRegist saveRegist = new SaveRegist();
+        saveRegist.setSavedID(id);
+        saveRegist.setSavedName(name);
+        saveRegist.setSavedEmail(email);
+        saveRegist.setSavedPwd(pwd);
+//        SaveRegist.S_id = id;
+//        SaveRegist.S_name = name;
+//        SaveRegist.S_email = email;
+//        SaveRegist.S_pwd = pwd;
+        database.getReference().child("UserInfo").push().setValue(saveRegist);
     }
 
     @Override

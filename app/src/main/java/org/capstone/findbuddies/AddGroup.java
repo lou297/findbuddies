@@ -2,55 +2,119 @@ package org.capstone.findbuddies;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.SparseBooleanArray;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.CheckBox;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
 public class AddGroup extends AppCompatActivity {
-//    Buddy buddy = new Buddy();
-//    int checked_number=adapter.getCount();
+
+    FirebaseDatabase database;
+    private FirebaseAuth mAuth;
+    FirebaseUser User;
+    String MyEmail;
+    ArrayList<BuddyItem> buddies;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_group);
-        CheckBox checked = (CheckBox)findViewById(R.id.checked);
-//        checked.setVisibility(View.VISIBLE);
+
+        buddies = new ArrayList<BuddyItem>();
+        database = FirebaseDatabase.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+        User = mAuth.getCurrentUser();
+        if(User!=null){
+            MyEmail = User.getEmail();
+        }
 
 
-        final ListView listview = (ListView)findViewById(R.id.listView);
+        final ListView listView= (ListView)findViewById(R.id.listview);
 
-        Buddy.BuddyAdapter adapter2 = new Buddy.BuddyAdapter();
-        ArrayList<BuddyItem> buddyitem = new ArrayList<BuddyItem>();
-        adapter2.addbuddy(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
-//        buddyitem.add(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
-//        buddyitem.add(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
-//        buddyitem.add(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
-
-//        final ArrayAdapter<BuddyItem> adapter = new ArrayAdapter<BuddyItem>(this, android.R.layout.simple_list_item_multiple_choice,buddyitem);
-
-//        adapter = new Buddy.BuddyAdapter();
-//        adapter.addbuddy(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
-//        adapter.addbuddy(new BuddyItem("딸","010-2345-1234",R.drawable.girl));
-//        adapter.addbuddy(new BuddyItem("친구1","010-5324-1234",R.drawable.friend));
-//        adapter.addbuddy(new BuddyItem("친구2","010-3424-1234",R.drawable.friend2));
-
-        listview.setAdapter(adapter2);
-
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        Button checkButton = (Button)findViewById(R.id.checkButton);
+        checkButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                listview.setItemChecked(position,true);
-//                adapter.notifyDataSetChanged();
-//                view.setBackgroundColor();
-//                Toast toast = Toast.makeText(getApplicationContext(),checked_number+"명 체크됨.",Toast.LENGTH_LONG);
-//                toast.show();
-
+            public void onClick(View v) {
+                SparseBooleanArray checkedItem = listView.getCheckedItemPositions();
+                for(int i = 0 ; i < buddies.size(); i ++){
+                    if(checkedItem.get(i)){
+                        Toast.makeText(AddGroup.this, buddies.get(i).getName(), Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
-//
+
+        AddGroupAdapter adapter = new AddGroupAdapter();
+        listView.setAdapter(adapter);
+    }
+
+    class AddGroupAdapter extends BaseAdapter {
+
+
+        public AddGroupAdapter(){
+            database.getReference().child("UserBuddy").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    buddies.clear();
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        SaveFriends value = snapshot.getValue(SaveFriends.class);
+                        if(value !=null){
+                            if( (value.getMyEmail()).equals(MyEmail)){
+                                addbuddy(new BuddyItem(value.getFriendName(),value.getFriendID(),R.drawable.boy));
+                            }
+                        }
+                    }
+                    notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+
+        @Override
+        public int getCount() {
+            return buddies.size();
+        }
+
+        public void addbuddy(BuddyItem buddy){
+            buddies.add(buddy);
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return buddies.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            GBuddyItemView itemview = new GBuddyItemView(getApplicationContext());
+            BuddyItem buddy = buddies.get(i);
+            itemview.setName(buddy.getName());
+            itemview.setId(buddy.getID());
+            itemview.setImage(buddy.getResId());
+
+            return itemview;
+        }
     }
 }

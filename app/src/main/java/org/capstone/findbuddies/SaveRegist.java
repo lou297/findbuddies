@@ -5,41 +5,42 @@ package org.capstone.findbuddies;
  */
 
 public class SaveRegist {
-    String S_id;
-    String S_name;
-    String S_email;
-    String S_pwd;
+    String savedID;
+    String savedName;
+    String savedEmail;
+    String savedPwd;
 
 
-    public String getS_id() {
-        return S_id;
+
+    public String getSavedID() {
+        return savedID;
     }
 
-    public void setS_id(String s_id) {
-        S_id = s_id;
+    public void setSavedID(String savedID) {
+        this.savedID = savedID;
     }
 
-    public String getS_name() {
-        return S_name;
+    public String getSavedName() {
+        return savedName;
     }
 
-    public void setS_name(String s_name) {
-        S_name = s_name;
+    public void setSavedName(String savedName) {
+        this.savedName = savedName;
     }
 
-    public String getS_email() {
-        return S_email;
+    public String getSavedEmail() {
+        return savedEmail;
     }
 
-    public void setS_email(String s_email) {
-        S_email = s_email;
+    public void setSavedEmail(String savedEmail) {
+        this.savedEmail = savedEmail;
     }
 
-    public String getS_pwd() {
-        return S_pwd;
+    public String getSavedPwd() {
+        return savedPwd;
     }
 
-    public void setS_pwd(String s_pwd) {
-        S_pwd = s_pwd;
+    public void setSavedPwd(String savedPwd) {
+        this.savedPwd = savedPwd;
     }
 }

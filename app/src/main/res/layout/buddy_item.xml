@@ -36,11 +36,11 @@
 
     </LinearLayout>
 
-    <CheckBox
-        android:id="@+id/checked"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:visibility="invisible" />
+    <!--<CheckBox-->
+        <!--android:id="@+id/checked"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_weight="1"-->
+        <!--android:visibility="visible" />-->
 
 </LinearLayout>

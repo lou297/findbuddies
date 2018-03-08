@@ -104,15 +104,15 @@ public class AddMate extends AppCompatActivity {
                         SaveRegist value = snapshot.getValue(SaveRegist.class);
                         if(value!=null){
 
-                            if( (value.getS_id()) .equals(SearchId.getText().toString())){
+                            if( (value.getSavedID()) .equals(SearchId.getText().toString())){
 
-                                if( (MyMail).equals(value.getS_email()) ){
+                                if( (MyMail).equals(value.getSavedEmail()) ){
                                     Toast.makeText(AddMate.this, "본인의 ID", Toast.LENGTH_SHORT).show();
                                 }
                                 else{
                                     Toast.makeText(AddMate.this, "있는 존재", Toast.LENGTH_SHORT).show();
                                     SET = 1;
-                                    OnOffContents(SET,value.getS_id(),value.getS_name());
+                                    OnOffContents(SET,value.getSavedID(),value.getSavedName());
                                 }
 
                             }
@@ -147,9 +147,9 @@ public class AddMate extends AppCompatActivity {
                     SaveRegist value = snapshot.getValue(SaveRegist.class);
                     if(value!=null){
 
-                        if( (value.getS_id()).equals(BuddyID) ){
-                            String FriendID = value.getS_id();
-                            String FriendName = value.getS_name();
+                        if( (value.getSavedID()).equals(BuddyID) ){
+                            String FriendID = value.getSavedID();
+                            String FriendName = value.getSavedName();
                             AddFriendList(MyEmail,FriendID,FriendName);
                         }
 
@@ -167,9 +167,12 @@ public class AddMate extends AppCompatActivity {
 
     public void AddFriendList(String MyEmail,String FriendID,String FriendName){
         SaveFriends saveFriends = new SaveFriends();
-        saveFriends.MyEmail = MyEmail;
-        saveFriends.FriendID = FriendID;
-        saveFriends.FriendName = FriendName;
+        saveFriends.setMyEmail(MyEmail);
+        saveFriends.setFriendID(FriendID);
+        saveFriends.setFriendName(FriendName);
+//        saveFriends.MyEmail = MyEmail;
+//        saveFriends.FriendID = FriendID;
+//        saveFriends.FriendName = FriendName;
 
         database.getReference().child("UserBuddy").push().setValue(saveFriends);
         Toast.makeText(this, "친구 등록 완료", Toast.LENGTH_SHORT).show();

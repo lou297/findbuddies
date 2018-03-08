@@ -6,12 +6,12 @@ package org.capstone.findbuddies;
 
 public class BuddyItem {
     String name;
-    String mobile;
+    String ID;
     int resId;
 
-    public BuddyItem(String name, String mobile, int resId) {
+    public BuddyItem(String name, String ID, int resId) {
         this.name = name;
-        this.mobile = mobile;
+        this.ID = ID;
         this.resId = resId;
     }
 
@@ -23,12 +23,12 @@ public class BuddyItem {
         this.name = name;
     }
 
-    public String getMobile() {
-        return mobile;
+    public String getID() {
+        return ID;
     }
 
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
+    public void setID(String ID) {
+        this.ID = ID;
     }
 
     public int getResId() {
@@ -43,7 +43,7 @@ public class BuddyItem {
     public String toString() {
         return "BuddyItem{" +
                 "name='" + name + '\'' +
-                ", mobile='" + mobile + '\'' +
+                ", ID='" + ID + '\'' +
                 '}';
     }
 }

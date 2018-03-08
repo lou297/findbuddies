@@ -32,9 +32,9 @@ public class Group extends Fragment {
         addgroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity().getApplicationContext(),AddGroup.class);
+                Intent intent = new Intent(getActivity().getApplicationContext(),GroupNaming.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivityForResult(intent,101);
+                startActivity(intent);
             }
         });
 

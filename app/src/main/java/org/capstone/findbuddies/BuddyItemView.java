@@ -45,8 +45,8 @@ public class BuddyItemView extends LinearLayout {
     public void setName(String name){
         textView.setText(name);
     }
-    public void setMobile(String mobile) {
-        textView2.setText(mobile);
+    public void setID(String ID) {
+        textView2.setText(ID);
     }
 
     public void setImage(int resId){
