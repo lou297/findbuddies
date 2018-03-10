@@ -33,7 +33,7 @@ public class Buddy extends Fragment {
     private FirebaseAuth mAuth;
     FirebaseUser User;
     String MyEmail;
-    String FriendName;
+
 
     @Nullable
     @Override
@@ -60,8 +60,7 @@ public class Buddy extends Fragment {
         ListView listview = (ListView) rootView.findViewById(R.id.listView);
 
         adapter = new BuddyAdapter();
-//        adapter.addbuddy(new BuddyItem("아들","010-1234-1234",R.drawable.boy));
-//        MakeFriendsList();
+
         listview.setAdapter(adapter);
 
         return rootView;

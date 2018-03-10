@@ -12,6 +12,13 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 
 /**
@@ -21,11 +28,24 @@ import java.util.ArrayList;
 public class Group extends Fragment {
 
     GroupAdapter adapter;
+    FirebaseDatabase database;
+    private FirebaseAuth mAuth;
+    FirebaseUser User;
+    String MyEmail;
+    String MyName;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.group,container,false);
+
+        database = FirebaseDatabase.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+        User = mAuth.getCurrentUser();
+        if(User!=null){
+            MyEmail = User.getEmail();
+        }
+        getMyName();
 
         Button addgroup = (Button)rootView.findViewById(R.id.addgroup);
 
@@ -42,7 +62,6 @@ public class Group extends Fragment {
 
         adapter = new GroupAdapter();
 
-        adapter.addgroup(new GroupItem("가족","아들 , 딸",R.drawable.family));
 
         listview.setAdapter(adapter);
 
@@ -58,8 +77,70 @@ public class Group extends Fragment {
         return rootView;
     }
 
+    private void getMyName() {
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if((value.getSavedEmail()).equals(MyEmail)){
+                        MyName = value.getSavedName();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     class GroupAdapter extends BaseAdapter{
         ArrayList<GroupItem> groups = new ArrayList<GroupItem>();
+        int isMember;
+        String GroupName;
+        String MemberList;
+        public GroupAdapter(){
+            database.getReference().child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    groups.clear();
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        GroupName = null;
+                        isMember = 0;
+                        MemberList="";
+                        SaveGroupList value = snapshot.getValue(SaveGroupList.class);
+                        ArrayList<String> members = value.getMembers();
+                        for(String memberCheck : members){
+                            if(memberCheck.equals(MyName)){
+                                isMember = 1;
+                            }
+                        }
+
+                        if(isMember==1){
+                            for(String member : members){
+                                if(MemberList.length()==0){
+                                    MemberList +=member;
+                                }
+                                else {
+                                    MemberList = MemberList + ", " + member;
+                                }
+                            }
+                            GroupName = value.getGroupName();
+                            addgroup(new GroupItem(GroupName,MemberList,R.drawable.family));
+                        }
+
+                    }
+                    notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
 
         @Override
         public int getCount() {

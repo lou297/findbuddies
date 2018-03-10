@@ -25,6 +25,7 @@ public class AddGroup extends AppCompatActivity {
     private FirebaseAuth mAuth;
     FirebaseUser User;
     String MyEmail;
+    String MyName;
     ArrayList<BuddyItem> buddies;
 
     @Override
@@ -39,7 +40,7 @@ public class AddGroup extends AppCompatActivity {
         if(User!=null){
             MyEmail = User.getEmail();
         }
-
+        GetMyName();
 
         final ListView listView= (ListView)findViewById(R.id.listview);
 
@@ -47,12 +48,21 @@ public class AddGroup extends AppCompatActivity {
         checkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ArrayList<String> members = new ArrayList<>();
+                members.add(MyName);
                 SparseBooleanArray checkedItem = listView.getCheckedItemPositions();
                 for(int i = 0 ; i < buddies.size(); i ++){
                     if(checkedItem.get(i)){
                         Toast.makeText(AddGroup.this, buddies.get(i).getName(), Toast.LENGTH_SHORT).show();
+                        members.add(buddies.get(i).getName());
                     }
                 }
+                if(members.size()>1){
+                    String GroupName = getIntent().getStringExtra("name");
+                    String GroupPassword = getIntent().getStringExtra("password");
+                    AddGroupChat(MyName,GroupName,GroupPassword,members);
+                }
+
             }
         });
 
@@ -61,7 +71,6 @@ public class AddGroup extends AppCompatActivity {
     }
 
     class AddGroupAdapter extends BaseAdapter {
-
 
         public AddGroupAdapter(){
             database.getReference().child("UserBuddy").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -116,5 +125,39 @@ public class AddGroup extends AppCompatActivity {
 
             return itemview;
         }
+    }
+
+    public void AddGroupChat(String owner,String groupName,String password,ArrayList<String> members){
+        SaveGroupList saveGroupList = new SaveGroupList();
+        saveGroupList.setOwner(owner);
+        saveGroupList.setGroupName(groupName);
+        saveGroupList.setPassword(password);
+        saveGroupList.setMembers(members);
+
+        database.getReference().child("GroupList").push().setValue(saveGroupList);
+        Toast.makeText(this, "그룹 추가 완료", Toast.LENGTH_SHORT).show();
+        finish();
+        GroupNaming NamingActivity = (GroupNaming) GroupNaming.NamingActivity;
+        NamingActivity.finish();
+    }
+
+    public void GetMyName(){
+
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if((value.getSavedEmail()).equals(MyEmail)){
+                        MyName = value.getSavedName();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }
