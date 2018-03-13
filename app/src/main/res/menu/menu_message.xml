@@ -3,7 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="org.capstone.findbuddies.message">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/notice_ballon"
+        android:title="@string/action_settings"
+        android:icon="@drawable/bubble"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/logout"
         android:orderInCategory="100"
         android:title="@string/action_settings"
         android:icon="@drawable/logout"

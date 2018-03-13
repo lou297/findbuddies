@@ -7,10 +7,29 @@ import java.util.ArrayList;
  */
 
 public class SaveGroupList {
+    int roomNo;
     String owner;
     String groupName;
     String password;
     ArrayList<String> members;
+    ArrayList<Integer> memberPermission;
+
+    public ArrayList<Integer> getMemberPermission() {
+        return memberPermission;
+    }
+
+    public void setMemberPermission(ArrayList<Integer> memberPermission) {
+        this.memberPermission = memberPermission;
+    }
+
+    public int getRoomNo() {
+        return roomNo;
+    }
+
+    public void setRoomNo(int roomNo) {
+        this.roomNo = roomNo;
+    }
+
 
     public String getGroupName() {
         return groupName;

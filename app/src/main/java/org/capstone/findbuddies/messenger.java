@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -26,7 +27,7 @@ public class messenger extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //noinspection ConstantConditions
-        getSupportActionBar().setTitle("messenger");
+        getSupportActionBar().setTitle("");
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowCustomEnabled(false);
@@ -79,10 +80,24 @@ public class messenger extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        mAuth.signOut();
-        finish();
-        Intent intent = new Intent(getApplication(),MainActivity.class);
-        startActivity(intent);
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()){
+            case R.id.notice_ballon:
+                Toast.makeText(this, "버튼 눌림", Toast.LENGTH_SHORT).show();
+                Intent notice = new Intent(getApplication(),NoticeList.class);
+                startActivity(notice);
+                return true;
+
+            case R.id.logout:
+                mAuth.signOut();
+                finish();
+                Intent out = new Intent(getApplication(),MainActivity.class);
+                startActivity(out);
+                return super.onOptionsItemSelected(item);
+
+            default:
+                return true;
+
+        }
+
     }
 }

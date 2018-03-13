@@ -40,6 +40,7 @@ public class Group extends Fragment {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.group,container,false);
 
         database = FirebaseDatabase.getInstance();
+
         mAuth = FirebaseAuth.getInstance();
         User = mAuth.getCurrentUser();
         if(User!=null){

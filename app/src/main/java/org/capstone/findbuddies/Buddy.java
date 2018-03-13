@@ -41,6 +41,7 @@ public class Buddy extends Fragment {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.buddy,container,false);
 
         database = FirebaseDatabase.getInstance();
+//        database.setPersistenceEnabled(true);
         mAuth = FirebaseAuth.getInstance();
         User = mAuth.getCurrentUser();
         if(User!=null){

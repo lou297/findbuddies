@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/groupOwner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="누구 "
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="님께서 "
+                android:textColor="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/groupName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="그룹방 제목 "
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" 방에 당신을 초대하였습니다."
+                android:textColor="@color/colorPrimaryDark" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:text="그룹원 : "
+                android:textColor="@color/colorPrimaryDark" />
+
+            <TextView
+                android:id="@+id/groupList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="멤버1, 멤버2"
+                android:textColor="@android:color/black" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+    <Button
+        android:id="@+id/accept"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:text="수락" />
+    <Button
+        android:id="@+id/reject"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:text="반대" />
+
+
+
+</LinearLayout>

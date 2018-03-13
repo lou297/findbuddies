@@ -49,18 +49,24 @@ public class AddGroup extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ArrayList<String> members = new ArrayList<>();
+                ArrayList<Integer> memberPermmision = new ArrayList<>();
+                int memberNumber=1;
                 members.add(MyName);
+                memberPermmision.add(1);
                 SparseBooleanArray checkedItem = listView.getCheckedItemPositions();
                 for(int i = 0 ; i < buddies.size(); i ++){
                     if(checkedItem.get(i)){
                         Toast.makeText(AddGroup.this, buddies.get(i).getName(), Toast.LENGTH_SHORT).show();
+                        memberNumber++;
                         members.add(buddies.get(i).getName());
+                        memberPermmision.add(0);
                     }
                 }
+
                 if(members.size()>1){
                     String GroupName = getIntent().getStringExtra("name");
                     String GroupPassword = getIntent().getStringExtra("password");
-                    AddGroupChat(MyName,GroupName,GroupPassword,members);
+                    AddGroupChat(MyName,GroupName,GroupPassword,members,memberPermmision);
                 }
 
             }
@@ -127,12 +133,14 @@ public class AddGroup extends AppCompatActivity {
         }
     }
 
-    public void AddGroupChat(String owner,String groupName,String password,ArrayList<String> members){
+    public void AddGroupChat(String owner, String groupName, String password, ArrayList<String> members, ArrayList<Integer> memberPermission){
         SaveGroupList saveGroupList = new SaveGroupList();
+        saveGroupList.setRoomNo(1000);
         saveGroupList.setOwner(owner);
         saveGroupList.setGroupName(groupName);
         saveGroupList.setPassword(password);
         saveGroupList.setMembers(members);
+        saveGroupList.setMemberPermission(memberPermission);
 
         database.getReference().child("GroupList").push().setValue(saveGroupList);
         Toast.makeText(this, "그룹 추가 완료", Toast.LENGTH_SHORT).show();

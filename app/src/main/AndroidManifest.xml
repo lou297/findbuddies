@@ -51,7 +51,8 @@
             android:name=".AddMate"
             android:theme="@style/Theme.AppCompat.Light.Dialog" />
         <activity android:name=".GroupNaming" />
-        <activity android:name=".AddGroup"></activity>
+        <activity android:name=".AddGroup" />
+        <activity android:name=".NoticeList"></activity>
     </application>
 
 </manifest>
