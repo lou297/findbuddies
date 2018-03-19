@@ -1,6 +1,10 @@
 package org.capstone.findbuddies;
 
+import com.google.firebase.database.Exclude;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by user on 2018-03-08.
@@ -61,5 +65,19 @@ public class SaveGroupList {
 
     public void setMembers(ArrayList<String> members) {
         this.members = members;
+    }
+
+    @Exclude
+    public Map<String,Object> toMap() {
+        HashMap<String,Object> hash = new HashMap<>();
+
+        hash.put("roonNo",roomNo);
+        hash.put("owner",owner);
+        hash.put("groupName",groupName);
+        hash.put("password",password);
+        hash.put("members",members);
+        hash.put("memberPermission",memberPermission);
+
+        return hash;
     }
 }

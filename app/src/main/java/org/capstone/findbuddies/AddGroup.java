@@ -27,12 +27,14 @@ public class AddGroup extends AppCompatActivity {
     String MyEmail;
     String MyName;
     ArrayList<BuddyItem> buddies;
+    FirebaseData MyFirebaseData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_group);
 
+        MyFirebaseData = new FirebaseData();
         buddies = new ArrayList<BuddyItem>();
         database = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -66,7 +68,8 @@ public class AddGroup extends AppCompatActivity {
                 if(members.size()>1){
                     String GroupName = getIntent().getStringExtra("name");
                     String GroupPassword = getIntent().getStringExtra("password");
-                    AddGroupChat(MyName,GroupName,GroupPassword,members,memberPermmision);
+                    AddGroupChat(MyName,GroupName,GroupPassword,members,memberPermmision,MyFirebaseData.getNewGroupNo());
+                    MyFirebaseData.searchMyIdinGPSList(MyFirebaseData.getNewGroupNo());
                 }
 
             }
@@ -133,9 +136,9 @@ public class AddGroup extends AppCompatActivity {
         }
     }
 
-    public void AddGroupChat(String owner, String groupName, String password, ArrayList<String> members, ArrayList<Integer> memberPermission){
+    public void AddGroupChat(String owner, String groupName, String password, ArrayList<String> members, ArrayList<Integer> memberPermission,int RoomNo){
         SaveGroupList saveGroupList = new SaveGroupList();
-        saveGroupList.setRoomNo(1000);
+        saveGroupList.setRoomNo(RoomNo);
         saveGroupList.setOwner(owner);
         saveGroupList.setGroupName(groupName);
         saveGroupList.setPassword(password);

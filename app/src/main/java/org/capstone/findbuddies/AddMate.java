@@ -170,9 +170,7 @@ public class AddMate extends AppCompatActivity {
         saveFriends.setMyEmail(MyEmail);
         saveFriends.setFriendID(FriendID);
         saveFriends.setFriendName(FriendName);
-//        saveFriends.MyEmail = MyEmail;
-//        saveFriends.FriendID = FriendID;
-//        saveFriends.FriendName = FriendName;
+
 
         database.getReference().child("UserBuddy").push().setValue(saveFriends);
         Toast.makeText(this, "친구 등록 완료", Toast.LENGTH_SHORT).show();

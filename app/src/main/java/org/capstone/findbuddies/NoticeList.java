@@ -45,7 +45,7 @@ public class NoticeList extends AppCompatActivity {
         NoticeAdapter adapter = new NoticeAdapter();
         listView.setAdapter(adapter);
 
-        
+
     }
 
     class NoticeAdapter extends BaseAdapter{
@@ -57,6 +57,7 @@ public class NoticeList extends AppCompatActivity {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         SaveGroupList value = snapshot.getValue(SaveGroupList.class);
+                        String uidKey = snapshot.getKey();
                         int InGroup = 0;
                         int position = 0;
                         int NotPermission = 0;
@@ -72,6 +73,8 @@ public class NoticeList extends AppCompatActivity {
                             ArrayList<Integer> permission = value.getMemberPermission();
                             if(permission.get(position)==0){
                                 NotPermission=1;
+                                permission.set(position,1);
+                                database.getReference().child("GroupList").child(uidKey).child("memberPermission").setValue(permission);
                             }
                         }
                         if(NotPermission==1){
