@@ -173,7 +173,7 @@ public class Buddy extends Fragment {
     class BuddyAdapter extends BaseAdapter {
 
         ArrayList<BuddyItem> buddies = new ArrayList<BuddyItem>();
-        public BuddyAdapter() {
+        private BuddyAdapter() {
             database.getReference().child("UserBuddy").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {

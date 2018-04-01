@@ -73,8 +73,8 @@ public class NoticeList extends AppCompatActivity {
                             ArrayList<Integer> permission = value.getMemberPermission();
                             if(permission.get(position)==0){
                                 NotPermission=1;
-                                permission.set(position,1);
-                                database.getReference().child("GroupList").child(uidKey).child("memberPermission").setValue(permission);
+//                                permission.set(position,1);
+//                                database.getReference().child("GroupList").child(uidKey).child("memberPermission").setValue(permission);
                             }
                         }
                         if(NotPermission==1){

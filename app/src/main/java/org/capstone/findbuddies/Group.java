@@ -33,6 +33,7 @@ public class Group extends Fragment {
     FirebaseUser User;
     String MyEmail;
     String MyName;
+    ArrayList<GroupItem> groups = new ArrayList<GroupItem>();
 
     @Nullable
     @Override
@@ -68,13 +69,17 @@ public class Group extends Fragment {
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                int GroupNo = groups.get(position).getGroupNo();
+                int groupsize = groups.get(position).getMemberIdList().size();
+                ArrayList<String> groupIdList= groups.get(position).getMemberIdList();
                 Intent intent = new Intent(getContext(),ShowMap.class);
+                intent.putExtra("no",GroupNo);
+                intent.putExtra("size",groupsize);
+                intent.putStringArrayListExtra("IdList",groupIdList);
                 startActivity(intent);
             }
         });
-
         return rootView;
     }
 
@@ -98,16 +103,17 @@ public class Group extends Fragment {
     }
 
     class GroupAdapter extends BaseAdapter{
-        ArrayList<GroupItem> groups = new ArrayList<GroupItem>();
         int isMember;
+        int GroupNo;
         String GroupName;
         String MemberList;
-        public GroupAdapter(){
+        private GroupAdapter(){
             database.getReference().child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     groups.clear();
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        GroupNo = 0;
                         GroupName = null;
                         isMember = 0;
                         MemberList="";
@@ -128,8 +134,10 @@ public class Group extends Fragment {
                                     MemberList = MemberList + ", " + member;
                                 }
                             }
+                            GroupNo = value.getGroupNo();
                             GroupName = value.getGroupName();
-                            addgroup(new GroupItem(GroupName,MemberList,R.drawable.family));
+                            ArrayList<String> memberID = value.getMembersID();
+                            addgroup(new GroupItem(GroupNo,GroupName,MemberList,memberID,R.drawable.family));
                         }
 
                     }

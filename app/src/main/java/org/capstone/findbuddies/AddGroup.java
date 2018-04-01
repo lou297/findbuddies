@@ -26,6 +26,7 @@ public class AddGroup extends AppCompatActivity {
     FirebaseUser User;
     String MyEmail;
     String MyName;
+    String MyID;
     ArrayList<BuddyItem> buddies;
     FirebaseData MyFirebaseData;
 
@@ -42,7 +43,10 @@ public class AddGroup extends AppCompatActivity {
         if(User!=null){
             MyEmail = User.getEmail();
         }
-        GetMyName();
+
+        FirebaseData firebaseData = new FirebaseData();
+        MyName = firebaseData.GetMyName();
+        MyID = firebaseData.GetMyID();
 
         final ListView listView= (ListView)findViewById(R.id.listview);
 
@@ -51,9 +55,11 @@ public class AddGroup extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ArrayList<String> members = new ArrayList<>();
+                ArrayList<String> membersID = new ArrayList<>();
                 ArrayList<Integer> memberPermmision = new ArrayList<>();
                 int memberNumber=1;
                 members.add(MyName);
+                membersID.add(MyID);
                 memberPermmision.add(1);
                 SparseBooleanArray checkedItem = listView.getCheckedItemPositions();
                 for(int i = 0 ; i < buddies.size(); i ++){
@@ -61,6 +67,7 @@ public class AddGroup extends AppCompatActivity {
                         Toast.makeText(AddGroup.this, buddies.get(i).getName(), Toast.LENGTH_SHORT).show();
                         memberNumber++;
                         members.add(buddies.get(i).getName());
+                        membersID.add(buddies.get(i).getID());
                         memberPermmision.add(0);
                     }
                 }
@@ -68,8 +75,8 @@ public class AddGroup extends AppCompatActivity {
                 if(members.size()>1){
                     String GroupName = getIntent().getStringExtra("name");
                     String GroupPassword = getIntent().getStringExtra("password");
-                    AddGroupChat(MyName,GroupName,GroupPassword,members,memberPermmision,MyFirebaseData.getNewGroupNo());
-                    MyFirebaseData.searchMyIdinGPSList(MyFirebaseData.getNewGroupNo());
+                    AddGroupChat(MyName,GroupName,GroupPassword,members,membersID,memberPermmision,MyFirebaseData.getNewGroupNo());
+//                    MyFirebaseData.searchMyIdinGPSList(MyFirebaseData.getNewGroupNo());
                 }
 
             }
@@ -136,13 +143,14 @@ public class AddGroup extends AppCompatActivity {
         }
     }
 
-    public void AddGroupChat(String owner, String groupName, String password, ArrayList<String> members, ArrayList<Integer> memberPermission,int RoomNo){
+    public void AddGroupChat(String owner, String groupName, String password, ArrayList<String> members,ArrayList<String> membersID, ArrayList<Integer> memberPermission,int groupNo){
         SaveGroupList saveGroupList = new SaveGroupList();
-        saveGroupList.setRoomNo(RoomNo);
+        saveGroupList.setGroupNo(groupNo);
         saveGroupList.setOwner(owner);
         saveGroupList.setGroupName(groupName);
         saveGroupList.setPassword(password);
         saveGroupList.setMembers(members);
+        saveGroupList.setMembersID(membersID);
         saveGroupList.setMemberPermission(memberPermission);
 
         database.getReference().child("GroupList").push().setValue(saveGroupList);
@@ -171,4 +179,6 @@ public class AddGroup extends AppCompatActivity {
             }
         });
     }
+
+
 }

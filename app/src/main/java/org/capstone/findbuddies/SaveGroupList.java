@@ -11,11 +11,12 @@ import java.util.Map;
  */
 
 public class SaveGroupList {
-    int roomNo;
+    int groupNo;
     String owner;
     String groupName;
     String password;
     ArrayList<String> members;
+    ArrayList<String> membersID;
     ArrayList<Integer> memberPermission;
 
     public ArrayList<Integer> getMemberPermission() {
@@ -26,12 +27,12 @@ public class SaveGroupList {
         this.memberPermission = memberPermission;
     }
 
-    public int getRoomNo() {
-        return roomNo;
+    public int getGroupNo() {
+        return groupNo;
     }
 
-    public void setRoomNo(int roomNo) {
-        this.roomNo = roomNo;
+    public void setGroupNo(int groupNo) {
+        this.groupNo = groupNo;
     }
 
 
@@ -67,11 +68,19 @@ public class SaveGroupList {
         this.members = members;
     }
 
+    public ArrayList<String> getMembersID() {
+        return membersID;
+    }
+
+    public void setMembersID(ArrayList<String> membersID) {
+        this.membersID = membersID;
+    }
+
     @Exclude
     public Map<String,Object> toMap() {
         HashMap<String,Object> hash = new HashMap<>();
 
-        hash.put("roonNo",roomNo);
+        hash.put("groupNo",groupNo);
         hash.put("owner",owner);
         hash.put("groupName",groupName);
         hash.put("password",password);

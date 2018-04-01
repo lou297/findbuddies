@@ -125,12 +125,18 @@ public class register extends AppCompatActivity {
         saveRegist.setSavedName(name);
         saveRegist.setSavedEmail(email);
         saveRegist.setSavedPwd(pwd);
-//        SaveRegist.S_id = id;
-//        SaveRegist.S_name = name;
-//        SaveRegist.S_email = email;
-//        SaveRegist.S_pwd = pwd;
+
+        SaveUserGPS saveUserGPS = new SaveUserGPS();
+        saveUserGPS.setUserEmail(email);
+        saveUserGPS.setGpsPermission(false);
+        saveUserGPS.setGpsList(null);
+        saveUserGPS.setTimeList(null);
+
         database.getReference().child("UserInfo").push().setValue(saveRegist);
+        database.getReference().child("UserGPS").push().setValue(saveUserGPS);
     }
+
+
 
     @Override
     protected void onStart() {
