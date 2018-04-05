@@ -57,44 +57,47 @@ public class NoticeList extends AppCompatActivity {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         SaveGroupList value = snapshot.getValue(SaveGroupList.class);
-                        String uidKey = snapshot.getKey();
-                        int InGroup = 0;
-                        int position = 0;
-                        int NotPermission = 0;
-                        ArrayList<String> members = value.getMembers();
-                        for(String memberCheck : members){
-                            if(memberCheck.equals(MyName)){
-                                InGroup = 1;
-                                break;
+                        if(value!=null){
+                            String uidKey = snapshot.getKey();
+                            int InGroup = 0;
+                            int position = 0;
+                            int NotPermission = 0;
+                            ArrayList<String> members = value.getMembers();
+                            for(String memberCheck : members){
+                                if(memberCheck.equals(MyName)){
+                                    InGroup = 1;
+                                    break;
+                                }
+                                position++;
                             }
-                            position++;
-                        }
-                        if(InGroup==1){
-                            ArrayList<Integer> permission = value.getMemberPermission();
-                            if(permission.get(position)==0){
-                                NotPermission=1;
+                            if(InGroup==1){
+                                ArrayList<Integer> permission = value.getMemberPermission();
+                                if(permission.get(position)==0){
+                                    NotPermission=1;
 //                                permission.set(position,1);
 //                                database.getReference().child("GroupList").child(uidKey).child("memberPermission").setValue(permission);
-                            }
-                        }
-                        if(NotPermission==1){
-                            String owner = value.getOwner();
-                            String groupName = value.getGroupName();
-                            String MemberList="";
-                            int i = 0;
-                            for(String memberCheck : members){
-                                if(i==0){
-                                    MemberList += memberCheck;
                                 }
-                                else {
-                                    MemberList = MemberList+" , "+memberCheck;
-                                }
-                                i++;
                             }
-                            NoticeItem noticeItem = new NoticeItem(owner,groupName,MemberList);
-                            addNotice(noticeItem);
+                            if(NotPermission==1){
+                                String owner = value.getOwner();
+                                String groupName = value.getGroupName();
+                                String MemberList="";
+                                int i = 0;
+                                for(String memberCheck : members){
+                                    if(i==0){
+                                        MemberList += memberCheck;
+                                    }
+                                    else {
+                                        MemberList = MemberList+" , "+memberCheck;
+                                    }
+                                    i++;
+                                }
+                                NoticeItem noticeItem = new NoticeItem(owner,groupName,MemberList);
+                                addNotice(noticeItem);
+                            }
+                            Toast.makeText(NoticeList.this, NotPermission+" "+InGroup, Toast.LENGTH_SHORT).show();
                         }
-                        Toast.makeText(NoticeList.this, NotPermission+" "+InGroup, Toast.LENGTH_SHORT).show();
+
 
                     }
                     notifyDataSetChanged();
@@ -146,7 +149,7 @@ public class NoticeList extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot :dataSnapshot.getChildren()){
                     SaveRegist value = snapshot.getValue(SaveRegist.class);
-                    if((value.getSavedEmail()).equals(MyEmail)){
+                    if (value != null && (value.getSavedEmail()).equals(MyEmail)) {
                         MyName = value.getSavedName();
                     }
                 }

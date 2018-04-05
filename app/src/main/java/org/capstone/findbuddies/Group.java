@@ -55,6 +55,7 @@ public class Group extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity().getApplicationContext(),GroupNaming.class);
+//                Intent intent = new Intent(getActivity().getApplicationContext(),ShowMap.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
@@ -89,7 +90,7 @@ public class Group extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot :dataSnapshot.getChildren()){
                     SaveRegist value = snapshot.getValue(SaveRegist.class);
-                    if((value.getSavedEmail()).equals(MyEmail)){
+                    if (value != null && (value.getSavedEmail()).equals(MyEmail)) {
                         MyName = value.getSavedName();
                     }
                 }
@@ -118,27 +119,30 @@ public class Group extends Fragment {
                         isMember = 0;
                         MemberList="";
                         SaveGroupList value = snapshot.getValue(SaveGroupList.class);
-                        ArrayList<String> members = value.getMembers();
-                        for(String memberCheck : members){
-                            if(memberCheck.equals(MyName)){
-                                isMember = 1;
+                        if(value!=null){
+                            ArrayList<String> members = value.getMembers();
+                            for(String memberCheck : members){
+                                if(memberCheck.equals(MyName)){
+                                    isMember = 1;
+                                }
+                            }
+
+                            if(isMember==1){
+                                for(String member : members){
+                                    if(MemberList.length()==0){
+                                        MemberList +=member;
+                                    }
+                                    else {
+                                        MemberList = MemberList + ", " + member;
+                                    }
+                                }
+                                GroupNo = value.getGroupNo();
+                                GroupName = value.getGroupName();
+                                ArrayList<String> memberID = value.getMembersID();
+                                addgroup(new GroupItem(GroupNo,GroupName,MemberList,memberID,R.drawable.family));
                             }
                         }
 
-                        if(isMember==1){
-                            for(String member : members){
-                                if(MemberList.length()==0){
-                                    MemberList +=member;
-                                }
-                                else {
-                                    MemberList = MemberList + ", " + member;
-                                }
-                            }
-                            GroupNo = value.getGroupNo();
-                            GroupName = value.getGroupName();
-                            ArrayList<String> memberID = value.getMembersID();
-                            addgroup(new GroupItem(GroupNo,GroupName,MemberList,memberID,R.drawable.family));
-                        }
 
                     }
                     notifyDataSetChanged();

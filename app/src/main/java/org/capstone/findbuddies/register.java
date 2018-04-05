@@ -1,5 +1,6 @@
 package org.capstone.findbuddies;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 public class register extends AppCompatActivity {
     int check = 0;
@@ -78,22 +82,47 @@ public class register extends AppCompatActivity {
             check = 1;
         }
         if(GetPwd.getBytes().length==0){
-            Toast toast = Toast.makeText(getApplicationContext(),"dfsdf3.",Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(getApplicationContext(),"dfsdf4.",Toast.LENGTH_LONG);
             toast.show();
             check = 1;
         }
 
         if(check == 1){
-            Toast toast = Toast.makeText(getApplicationContext(),"정보를 입력해주세요.",Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(getApplicationContext(),"정보를 모두 입력해주세요.",Toast.LENGTH_LONG);
             toast.show();
         }
         else if (check == 0){
             Toast toast = Toast.makeText(getApplicationContext(),"정보 입력됨.",Toast.LENGTH_LONG);
             toast.show();
-            CreateUser(GetEmail,GetPwd);
-            UploadData(GetId,GetName,GetEmail,GetPwd);
+//            CreateUser(GetEmail,GetPwd);
+            create(GetEmail,GetPwd);
+            UploadData1(GetId,GetName,GetEmail,GetPwd);
+            UploadData2(GetEmail);
             finish();
         }
+    }
+
+    private void create(String email,String password){
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+//                            Log.d(TAG, "createUserWithEmail:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+//                            updateUI(user);
+                        } else {
+                            // If sign in fails, display a message to the user.
+//                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                            Toast.makeText(register.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+//                            updateUI(null);
+                        }
+
+                        // ...
+                    }
+                });
     }
 
     private void CreateUser(String email,String password){
@@ -104,8 +133,9 @@ public class register extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
 //                            Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
+//                            FirebaseUser user = mAuth.getCurrentUser();
 //                            updateUI(user);
+                            Toast.makeText(register.this, "등록 성공", Toast.LENGTH_SHORT).show();
                         } else {
                             // If sign in fails, display a message to the user.
 //                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -119,20 +149,28 @@ public class register extends AppCompatActivity {
                 });
     }
 
-    public void UploadData(String id,String name, String email,String pwd){
+    public void UploadData1(String id,String name, String email,String pwd){
         SaveRegist saveRegist = new SaveRegist();
         saveRegist.setSavedID(id);
         saveRegist.setSavedName(name);
         saveRegist.setSavedEmail(email);
         saveRegist.setSavedPwd(pwd);
+        Toast.makeText(this, "upload", Toast.LENGTH_SHORT).show();
 
+
+        database.getReference().child("UserInfo").push().setValue(saveRegist);
+
+    }
+
+    public void UploadData2(String email){
         SaveUserGPS saveUserGPS = new SaveUserGPS();
         saveUserGPS.setUserEmail(email);
         saveUserGPS.setGpsPermission(false);
-        saveUserGPS.setGpsList(null);
-        saveUserGPS.setTimeList(null);
+        ArrayList<Location> newList1 = new ArrayList<>();
+        ArrayList<Date> newList2 = new ArrayList<>();
+        saveUserGPS.setGpsList(newList1);
+        saveUserGPS.setTimeList(newList2);
 
-        database.getReference().child("UserInfo").push().setValue(saveRegist);
         database.getReference().child("UserGPS").push().setValue(saveUserGPS);
     }
 

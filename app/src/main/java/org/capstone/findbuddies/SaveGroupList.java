@@ -19,6 +19,9 @@ public class SaveGroupList {
     ArrayList<String> membersID;
     ArrayList<Integer> memberPermission;
 
+    public SaveGroupList() {
+    }
+
     public ArrayList<Integer> getMemberPermission() {
         return memberPermission;
     }

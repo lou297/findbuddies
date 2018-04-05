@@ -15,6 +15,9 @@ public class SaveUserGPS {
     ArrayList<Location> gpsList;
     ArrayList<Date> timeList;
 
+    public SaveUserGPS() {
+    }
+
     public String getUserEmail() {
         return userEmail;
     }

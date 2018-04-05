@@ -158,6 +158,11 @@ public class ShowMap extends AppCompatActivity {
     }
 
     public void showMarker(Location location) {
+
+        CustomInfoWindow adapter = new CustomInfoWindow(ShowMap.this);
+        map.setInfoWindowAdapter(adapter);
+
+
         for(int i = 0 ; i < markerList.size(); i ++){
             markerList.get(i).position(new LatLng(123,123));
             map.addMarker(markerList.get(i));
@@ -170,13 +175,13 @@ public class ShowMap extends AppCompatActivity {
             marker.title("아들");
             marker.snippet("현재 위치입니다.");
             marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.smallboy));
-            map.addMarker(marker);
+            map.addMarker(marker).showInfoWindow();
             marker2 = new MarkerOptions();
             marker2.position(new LatLng(location.getLatitude(), location.getLongitude() ) );
             marker2.title("딸");
             marker2.snippet("현재 위치입니다.");
             marker2.icon(BitmapDescriptorFactory.fromResource(R.drawable.smallgirl));
-            map.addMarker(marker2);
+            map.addMarker(marker2).showInfoWindow();
         }
         else {
 

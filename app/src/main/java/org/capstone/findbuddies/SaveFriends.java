@@ -9,6 +9,8 @@ public class SaveFriends {
     String friendID;
     String friendName;
 
+    public SaveFriends() {
+    }
 
     public String getMyEmail() {
         return myEmail;

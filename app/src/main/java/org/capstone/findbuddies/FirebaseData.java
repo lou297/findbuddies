@@ -19,27 +19,27 @@ import java.util.Date;
 public class FirebaseData {
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    FirebaseUser User = mAuth.getCurrentUser();
-    String MyName;
-    String MyID;
+    FirebaseUser User = mAuth.getCurrentUser();;
+
+
     String MyEmail;
-    int CheckMyGPSList=0;
     int GroupNo;
     int existGroupNo = 0;
 
-    public String getMyEmail(){
+    public String GetMyEmail(){
         MyEmail = User.getEmail();
         return MyEmail;
     }
 
-    public String GetMyName(){
+    public String GetMyName(final String Email){
+        final String[] MyName = new String[1];
         database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot :dataSnapshot.getChildren()){
                     SaveRegist value = snapshot.getValue(SaveRegist.class);
-                    if((value.getSavedEmail()).equals(getMyEmail())){
-                        MyName = value.getSavedName();
+                    if (value != null && (value.getSavedEmail()).equals(Email)) {
+                        MyName[0] = value.getSavedName();
                     }
                 }
             }
@@ -49,17 +49,18 @@ public class FirebaseData {
 
             }
         });
-        return MyName;
+        return MyName[0];
     }
 
-    public String GetMyID(){
+    public String GetMyID(final String Email){
+        final String[] MyID = new String[1];
         database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot :dataSnapshot.getChildren()){
                     SaveRegist value = snapshot.getValue(SaveRegist.class);
-                    if((value.getSavedEmail()).equals(getMyEmail())){
-                        MyID = value.getSavedID();
+                    if (value != null && (value.getSavedEmail()).equals(Email)) {
+                        MyID[0] = value.getSavedID();
                     }
                 }
             }
@@ -69,7 +70,7 @@ public class FirebaseData {
 
             }
         });
-        return MyID;
+        return MyID[0];
     }
 
 //    public void searchMyIdinGPSList(int GroupNo){
@@ -141,18 +142,17 @@ public class FirebaseData {
 
 
 
-    public void AddNewOrExistingGPSList(){
-
-    }
-
     public int getNewGroupNo(){
 
         database.getReference().child("LastGroupNo").addListenerForSingleValueEvent(new ValueEventListener() {
           @Override
           public void onDataChange(DataSnapshot dataSnapshot) {
               for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                  GroupNo = snapshot.getValue(int.class);
-                  existGroupNo++;
+                  if(snapshot.getValue()!=null) {
+                      //noinspection ConstantConditions
+                      GroupNo = snapshot.getValue(int.class);
+                      existGroupNo++;
+                  }
               }
               if(existGroupNo==0){
                 GroupNo=10000;
@@ -177,18 +177,20 @@ public class FirebaseData {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     SaveUserGPS value = snapshot.getValue(SaveUserGPS.class);
-                    if((value.getUserEmail()).equals(MyEmail)){
+                    if (value != null && (value.getUserEmail()).equals(MyEmail)) {
                         String uidKey = snapshot.getKey();
-                        ArrayList<Location> GpsList = value.getGpsList();
-                        GpsList.add(location);
+                        if (value.getGpsList().size() <= 10) {
+                            ArrayList<Location> GpsList = value.getGpsList();
+                            GpsList.add(location);
 
-                        ArrayList<Date> TimeList = value.getTimeList();
-                        long now = System.currentTimeMillis();
-                        Date date = new Date(now);
-                        TimeList.add(date);
+                            ArrayList<Date> TimeList = value.getTimeList();
+                            long now = System.currentTimeMillis();
+                            Date date = new Date(now);
+                            TimeList.add(date);
 
-                        database.getReference().child("UserGPS").child(uidKey).child("gpsList").setValue(GpsList);
-                        database.getReference().child("UserGPS").child(uidKey).child("timeList").setValue(TimeList);
+                            database.getReference().child("UserGPS").child(uidKey).child("gpsList").setValue(GpsList);
+                            database.getReference().child("UserGPS").child(uidKey).child("timeList").setValue(TimeList);
+                        }
                     }
                 }
             }

@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
                     String password = pwd.getText().toString();
                     LoginCheck(email,password);
                 }
+                else {
+                    Toast.makeText(MainActivity.this, "zzz", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
@@ -48,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(),register.class);
+//                Intent intent = new Intent(getApplicationContext(),StreetView.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
@@ -88,12 +92,13 @@ public class MainActivity extends AppCompatActivity {
 //                            Log.d(TAG, "signInWithEmail:success");
 //                            FirebaseUser user = mAuth.getCurrentUser();
 //                            updateUI(user);
+                            Toast.makeText(MainActivity.this, "성공!", Toast.LENGTH_SHORT).show();
 
                         } else {
                             // If sign in fails, display a message to the user.
 //                            Log.w(TAG, "signInWithEmail:failure", task.getException());
-//                            Toast.makeText(EmailPasswordActivity.this, "Authentication failed.",
-//                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
 //                            updateUI(null);
                             Toast.makeText(getApplication(),"옳바른 정보를 입력해주세요.",Toast.LENGTH_LONG).show();
                         }

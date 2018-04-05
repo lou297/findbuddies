@@ -27,8 +27,9 @@ public class AddGroup extends AppCompatActivity {
     String MyEmail;
     String MyName;
     String MyID;
+
     ArrayList<BuddyItem> buddies;
-    FirebaseData MyFirebaseData;
+    FirebaseData MyFirebaseData = new FirebaseData();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +43,12 @@ public class AddGroup extends AppCompatActivity {
         User = mAuth.getCurrentUser();
         if(User!=null){
             MyEmail = User.getEmail();
+            GetMyName(MyEmail);
+            GetMyID(MyEmail);
         }
 
-        FirebaseData firebaseData = new FirebaseData();
-        MyName = firebaseData.GetMyName();
-        MyID = firebaseData.GetMyID();
+
+
 
         final ListView listView= (ListView)findViewById(R.id.listview);
 
@@ -57,7 +59,9 @@ public class AddGroup extends AppCompatActivity {
                 ArrayList<String> members = new ArrayList<>();
                 ArrayList<String> membersID = new ArrayList<>();
                 ArrayList<Integer> memberPermmision = new ArrayList<>();
-                int memberNumber=1;
+                if(MyEmail==null){
+                    Toast.makeText(AddGroup.this, "여기가 문제", Toast.LENGTH_SHORT).show();
+                }
                 members.add(MyName);
                 membersID.add(MyID);
                 memberPermmision.add(1);
@@ -65,7 +69,6 @@ public class AddGroup extends AppCompatActivity {
                 for(int i = 0 ; i < buddies.size(); i ++){
                     if(checkedItem.get(i)){
                         Toast.makeText(AddGroup.this, buddies.get(i).getName(), Toast.LENGTH_SHORT).show();
-                        memberNumber++;
                         members.add(buddies.get(i).getName());
                         membersID.add(buddies.get(i).getID());
                         memberPermmision.add(0);
@@ -75,9 +78,10 @@ public class AddGroup extends AppCompatActivity {
                 if(members.size()>1){
                     String GroupName = getIntent().getStringExtra("name");
                     String GroupPassword = getIntent().getStringExtra("password");
-                    AddGroupChat(MyName,GroupName,GroupPassword,members,membersID,memberPermmision,MyFirebaseData.getNewGroupNo());
+                    AddGroupChat(MyEmail,GroupName,GroupPassword,members,membersID,memberPermmision,MyFirebaseData.getNewGroupNo());
 //                    MyFirebaseData.searchMyIdinGPSList(MyFirebaseData.getNewGroupNo());
                 }
+
 
             }
         });
@@ -160,14 +164,13 @@ public class AddGroup extends AppCompatActivity {
         NamingActivity.finish();
     }
 
-    public void GetMyName(){
-
+    public void GetMyName(final String Email){
         database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot :dataSnapshot.getChildren()){
                     SaveRegist value = snapshot.getValue(SaveRegist.class);
-                    if((value.getSavedEmail()).equals(MyEmail)){
+                    if (value != null && (value.getSavedEmail()).equals(Email)) {
                         MyName = value.getSavedName();
                     }
                 }
@@ -179,6 +182,26 @@ public class AddGroup extends AppCompatActivity {
             }
         });
     }
+
+    public void GetMyID(final String Email){
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if (value != null && (value.getSavedEmail()).equals(Email)) {
+                        MyID = value.getSavedID();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
 
 
 }
