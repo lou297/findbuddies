@@ -9,12 +9,16 @@ import com.google.android.gms.maps.StreetViewPanoramaFragment;
 import com.google.android.gms.maps.model.LatLng;
 
 public class StreetView extends FragmentActivity implements OnStreetViewPanoramaReadyCallback {
+    double latitude;
+    double longitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_street_view);
 
+        latitude = getIntent().getDoubleExtra("latitude",0);
+        longitude = getIntent().getDoubleExtra("longitude",0);
         StreetViewPanoramaFragment streetViewPanoramaFragment =
                 (StreetViewPanoramaFragment) getFragmentManager()
                         .findFragmentById(R.id.street_view);
@@ -23,6 +27,6 @@ public class StreetView extends FragmentActivity implements OnStreetViewPanorama
 
     @Override
     public void onStreetViewPanoramaReady(StreetViewPanorama streetViewPanorama) {
-        streetViewPanorama.setPosition(new LatLng(-33.87365, 151.20689));
+        streetViewPanorama.setPosition(new LatLng(latitude, longitude));
     }
 }

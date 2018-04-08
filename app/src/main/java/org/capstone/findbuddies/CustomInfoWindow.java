@@ -34,7 +34,7 @@ public class CustomInfoWindow implements GoogleMap.InfoWindowAdapter{
     public View getInfoContents(Marker marker) {
         View view = context.getLayoutInflater().inflate(R.layout.custom_window,null);
         ImageView imageView = view.findViewById(R.id.paranomaView);
-        imageView.setImageDrawable(LoadImageFromWeb(37.422, -122.084));
+        imageView.setImageDrawable(LoadImageFromWebOperations(37.422, -122.084));
         return view;
     }
 
@@ -93,6 +93,20 @@ public class CustomInfoWindow implements GoogleMap.InfoWindowAdapter{
             return null;
         }
 
+    }
+
+    public static Drawable LoadImageFromWebOperations(double latitude,double longitude) {
+        String url = "http://maps.google.com/cbk?output=xml&ll=" + latitude + "," + longitude;
+        try {
+            Log.d("dubug","qqq1");
+            InputStream is = (InputStream) new URL(url).getContent();
+            Log.d("dubug","qqq2");
+            Drawable d = Drawable.createFromStream(is, "src name");
+            Log.d("dubug","qqq3");
+            return d;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 

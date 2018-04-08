@@ -11,12 +11,16 @@ import android.widget.Toast;
 
 public class GroupNaming extends AppCompatActivity {
     public static Activity NamingActivity;
+    String MyEmail;
+    String MyName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_naming);
         NamingActivity = GroupNaming.this;
+        MyEmail = getIntent().getStringExtra("MyEmail");
+        MyName = getIntent().getStringExtra("MyName");
         
         Button create = (Button)findViewById(R.id.create);
         create.setOnClickListener(new View.OnClickListener() {
@@ -54,6 +58,8 @@ public class GroupNaming extends AppCompatActivity {
             Intent intent = new Intent(getApplicationContext(),AddGroup.class);
             intent.putExtra("name",GetGroupName());
             intent.putExtra("password",password);
+            intent.putExtra("MyEmail",MyEmail);
+            intent.putExtra("MyName",MyName);
             startActivity(intent);
 
         }

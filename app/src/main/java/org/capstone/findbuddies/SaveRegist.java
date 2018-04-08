@@ -10,8 +10,7 @@ public class SaveRegist {
     String savedEmail;
     String savedPwd;
 
-    public SaveRegist() {
-    }
+
 
     public String getSavedID() {
         return savedID;

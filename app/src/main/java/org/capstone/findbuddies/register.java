@@ -1,6 +1,5 @@
 package org.capstone.findbuddies;
 
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -166,7 +165,7 @@ public class register extends AppCompatActivity {
         SaveUserGPS saveUserGPS = new SaveUserGPS();
         saveUserGPS.setUserEmail(email);
         saveUserGPS.setGpsPermission(false);
-        ArrayList<Location> newList1 = new ArrayList<>();
+        ArrayList<LocationInfo> newList1 = new ArrayList<>();
         ArrayList<Date> newList2 = new ArrayList<>();
         saveUserGPS.setGpsList(newList1);
         saveUserGPS.setTimeList(newList2);

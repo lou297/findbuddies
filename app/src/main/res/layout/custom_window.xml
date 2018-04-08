@@ -14,6 +14,7 @@
         android:id="@+id/paranomaView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/boy" />
+        app:srcCompat="@drawable/boy"
+        android:contentDescription="TODO" />
 
 </LinearLayout>

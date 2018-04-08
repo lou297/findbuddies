@@ -10,13 +10,15 @@ public class GroupItem {
     int groupNo;
     String name;
     String member;
+    ArrayList<String> memeberNameList;
     ArrayList<String> memberIdList;
     int resId;
 
-    public GroupItem(int groupNo,String name,String member,ArrayList<String> memberIdList,int resId) {
+    public GroupItem(int groupNo,String name,String member,ArrayList<String> memeberNameList,ArrayList<String> memberIdList,int resId) {
         this.groupNo = groupNo;
         this.name = name;
         this.member = member;
+        this.memeberNameList = memeberNameList;
         this.memberIdList = memberIdList;
         this.resId = resId;
     }
@@ -35,6 +37,14 @@ public class GroupItem {
 
     public void setMember(String member) {
         this.member = member;
+    }
+
+    public ArrayList<String> getMemeberNameList() {
+        return memeberNameList;
+    }
+
+    public void setMemeberNameList(ArrayList<String> memeberNameList) {
+        this.memeberNameList = memeberNameList;
     }
 
     public ArrayList<String> getMemberIdList() {

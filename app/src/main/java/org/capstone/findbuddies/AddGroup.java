@@ -10,10 +10,9 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -21,31 +20,27 @@ import java.util.ArrayList;
 
 public class AddGroup extends AppCompatActivity {
 
-    FirebaseDatabase database;
-    private FirebaseAuth mAuth;
-    FirebaseUser User;
+    DatabaseReference database;
     String MyEmail;
     String MyName;
     String MyID;
+    int GroupNo;
+    int existGroupNo = 0;
 
     ArrayList<BuddyItem> buddies;
-    FirebaseData MyFirebaseData = new FirebaseData();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_group);
 
-        MyFirebaseData = new FirebaseData();
+
         buddies = new ArrayList<BuddyItem>();
-        database = FirebaseDatabase.getInstance();
-        mAuth = FirebaseAuth.getInstance();
-        User = mAuth.getCurrentUser();
-        if(User!=null){
-            MyEmail = User.getEmail();
-            GetMyName(MyEmail);
-            GetMyID(MyEmail);
-        }
+        database = FirebaseDatabase.getInstance().getReference();
+
+        MyEmail = getIntent().getStringExtra("MyEmail");
+        MyName = getIntent().getStringExtra("MyName");
+        GetMyID(MyEmail);
 
 
 
@@ -78,7 +73,7 @@ public class AddGroup extends AppCompatActivity {
                 if(members.size()>1){
                     String GroupName = getIntent().getStringExtra("name");
                     String GroupPassword = getIntent().getStringExtra("password");
-                    AddGroupChat(MyEmail,GroupName,GroupPassword,members,membersID,memberPermmision,MyFirebaseData.getNewGroupNo());
+                    AddGroupChat(MyEmail,GroupName,GroupPassword,members,membersID,memberPermmision,getNewGroupNo());
 //                    MyFirebaseData.searchMyIdinGPSList(MyFirebaseData.getNewGroupNo());
                 }
 
@@ -93,7 +88,7 @@ public class AddGroup extends AppCompatActivity {
     class AddGroupAdapter extends BaseAdapter {
 
         public AddGroupAdapter(){
-            database.getReference().child("UserBuddy").addListenerForSingleValueEvent(new ValueEventListener() {
+            database.child("UserBuddy").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     buddies.clear();
@@ -157,7 +152,7 @@ public class AddGroup extends AppCompatActivity {
         saveGroupList.setMembersID(membersID);
         saveGroupList.setMemberPermission(memberPermission);
 
-        database.getReference().child("GroupList").push().setValue(saveGroupList);
+        database.child("GroupList").push().setValue(saveGroupList);
         Toast.makeText(this, "그룹 추가 완료", Toast.LENGTH_SHORT).show();
         finish();
         GroupNaming NamingActivity = (GroupNaming) GroupNaming.NamingActivity;
@@ -165,7 +160,7 @@ public class AddGroup extends AppCompatActivity {
     }
 
     public void GetMyName(final String Email){
-        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+        database.child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot :dataSnapshot.getChildren()){
@@ -184,7 +179,7 @@ public class AddGroup extends AppCompatActivity {
     }
 
     public void GetMyID(final String Email){
-        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+        database.child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot :dataSnapshot.getChildren()){
@@ -200,6 +195,35 @@ public class AddGroup extends AppCompatActivity {
 
             }
         });
+    }
+
+    public int getNewGroupNo(){
+
+        database.child("LastGroupNo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    if(snapshot.getValue()!=null) {
+                        //noinspection ConstantConditions
+                        GroupNo = snapshot.getValue(int.class);
+                        existGroupNo++;
+                    }
+                }
+                if(existGroupNo==0){
+                    GroupNo=10000;
+                    database.child("LastGroupNo").setValue(GroupNo);
+                }
+                else {
+                    GroupNo++;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        return GroupNo;
     }
 
 

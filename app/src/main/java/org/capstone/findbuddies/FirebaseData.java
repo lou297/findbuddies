@@ -1,16 +1,11 @@
 package org.capstone.findbuddies;
 
-import android.location.Location;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by user on 2018-03-15.
@@ -171,34 +166,5 @@ public class FirebaseData {
       return GroupNo;
     }
 
-    public void SaveLocationData(final Location location){
-        database.getReference().child("UserGPS").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    SaveUserGPS value = snapshot.getValue(SaveUserGPS.class);
-                    if (value != null && (value.getUserEmail()).equals(MyEmail)) {
-                        String uidKey = snapshot.getKey();
-                        if (value.getGpsList().size() <= 10) {
-                            ArrayList<Location> GpsList = value.getGpsList();
-                            GpsList.add(location);
 
-                            ArrayList<Date> TimeList = value.getTimeList();
-                            long now = System.currentTimeMillis();
-                            Date date = new Date(now);
-                            TimeList.add(date);
-
-                            database.getReference().child("UserGPS").child(uidKey).child("gpsList").setValue(GpsList);
-                            database.getReference().child("UserGPS").child(uidKey).child("timeList").setValue(TimeList);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
 }

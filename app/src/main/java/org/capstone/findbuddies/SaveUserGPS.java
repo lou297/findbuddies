@@ -1,7 +1,5 @@
 package org.capstone.findbuddies;
 
-import android.location.Location;
-
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -12,7 +10,7 @@ import java.util.Date;
 public class SaveUserGPS {
     String userEmail;
     boolean gpsPermission;
-    ArrayList<Location> gpsList;
+    ArrayList<LocationInfo> gpsList;
     ArrayList<Date> timeList;
 
     public SaveUserGPS() {
@@ -34,11 +32,11 @@ public class SaveUserGPS {
         this.gpsPermission = gpsPermission;
     }
 
-    public ArrayList<Location> getGpsList() {
+    public ArrayList<LocationInfo> getGpsList() {
         return gpsList;
     }
 
-    public void setGpsList(ArrayList<Location> gpsList) {
+    public void setGpsList(ArrayList<LocationInfo> gpsList) {
         this.gpsList = gpsList;
     }
 

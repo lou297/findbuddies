@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 public class Group extends Fragment {
 
     GroupAdapter adapter;
-    FirebaseDatabase database;
+    DatabaseReference database;
     private FirebaseAuth mAuth;
     FirebaseUser User;
     String MyEmail;
@@ -40,7 +41,7 @@ public class Group extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.group,container,false);
 
-        database = FirebaseDatabase.getInstance();
+        database = FirebaseDatabase.getInstance().getReference();
 
         mAuth = FirebaseAuth.getInstance();
         User = mAuth.getCurrentUser();
@@ -55,7 +56,8 @@ public class Group extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity().getApplicationContext(),GroupNaming.class);
-//                Intent intent = new Intent(getActivity().getApplicationContext(),ShowMap.class);
+                intent.putExtra("MyEmail",MyEmail);
+                intent.putExtra("MyName",MyName);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
@@ -72,20 +74,30 @@ public class Group extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 int GroupNo = groups.get(position).getGroupNo();
-                int groupsize = groups.get(position).getMemberIdList().size();
-                ArrayList<String> groupIdList= groups.get(position).getMemberIdList();
-                Intent intent = new Intent(getContext(),ShowMap.class);
-                intent.putExtra("no",GroupNo);
-                intent.putExtra("size",groupsize);
-                intent.putStringArrayListExtra("IdList",groupIdList);
-                startActivity(intent);
+                if(CheckPermission(GroupNo)){
+                    int groupsize = groups.get(position).getMemberIdList().size();
+                    ArrayList<String> groupIdList= groups.get(position).getMemberIdList();
+                    ArrayList<String> groupNameList = groups.get(position).getMemeberNameList();
+                    Intent intent = new Intent(getContext(),ShowMap.class);
+                    intent.putExtra("no",GroupNo);
+                    intent.putExtra("size",groupsize);
+                    intent.putStringArrayListExtra("IdList",groupIdList);
+                    intent.putStringArrayListExtra("NameList",groupNameList);
+                    intent.putExtra("MyEmail",MyEmail);
+                    intent.putExtra("MyName",MyName);
+                    startActivity(intent);
+                }
+                else{
+
+                }
+
             }
         });
         return rootView;
     }
 
     private void getMyName() {
-        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+        database.child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot :dataSnapshot.getChildren()){
@@ -109,7 +121,7 @@ public class Group extends Fragment {
         String GroupName;
         String MemberList;
         private GroupAdapter(){
-            database.getReference().child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
+            database.child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     groups.clear();
@@ -138,8 +150,9 @@ public class Group extends Fragment {
                                 }
                                 GroupNo = value.getGroupNo();
                                 GroupName = value.getGroupName();
+                                ArrayList<String> memberName = value.getMembers();
                                 ArrayList<String> memberID = value.getMembersID();
-                                addgroup(new GroupItem(GroupNo,GroupName,MemberList,memberID,R.drawable.family));
+                                addgroup(new GroupItem(GroupNo,GroupName,MemberList,memberName,memberID,R.drawable.family));
                             }
                         }
 
@@ -184,6 +197,37 @@ public class Group extends Fragment {
 
             return itemview;
         }
+    }
+
+    public boolean CheckPermission(final int groupNo){
+        final boolean[] bool = {true};
+        database.child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    SaveGroupList value = snapshot.getValue(SaveGroupList.class);
+                    if(value!=null&&value.getGroupNo()==groupNo){
+                        for(int i = 0 ; i<value.getMemberPermission().size();i++){
+                            if(value.getMemberPermission().get(i)==0){
+                                bool[0] = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+        return bool[0];
+    }
+
+    public void RestrainMessage(){
+        
     }
 
 

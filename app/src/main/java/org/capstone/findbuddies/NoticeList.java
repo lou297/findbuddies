@@ -50,7 +50,7 @@ public class NoticeList extends AppCompatActivity {
 
     class NoticeAdapter extends BaseAdapter{
 
-        public NoticeAdapter(){
+        NoticeAdapter(){
 
             database.getReference().child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
