@@ -12,8 +12,19 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -33,8 +44,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class ShowMap extends AppCompatActivity {
+public class ShowMap extends AppCompatActivity implements OnConnectionFailedListener{
 
+    int PLACE_AUTOCOMPLETE_REQUEST_CODE = 101;
     boolean mLocationPermissionGranted;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 //    SupportMapFragment mapFragment;
@@ -47,6 +59,8 @@ public class ShowMap extends AppCompatActivity {
     long minTime = 1000;
     float minDistance = 10;
     ArrayList<MarkerOptions> markerList = new ArrayList<>();
+    private GoogleApiClient mGoogleApiClient;
+    Button but;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +68,8 @@ public class ShowMap extends AppCompatActivity {
 
         database = FirebaseDatabase.getInstance().getReference();
         MyEmail = getIntent().getStringExtra("MyEmail");
+
+        //////////////////////구글 맵
 
 //        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
@@ -74,9 +90,52 @@ public class ShowMap extends AppCompatActivity {
                         startActivity(intent);
                     }
                 });
+
             }
         });
 
+        mGoogleApiClient = new GoogleApiClient
+                .Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this, this)
+                .build();
+
+        ///////////////// 자동 완성
+//        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+//                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+//        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+//            @Override
+//            public void onPlaceSelected(Place place) {
+//                // TODO: Get info about the selected place.
+//
+//            }
+//
+//            @Override
+//            public void onError(Status status) {
+//                // TODO: Handle the error.
+//
+//            }
+//        });
+        but = findViewById(R.id.searchButton);
+        but.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    Intent intent =
+                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                                    .build(ShowMap.this);
+                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                } catch (GooglePlayServicesRepairableException e) {
+                    // TODO: Handle the error.
+                } catch (GooglePlayServicesNotAvailableException e) {
+                    // TODO: Handle the error.
+                }
+            }
+        });
+
+
+        ///////////////////////사용자에 따른 마커 추가
 
         int number = getIntent().getIntExtra("size",0);
         for(int i = 0 ; i < number; i ++){
@@ -119,6 +178,21 @@ public class ShowMap extends AppCompatActivity {
             }
         }
 //        updateLocationUI();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlaceAutocomplete.getPlace(this, data);
+            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                Status status = PlaceAutocomplete.getStatus(this, data);
+                // TODO: Handle the error.
+
+            } else if (resultCode == RESULT_CANCELED) {
+                // The user canceled operation.
+            }
+        }
     }
 
     public void requestMyLocation(){
@@ -395,5 +469,15 @@ public class ShowMap extends AppCompatActivity {
         return date[0];
     }
 
+    public void AddMarker(LatLng latLng){
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
+        MarkerOptions marker = new MarkerOptions();
+        marker.position(latLng);
+    }
 
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 }

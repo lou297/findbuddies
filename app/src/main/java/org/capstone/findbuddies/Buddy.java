@@ -53,7 +53,13 @@ public class Buddy extends Fragment {
         addmate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity().getApplicationContext(),AddMate.class);
+//                Intent intent = new Intent(getActivity().getApplicationContext(),AddMate.class);
+//                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                startActivity(intent);
+//                Intent intent = new Intent(getActivity().getApplicationContext(),CalendarActivity.class);
+//                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                startActivity(intent);
+                Intent intent = new Intent(getActivity().getApplicationContext(),MemoEdit.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }

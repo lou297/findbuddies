@@ -1,9 +1,11 @@
 package org.capstone.findbuddies;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -88,7 +90,7 @@ public class Group extends Fragment {
                     startActivity(intent);
                 }
                 else{
-
+                    RestrainMessage(GroupNo);
                 }
 
             }
@@ -226,8 +228,40 @@ public class Group extends Fragment {
         return bool[0];
     }
 
-    public void RestrainMessage(){
-        
+    public void RestrainMessage(final int groupNo){
+        final String[] NotPermMembers = {""};
+        database.child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    SaveGroupList value = snapshot.getValue(SaveGroupList.class);
+                    if(value!=null&&value.getGroupNo()==groupNo){
+                        for(int i = 0 ; i<value.getMemberPermission().size();i++){
+                            if(value.getMemberPermission().get(i)==0){
+                                NotPermMembers[0] += (value.getMembers().get(i)+" ");
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        NotPermMembers[0] += "회원님이 초청을 수락하지 않으셨습니다.";
+        new AlertDialog.Builder(getContext())
+                .setTitle("Restrained")
+                .setMessage(NotPermMembers[0])
+                .setNeutralButton("확인", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                }).show();
+
     }
 
 
