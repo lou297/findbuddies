@@ -42,7 +42,8 @@ public class messenger extends AppCompatActivity {
         tabs.addTab(tabs.newTab().setText("Buddy"));
         tabs.addTab(tabs.newTab().setText("Group"));
 
-        tabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+
+        tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 int position = tab.getPosition();

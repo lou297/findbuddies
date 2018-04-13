@@ -79,7 +79,7 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
                 Log.d("ShowMap","GoogleMap 준비됨.");
 
                 map = googleMap;
-                map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+//                map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
                 map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                     @Override
                     public void onInfoWindowClick(Marker marker) {

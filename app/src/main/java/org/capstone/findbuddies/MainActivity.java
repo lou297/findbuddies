@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // User is signed in
                     Toast.makeText(getApplicationContext(),"zzz",Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(getApplicationContext(),messenger.class);
+                    Intent intent = new Intent(getApplicationContext(),NavigationMain.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     finish();

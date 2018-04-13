@@ -56,8 +56,12 @@
         <activity android:name=".NoticeList" />
         <activity android:name=".ActionList" />
         <activity android:name=".StreetView" />
-        <activity android:name=".CalendarActivity" />
-        <activity android:name=".MemoEdit"></activity>
+        <activity android:name=".MemoEdit" />
+        <activity
+            android:name=".NavigationMain"
+            android:label="@string/title_activity_navigation_main"
+            android:theme="@style/AppTheme" />
+        <activity android:name=".MemoPicker"></activity>
     </application>
 
 </manifest>

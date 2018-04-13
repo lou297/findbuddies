@@ -59,7 +59,7 @@ public class Buddy extends Fragment {
 //                Intent intent = new Intent(getActivity().getApplicationContext(),CalendarActivity.class);
 //                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 //                startActivity(intent);
-                Intent intent = new Intent(getActivity().getApplicationContext(),MemoEdit.class);
+                Intent intent = new Intent(getActivity().getApplicationContext(),NavigationMain.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
