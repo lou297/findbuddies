@@ -26,7 +26,7 @@ public class AddGroup extends AppCompatActivity {
     String MyID;
     int GroupNo;
     int existGroupNo = 0;
-
+  
     ArrayList<BuddyItem> buddies;
 
     @Override

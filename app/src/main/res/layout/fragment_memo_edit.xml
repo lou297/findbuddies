@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,31 +7,33 @@
     android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
+        android:id="@+id/MemoToolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        app:popupTheme="@style/AppTheme.PopupOverlay"/>
+        android:layout_height="?attr/actionBarSize"
+        android:background="#FFFFFF"/>
 
     <EditText
         android:id="@+id/title_edit"
         android:hint="제목"
         android:maxLines="1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/MemoToolbar"/>
 
     <EditText
         android:id="@+id/contents_edit"
-        android:hint="내용"
-        android:background="#ffea00"
-        android:padding="8dp"
-        android:gravity="top"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@+id/title_edit"
+        android:background="@drawable/edit_memo"
+        android:gravity="top"
+        android:hint="내용"
+        android:padding="8dp" />
 
     <ImageView
         android:id="@+id/PictureView"
-        android:layout_width="match_parent"
+        android:layout_below="@+id/contents_edit"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:srcCompat="@color/cardview_light_background" />
 
@@ -39,9 +41,11 @@
         android:id="@+id/AddPictureBut"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/ic_insert_photo"
+        android:backgroundTint="#FFFFFF"
+        android:layout_margin="16dp"/>
 
 
-</LinearLayout>
+</RelativeLayout>

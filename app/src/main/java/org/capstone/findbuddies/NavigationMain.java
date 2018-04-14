@@ -20,8 +20,8 @@ public class NavigationMain extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.MemoToolbar);
+//        setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -70,8 +70,10 @@ public class NavigationMain extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.save) {
+            Intent intent = new Intent(this,ParsingMemo.class);
+                startActivity(intent);
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -89,8 +91,9 @@ public class NavigationMain extends AppCompatActivity
         }
         else if (id == R.id.note) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.nav_main,new MemoEditFragment())
+                    .replace(R.id.nav_main,new MemoList())
                     .commit();
+
         } else if (id == R.id.calendar) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,new CalendarFragment())

@@ -16,7 +16,7 @@
             <android.support.v7.widget.Toolbar
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorPrimaryDark"
+                android:background="@color/cardview_light_background"
                 android:elevation="1dp"
                 android:id="@+id/toolbar"
                 android:theme="@style/Theme.AppCompat.NoActionBar">
