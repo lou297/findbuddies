@@ -126,10 +126,13 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
                             new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
                                     .build(ShowMap.this);
                     startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                    Log.d("dubug","bbb");
                 } catch (GooglePlayServicesRepairableException e) {
+                    Log.d("dubug","aaa");
                     // TODO: Handle the error.
                 } catch (GooglePlayServicesNotAvailableException e) {
                     // TODO: Handle the error.
+                    Log.d("dubug","zzbbbz");
                 }
             }
         });
@@ -188,9 +191,11 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
                 // TODO: Handle the error.
+                Log.d("dubug",status.getStatusMessage());
 
             } else if (resultCode == RESULT_CANCELED) {
                 // The user canceled operation.
+                Log.d("dubug","qwea");
             }
         }
     }
