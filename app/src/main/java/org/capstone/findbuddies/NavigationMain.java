@@ -12,18 +12,28 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+
+import com.google.firebase.database.FirebaseDatabase;
 
 public class NavigationMain extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
+    FloatingActionButton fab;
+    String myEmail;
+    FirebaseDatabase database;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.MemoToolbar);
 //        setSupportActionBar(toolbar);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.nav_main,new MainMapFragment())
+                .commit();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        database = FirebaseDatabase.getInstance();
+        myEmail = getIntent().getStringExtra("myEmail");
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -32,6 +42,7 @@ public class NavigationMain extends AppCompatActivity
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.nav_main,new MemoEditFragment())
                         .commit();
+                fab.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -70,10 +81,36 @@ public class NavigationMain extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.save) {
+        if(id == R.id.special){
             Intent intent = new Intent(this,ParsingMemo.class);
-                startActivity(intent);
-                return true;
+            EditText titleEdit = findViewById(R.id.title_edit);
+            EditText contentEdit = findViewById(R.id.contents_edit);
+            intent.putExtra("title",titleEdit.getText().toString());
+            intent.putExtra("content",contentEdit.getText().toString());
+            startActivity(intent);
+            return true;
+        }
+
+        if (id == R.id.save) {
+//            EditText titleEdit = findViewById(R.id.title_edit);
+//            EditText contentEdit = findViewById(R.id.contents_edit);
+//            long Now = System.currentTimeMillis();
+//            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
+//            String date = simpleDateFormat.format(new Date(Now));
+//
+//            ImageView imageView = findViewById(R.id.PictureView);
+//            SaveMemo saveMemo = new SaveMemo();
+//
+//            saveMemo.setImageUrl(uri.toString());
+//            saveMemo.setUploaderEmail(myEmail);
+//            saveMemo.setLastEditDate(date);
+//            saveMemo.setTitle(titleEdit.toString());
+//            saveMemo.setMemo(contentEdit.toString());
+//            saveMemo.setYear(0);
+//            saveMemo.setMonth(0);
+//            saveMemo.setDay(0);
+//
+//            database.getReference().child("MemoList").push().setValue(saveMemo);
         }
 
         return super.onOptionsItemSelected(item);
@@ -83,24 +120,34 @@ public class NavigationMain extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
+        fab.setVisibility(View.VISIBLE);
+        Bundle bundle = new Bundle();
+        bundle.putString("myEmail",myEmail);
         int id = item.getItemId();
         if(id == R.id.map) {
+            MainMapFragment mainMapFragment = new MainMapFragment();
+            mainMapFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.nav_main,new MainMapFragment())
+                    .replace(R.id.nav_main,mainMapFragment)
                     .commit();
         }
         else if (id == R.id.note) {
+            MemoList memoList = new MemoList();
+            memoList.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.nav_main,new MemoList())
+                    .replace(R.id.nav_main,memoList)
                     .commit();
 
         } else if (id == R.id.calendar) {
+            CalendarFragment calendarFragment = new CalendarFragment();
+            calendarFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.nav_main,new CalendarFragment())
+                    .replace(R.id.nav_main,calendarFragment)
                     .commit();
         } else if (id == R.id.group) {
             Intent intent = new Intent(getApplicationContext(),messenger.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra("myEmail",myEmail);
             startActivity(intent);
         } else if (id == R.id.account) {
 

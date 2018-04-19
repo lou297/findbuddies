@@ -17,22 +17,35 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class MemoEditFragment extends Fragment{
     FloatingActionButton PictureBut;
     private static final int GALLERY_CODE= 1000;
     private FirebaseStorage storage;
+    private FirebaseDatabase database;
     ImageView PictureView;
     String PicturePath;
+    String myEmail;
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
+    String date;
+    EditText Title;
+    EditText Memo;
+    int AddedPicture;
+
     Toolbar toolbar;
     @Nullable
     @Override
@@ -52,8 +65,9 @@ public class MemoEditFragment extends Fragment{
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},0);
         }
-
+        database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
+        AddedPicture = 0;
         PictureBut = view.findViewById(R.id.AddPictureBut);
         PictureView = view.findViewById(R.id.PictureView);
 
@@ -63,6 +77,7 @@ public class MemoEditFragment extends Fragment{
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+
                 startActivityForResult(intent,GALLERY_CODE);
             }
         });
@@ -78,6 +93,7 @@ public class MemoEditFragment extends Fragment{
                 PicturePath = getPath(data.getData());
                 File file = new File(PicturePath);
                 PictureView.setImageURI(Uri.fromFile(file));
+                AddedPicture = 1;
             }
 
         }
@@ -96,7 +112,7 @@ public class MemoEditFragment extends Fragment{
         return cursor.getString(index);
     }
 
-    public void UploadMemo(String uri){
+    public void UploadUri(String uri){
         StorageReference storageRef = storage.getReference();
         Uri file = Uri.fromFile(new File(uri));
         StorageReference riversRef = storageRef.child("images/"+file.getLastPathSegment());
@@ -114,7 +130,29 @@ public class MemoEditFragment extends Fragment{
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                     Uri downloadUrl = taskSnapshot.getDownloadUrl();
                     downloadUrl.toString();//>>이미지 path
+
+
             }
         });
+    }
+
+    public void UploadMemo(String uri){
+        long Now = System.currentTimeMillis();
+        date = simpleDateFormat.format(new Date(Now));
+
+        SaveMemo saveMemo = new SaveMemo();
+        Title = getView().findViewById(R.id.title_edit);
+        Memo = getView().findViewById(R.id.contents_edit);
+
+        saveMemo.setImageUrl(uri.toString());
+        saveMemo.setUploaderEmail(myEmail);
+        saveMemo.setLastEditDate(date);
+        saveMemo.setTitle(Title.toString());
+        saveMemo.setMemo(Memo.toString());
+        saveMemo.setYear(0);
+        saveMemo.setMonth(0);
+        saveMemo.setDay(0);
+
+        database.getReference().child("MemoList").push().setValue(saveMemo);
     }
 }

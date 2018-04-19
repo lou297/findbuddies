@@ -44,7 +44,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:src="@drawable/ic_insert_photo"
-        android:backgroundTint="#FFFFFF"
+        android:backgroundTint="#2244FF"
         android:layout_margin="16dp"/>
 
 

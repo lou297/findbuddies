@@ -4,13 +4,13 @@ public class MemoItem {
     String title;
     String contents;
     String date;
-    int picture;
+    String pictureURI;
 
-    public MemoItem(String title, String contents, String date, int picture) {
+    public MemoItem(String title, String contents, String date, String pictureURI) {
         this.title = title;
         this.contents = contents;
         this.date = date;
-        this.picture = picture;
+        this.pictureURI = pictureURI;
     }
 
     public String getTitle() {
@@ -37,12 +37,12 @@ public class MemoItem {
         this.date = date;
     }
 
-    public int getPicture() {
-        return picture;
+    public String getPictureURI() {
+        return pictureURI;
     }
 
-    public void setPicture(int picture) {
-        this.picture = picture;
+    public void setPictureURI(String pictureURI) {
+        this.pictureURI = pictureURI;
     }
 }
 

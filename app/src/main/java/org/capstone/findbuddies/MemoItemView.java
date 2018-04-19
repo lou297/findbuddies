@@ -1,6 +1,7 @@
 package org.capstone.findbuddies;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -45,7 +46,7 @@ public class MemoItemView extends LinearLayout{
         date.setText(Date);
     }
 
-    public void setPicture(int Picture) {
-        picture.setImageResource(Picture);
+    public void setPicture(Uri Picture) {
+        picture.setImageURI(Picture);
     }
 }

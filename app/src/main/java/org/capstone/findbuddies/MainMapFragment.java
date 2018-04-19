@@ -6,16 +6,21 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.Locale;
 
 public class MainMapFragment extends Fragment implements OnMapReadyCallback{
     private GoogleMap googleMap;
     private MapView mapView;
+    MarkerOptions marker;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -25,15 +30,42 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
         mapView.getMapAsync(this);
-
         Locale ko = Locale.KOREA;
+
+
+        if(googleMap!=null){
+
+        }
+
         return rootView;
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(final GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        marker = new MarkerOptions();
+        LatLng curPoint = new LatLng(37.234, 126.972);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curPoint,15));
+        marker.position(googleMap.getCameraPosition().target);
+        googleMap.addMarker(marker);
+
+        googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+            @Override
+            public void onCameraMove() {
+                Toast.makeText(getContext(), "zzzzzzzzz", Toast.LENGTH_SHORT).show();
+                marker.position(googleMap.getCameraPosition().target);
+            }
+        });
+        googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+
+            }
+        });
 
     }
+
+
 
     @Override
     public void onResume() {

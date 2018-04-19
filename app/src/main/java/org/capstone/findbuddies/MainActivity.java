@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
                 if(Id.getText()!=null && pwd.getText()!=null){
                     String email = Id.getText().toString();
                     String password = pwd.getText().toString();
-                    LoginCheck(email,password);
+                    LoginCheck(email.trim(),password.trim());
                 }
                 else {
                     Toast.makeText(MainActivity.this, "zzz", Toast.LENGTH_SHORT).show();
@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
                     // User is signed in
                     Toast.makeText(getApplicationContext(),"zzz",Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(getApplicationContext(),NavigationMain.class);
+                    intent.putExtra("myEmail",user.getEmail());
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     finish();
