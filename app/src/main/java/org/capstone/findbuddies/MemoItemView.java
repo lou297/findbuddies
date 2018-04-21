@@ -18,10 +18,12 @@ public class MemoItemView extends LinearLayout{
 
     public MemoItemView(Context context) {
         super(context);
+        init(context);
     }
 
     public MemoItemView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init(context);
     }
 
     private void init(Context context) {

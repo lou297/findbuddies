@@ -18,6 +18,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
     productFlavors {
     }
     buildToolsVersion '27.0.3'
@@ -31,6 +35,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:11.8.0'
     implementation 'com.google.firebase:firebase-crash:11.8.0'
     implementation 'com.google.firebase:firebase-storage:11.8.0'
+    implementation 'com.firebaseui:firebase-ui-storage:0.6.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
@@ -50,6 +55,10 @@ dependencies {
     implementation('com.google.apis:google-api-services-calendar:v3-rev305-1.23.0') {
         exclude group: 'org.apache.httpcomponents'
     }
+    implementation('com.google.http-client:google-http-client-gson:1.23.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+    implementation 'com.google.apis:google-api-services-vision:v1-rev369-1.23.0'
 
 }
 

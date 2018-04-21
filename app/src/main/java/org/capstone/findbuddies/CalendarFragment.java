@@ -1,7 +1,6 @@
 package org.capstone.findbuddies;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,7 +13,6 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CalendarView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,15 +35,7 @@ public class CalendarFragment extends Fragment {
         myEmail = getArguments().getString("myEmail");
         database = FirebaseDatabase.getInstance();
         calendarView = rootView.findViewById(R.id.calendarView);
-        try{
-            ViewGroup vg = (ViewGroup) calendarView.getChildAt(13);
-            View child = vg.getChildAt(13);
-            if(child instanceof TextView){
-                ((TextView)child).setTextColor(Color.BLUE);
-            }
-        }catch (Exception e){
 
-        }
         final ListView listview = (ListView) rootView.findViewById(R.id.SpecificDateMemoList);
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {

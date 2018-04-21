@@ -54,12 +54,15 @@ public class MemoPicker extends AppCompatActivity {
             AMPM = "오전";
             AMPMhour = hour;
         }
-        dateTextview.setText(year+"년 "+month+"월 "+day+"일");
-        timeTextview.setText(AMPM+" "+AMPMhour+"시 "+minute+"분");
+        String date = year+"년 "+month+"월 "+day+"일";
+        String time = AMPM+" "+AMPMhour+"시 "+minute+"분";
+        dateTextview.setText(date);
+        timeTextview.setText(time);
         datePicker.init(year, month, day, new DatePicker.OnDateChangedListener() {
             @Override
             public void onDateChanged(DatePicker view, int yearofDate, int monthOfYear, int dayOfMonth) {
-                dateTextview.setText(yearofDate+"년 "+monthOfYear+"월 "+dayOfMonth+"일");
+                String ChangedDate = yearofDate+"년 "+monthOfYear+"월 "+dayOfMonth+"일";
+                dateTextview.setText(ChangedDate);
                 year = yearofDate;
                 month = monthOfYear;
                 day = dayOfMonth;
@@ -88,7 +91,8 @@ public class MemoPicker extends AppCompatActivity {
                     AMPM = "오전";
                     AMPMhour = hourOfDay;
                 }
-                timeTextview.setText(AMPM+" "+AMPMhour+"시 "+minutes+"분");
+                String ChangedTime = AMPM+" "+AMPMhour+"시 "+minutes+"분";
+                timeTextview.setText(ChangedTime);
                 hour = hourOfDay;
                 minute = minutes;
             }

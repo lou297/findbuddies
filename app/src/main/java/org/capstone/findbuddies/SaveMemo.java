@@ -3,6 +3,8 @@ package org.capstone.findbuddies;
 public class SaveMemo {
     String uploaderEmail;
     String lastEditDate;
+    long editSystemTime;
+    boolean checkGroupMemo;
     String title;
     String memo;
     String imageUrl;
@@ -27,6 +29,22 @@ public class SaveMemo {
 
     public void setLastEditDate(String lastEditDate) {
         this.lastEditDate = lastEditDate;
+    }
+
+    public long getEditSystemTime() {
+        return editSystemTime;
+    }
+
+    public void setEditSystemTime(long editSystemTime) {
+        this.editSystemTime = editSystemTime;
+    }
+
+    public boolean isCheckGroupMemo() {
+        return checkGroupMemo;
+    }
+
+    public void setCheckGroupMemo(boolean checkGroupMemo) {
+        this.checkGroupMemo = checkGroupMemo;
     }
 
     public String getTitle() {

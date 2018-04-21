@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -38,6 +39,7 @@ public class MemoEditFragment extends Fragment{
     private FirebaseStorage storage;
     private FirebaseDatabase database;
     ImageView PictureView;
+    TextView PictureViewURI;
     String PicturePath;
     String myEmail;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
@@ -54,6 +56,7 @@ public class MemoEditFragment extends Fragment{
         toolbar = rootView.findViewById(R.id.MemoToolbar);
         toolbar.setTitle("");
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+        myEmail = getArguments().getString("myEmail");
         return rootView;
     }
 
@@ -70,6 +73,7 @@ public class MemoEditFragment extends Fragment{
         AddedPicture = 0;
         PictureBut = view.findViewById(R.id.AddPictureBut);
         PictureView = view.findViewById(R.id.PictureView);
+        PictureViewURI = view.findViewById(R.id.PictureViewURI);
 
 
         PictureBut.setOnClickListener(new View.OnClickListener() {
@@ -91,8 +95,11 @@ public class MemoEditFragment extends Fragment{
         if(requestCode == GALLERY_CODE){
             if(data!=null){
                 PicturePath = getPath(data.getData());
-                File file = new File(PicturePath);
-                PictureView.setImageURI(Uri.fromFile(file));
+                Uri file = Uri.fromFile(new File(getPath(data.getData())));
+
+                PictureView.setImageURI(file);
+//                UploadUri(file);
+                PictureViewURI.setText(file.toString());
                 AddedPicture = 1;
             }
 
@@ -112,9 +119,8 @@ public class MemoEditFragment extends Fragment{
         return cursor.getString(index);
     }
 
-    public void UploadUri(String uri){
-        StorageReference storageRef = storage.getReference();
-        Uri file = Uri.fromFile(new File(uri));
+    public void UploadUri(Uri file){
+        StorageReference storageRef = storage.getReferenceFromUrl("gs://map-api-187214.appspot.com");
         StorageReference riversRef = storageRef.child("images/"+file.getLastPathSegment());
         UploadTask uploadTask = riversRef.putFile(file);
 
@@ -147,6 +153,8 @@ public class MemoEditFragment extends Fragment{
         saveMemo.setImageUrl(uri.toString());
         saveMemo.setUploaderEmail(myEmail);
         saveMemo.setLastEditDate(date);
+        saveMemo.setEditSystemTime(Now);
+        saveMemo.setCheckGroupMemo(false);
         saveMemo.setTitle(Title.toString());
         saveMemo.setMemo(Memo.toString());
         saveMemo.setYear(0);

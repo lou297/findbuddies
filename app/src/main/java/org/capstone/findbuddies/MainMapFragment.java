@@ -14,6 +14,8 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Locale;
 
@@ -21,11 +23,18 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
     private GoogleMap googleMap;
     private MapView mapView;
     MarkerOptions marker;
+    String myEmail;
+    FirebaseAuth auth;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.main_map, container, false);
-
+        auth = FirebaseAuth.getInstance();
+        FirebaseUser user = auth.getCurrentUser();
+        if(user!=null){
+            myEmail = user.getEmail();
+        }
+//        myEmail = getArguments().getString("myEmail");
         mapView = (MapView)rootView.findViewById(R.id.MainMapView);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();

@@ -1,7 +1,9 @@
 package org.capstone.findbuddies;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,34 +15,53 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class NavigationMain extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     FloatingActionButton fab;
     String myEmail;
-    FirebaseDatabase database;
+    private FirebaseDatabase database;
+    private FirebaseStorage storage;
+    Bundle bundle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.MemoToolbar);
 //        setSupportActionBar(toolbar);
+        database = FirebaseDatabase.getInstance();
+        storage = FirebaseStorage.getInstance();
+        myEmail = getIntent().getStringExtra("myEmail");
+        bundle = new Bundle();
+        bundle.putString("myEmail",myEmail);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.nav_main,new MainMapFragment())
                 .commit();
 
-        database = FirebaseDatabase.getInstance();
-        myEmail = getIntent().getStringExtra("myEmail");
+
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
+                MemoEditFragment memoEditFragment = new MemoEditFragment();
+                memoEditFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.nav_main,new MemoEditFragment())
+                        .replace(R.id.nav_main,memoEditFragment)
                         .commit();
                 fab.setVisibility(View.INVISIBLE);
             }
@@ -92,28 +113,69 @@ public class NavigationMain extends AppCompatActivity
         }
 
         if (id == R.id.save) {
-//            EditText titleEdit = findViewById(R.id.title_edit);
-//            EditText contentEdit = findViewById(R.id.contents_edit);
-//            long Now = System.currentTimeMillis();
-//            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
-//            String date = simpleDateFormat.format(new Date(Now));
-//
-//            ImageView imageView = findViewById(R.id.PictureView);
-//            SaveMemo saveMemo = new SaveMemo();
-//
-//            saveMemo.setImageUrl(uri.toString());
-//            saveMemo.setUploaderEmail(myEmail);
-//            saveMemo.setLastEditDate(date);
-//            saveMemo.setTitle(titleEdit.toString());
-//            saveMemo.setMemo(contentEdit.toString());
-//            saveMemo.setYear(0);
-//            saveMemo.setMonth(0);
-//            saveMemo.setDay(0);
-//
-//            database.getReference().child("MemoList").push().setValue(saveMemo);
+
+            TextView PictureViewURI = findViewById(R.id.PictureViewURI);
+            Toast.makeText(this, PictureViewURI.getText(), Toast.LENGTH_SHORT).show();
+            if(!PictureViewURI.getText().toString().equals("")){
+                StorageReference storageRef = storage.getReferenceFromUrl("gs://map-api-187214.appspot.com");
+                Uri file = Uri.parse(PictureViewURI.getText().toString());
+                StorageReference riversRef = storageRef.child("images/"+file.getLastPathSegment());
+                UploadTask uploadTask = riversRef.putFile(file);
+
+                // Register observers to listen for when the download is done or if it fails
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        Toast.makeText(NavigationMain.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        UploadMemo(downloadUrl.toString());
+
+                    }
+                });
+            }
+            else {
+                UploadMemo(null);
+            }
+
+
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void UploadMemo(String URI){
+        long Now = System.currentTimeMillis();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
+        String date = simpleDateFormat.format(new Date(Now));
+        SaveMemo saveMemo = new SaveMemo();
+        EditText Title = findViewById(R.id.title_edit);
+        EditText Memo = findViewById(R.id.contents_edit);
+
+        if(URI!=null){
+            saveMemo.setImageUrl(URI);
+        }
+        saveMemo.setUploaderEmail(myEmail);
+        saveMemo.setLastEditDate(date);
+        saveMemo.setEditSystemTime(Now);
+        saveMemo.setCheckGroupMemo(false);
+        saveMemo.setTitle(Title.getText().toString());
+        saveMemo.setMemo(Memo.getText().toString());
+        saveMemo.setYear(0);
+        saveMemo.setMonth(0);
+        saveMemo.setDay(0);
+
+        database.getReference().child("MemoList").push().setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(NavigationMain.this, "업로드 완료!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -121,8 +183,7 @@ public class NavigationMain extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         fab.setVisibility(View.VISIBLE);
-        Bundle bundle = new Bundle();
-        bundle.putString("myEmail",myEmail);
+
         int id = item.getItemId();
         if(id == R.id.map) {
             MainMapFragment mainMapFragment = new MainMapFragment();

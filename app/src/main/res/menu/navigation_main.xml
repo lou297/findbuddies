@@ -8,7 +8,7 @@
         android:icon="@drawable/ic_star" />
     <item
         android:id="@+id/save"
-        android:title="@string/action_settings"
+        android:title="Settings"
         android:icon="@drawable/ic_save"
         app:showAsAction="ifRoom"/>
 </menu>

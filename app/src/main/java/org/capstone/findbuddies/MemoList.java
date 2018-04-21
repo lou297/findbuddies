@@ -1,6 +1,5 @@
 package org.capstone.findbuddies;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,40 +9,47 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.bumptech.glide.Glide;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class MemoList extends Fragment {
     ArrayList<MemoItem> Memos = new ArrayList<>();
     FirebaseDatabase database;
+    FirebaseStorage storage;
     String myEmail;
+    MemoAdapter adapter;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.memo_list,container,false);
         database = FirebaseDatabase.getInstance();
+        storage = FirebaseStorage.getInstance();
 
         myEmail = getArguments().getString("myEmail");
         ListView listview = (ListView) rootView.findViewById(R.id.MemoListView);
 
-        MemoAdapter adapter = new MemoAdapter();
+        adapter = new MemoAdapter();
 
         listview.setAdapter(adapter);
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getContext(),MemoEdit.class);
-
-                startActivity(intent);
+//                Intent intent = new Intent(getContext(),MemoEdit.class);
+//
+//                startActivity(intent);
             }
         });
 
@@ -62,10 +68,12 @@ public class MemoList extends Fragment {
                         SaveMemo value = snapshot.getValue(SaveMemo.class);
                         if(value!=null){
                             if(myEmail.equals(value.getUploaderEmail())){
-                                addMemo(new MemoItem(value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl()));
+                                MemoItem memoItem = new MemoItem(value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl());
+                                addMemo(memoItem);
                             }
                         }
                     }
+                    notifyDataSetChanged();
                 }
 
                 @Override
@@ -102,8 +110,18 @@ public class MemoList extends Fragment {
             itemview.setTitle(Memo.getTitle());
             itemview.setContents(Memo.getContents());
             itemview.setDate(Memo.getDate());
-            File f = new File(Memo.getPictureURI());
-            itemview.setPicture(Uri.fromFile(f));
+            /////////////////////수정해야함
+            if(Memo.getPictureURI()!=null){
+                StorageReference storageReference = storage.getReferenceFromUrl(Memo.getPictureURI());
+                ImageView picture = convertView.findViewById(R.id.picture);
+                itemview.setPicture(Uri.parse(Memo.getPictureURI()));
+                Glide.with(getContext())
+                        .using(new FirebaseImageLoader())
+                        .load(storageReference)
+                        .into(picture);
+            }
+            //////////////////////////////////
+
 
             return itemview;
         }
