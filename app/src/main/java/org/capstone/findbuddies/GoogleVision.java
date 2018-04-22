@@ -104,7 +104,7 @@ public class GoogleVision extends AppCompatActivity {
             startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
         }
     }
-
+ 
     public File getCameraFile() {
         File dir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         return new File(dir, FILE_NAME);
