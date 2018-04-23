@@ -174,14 +174,8 @@ public class NavigationMain extends AppCompatActivity
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(NavigationMain.this, "업로드 완료!", Toast.LENGTH_SHORT).show();
-                MemoList memoList = new MemoList();
-                memoList.setArguments(bundle);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.nav_main,memoList)
-                        .commit();
             }
         });
-
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

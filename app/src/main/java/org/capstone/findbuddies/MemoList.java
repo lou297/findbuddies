@@ -1,5 +1,6 @@
 package org.capstone.findbuddies;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
@@ -105,42 +105,25 @@ public class MemoList extends Fragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View view = convertView;
-            ViewHolder viewHolder;
-            if(view==null){
-                view = getLayoutInflater().inflate(R.layout.memo_item,null);
-                viewHolder = new ViewHolder();
-                viewHolder.title = view.findViewById(R.id.title);
-                viewHolder.date = view.findViewById(R.id.date);
-                viewHolder.content = view.findViewById(R.id.contents);
-                viewHolder.picture = view.findViewById(R.id.picture);
-
-                view.setTag(viewHolder);
-            }
-            else {
-                viewHolder = (ViewHolder)view.getTag();
-            }
+            MemoItemView itemview = new MemoItemView(getContext());
             MemoItem Memo = Memos.get(position);
-            viewHolder.title.setText(Memo.getTitle());
-            viewHolder.date.setText(Memo.getDate());
-            viewHolder.content.setText(Memo.getContents());
+            itemview.setTitle(Memo.getTitle());
+            itemview.setContents(Memo.getContents());
+            itemview.setDate(Memo.getDate());
+            /////////////////////수정해야함
             if(Memo.getPictureURI()!=null){
                 StorageReference storageReference = storage.getReferenceFromUrl(Memo.getPictureURI());
+                ImageView picture = convertView.findViewById(R.id.picture);
+                itemview.setPicture(Uri.parse(Memo.getPictureURI()));
                 Glide.with(getContext())
                         .using(new FirebaseImageLoader())
                         .load(storageReference)
-                        .into(viewHolder.picture);
+                        .into(picture);
             }
+            //////////////////////////////////
 
 
-
-            return view;
-        }
-        class ViewHolder{
-            TextView title;
-            TextView date;
-            TextView content;
-            ImageView picture;
+            return itemview;
         }
     }
 }
