@@ -35,7 +35,7 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
             myEmail = user.getEmail();
         }
 //        myEmail = getArguments().getString("myEmail");
-        mapView = (MapView)rootView.findViewById(R.id.MainMapView);
+        mapView = rootView.findViewById(R.id.MainMapView);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
         mapView.getMapAsync(this);

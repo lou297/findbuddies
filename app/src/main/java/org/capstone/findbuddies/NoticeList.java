@@ -40,7 +40,7 @@ public class NoticeList extends AppCompatActivity {
         }
         GetMyName();
 
-        ListView listView = (ListView)findViewById(R.id.listView);
+        ListView listView = findViewById(R.id.listView);
 
         NoticeAdapter adapter = new NoticeAdapter();
         listView.setAdapter(adapter);
@@ -109,7 +109,7 @@ public class NoticeList extends AppCompatActivity {
                 }
             });
             if(noticeList.size()==0){
-                TextView NoNotice = (TextView)findViewById(R.id.NoNotice);
+                TextView NoNotice = findViewById(R.id.NoNotice);
                 NoNotice.setVisibility(View.VISIBLE);
             }
         }

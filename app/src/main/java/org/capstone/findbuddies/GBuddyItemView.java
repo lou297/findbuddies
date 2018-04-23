@@ -49,7 +49,7 @@ public class GBuddyItemView extends LinearLayout implements Checkable{
     @Override
     public void toggle() {
 
-        setChecked(CB.isChecked() ? false : true) ;
+        setChecked(!CB.isChecked()) ;
 
     }
 
@@ -57,10 +57,10 @@ public class GBuddyItemView extends LinearLayout implements Checkable{
         LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.g_buddy_item,this, true);
 
-        Name = (TextView)findViewById(R.id.name);
-        Id = (TextView)findViewById(R.id.id);
-        imageView = (ImageView)findViewById(R.id.imageView);
-        CB = (CheckBox) findViewById(R.id.checkBox);
+        Name = findViewById(R.id.name);
+        Id = findViewById(R.id.id);
+        imageView = findViewById(R.id.imageView);
+        CB = findViewById(R.id.checkBox);
     }
 
     public void setName(String name){

@@ -30,9 +30,9 @@ public class NoticeItemView extends LinearLayout {
     private void init(Context context){
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.notice_item,this,true);
-        groupOwner = (TextView)findViewById(R.id.groupOwner);
-        groupName = (TextView)findViewById(R.id.groupName);
-        groupList = (TextView)findViewById(R.id.groupList);
+        groupOwner = findViewById(R.id.groupOwner);
+        groupName = findViewById(R.id.groupName);
+        groupList = findViewById(R.id.groupList);
     }
 
     public void setGroupOwner(String groupowner) {

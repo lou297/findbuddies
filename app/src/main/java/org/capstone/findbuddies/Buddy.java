@@ -49,7 +49,7 @@ public class Buddy extends Fragment {
             MyEmail = User.getEmail();
         }
 
-        Button addmate = (Button)rootView.findViewById(R.id.addbuddy);
+        Button addmate = rootView.findViewById(R.id.addbuddy);
         addmate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,7 +65,7 @@ public class Buddy extends Fragment {
             }
         });
 
-        ListView listview = (ListView) rootView.findViewById(R.id.listView);
+        ListView listview = rootView.findViewById(R.id.listView);
 
         adapter = new BuddyAdapter();
 

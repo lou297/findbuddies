@@ -52,7 +52,7 @@ public class Group extends Fragment {
         }
         getMyName();
 
-        Button addgroup = (Button)rootView.findViewById(R.id.addgroup);
+        Button addgroup = rootView.findViewById(R.id.addgroup);
 
         addgroup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,7 +65,7 @@ public class Group extends Fragment {
             }
         });
 
-        ListView listview = (ListView) rootView.findViewById(R.id.listView2);
+        ListView listview = rootView.findViewById(R.id.listView2);
 
         adapter = new GroupAdapter();
 

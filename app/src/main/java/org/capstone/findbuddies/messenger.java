@@ -24,7 +24,7 @@ public class messenger extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messenger);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //noinspection ConstantConditions
         getSupportActionBar().setTitle("");
@@ -38,7 +38,7 @@ public class messenger extends AppCompatActivity {
         group = new Group();
 
         getSupportFragmentManager().beginTransaction().add(R.id.container,buddy).commit();
-        TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tabs = findViewById(R.id.tabs);
         tabs.addTab(tabs.newTab().setText("Buddy"));
         tabs.addTab(tabs.newTab().setText("Group"));
 

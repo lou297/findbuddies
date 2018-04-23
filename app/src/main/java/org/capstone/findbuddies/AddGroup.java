@@ -45,9 +45,9 @@ public class AddGroup extends AppCompatActivity {
 
 
 
-        final ListView listView= (ListView)findViewById(R.id.listview);
+        final ListView listView= findViewById(R.id.listview);
 
-        Button checkButton = (Button)findViewById(R.id.checkButton);
+        Button checkButton = findViewById(R.id.checkButton);
         checkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

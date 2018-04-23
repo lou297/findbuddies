@@ -37,9 +37,9 @@ public class BuddyItemView extends LinearLayout {
         assert inflater != null;
         //??
         inflater.inflate(R.layout.buddy_item,this,true);
-        textView = (TextView)findViewById(R.id.textView);
-        textView2 = (TextView)findViewById(R.id.textView2);
-        imageView = (ImageView)findViewById(R.id.imageView);
+        textView = findViewById(R.id.textView);
+        textView2 = findViewById(R.id.textView2);
+        imageView = findViewById(R.id.imageView);
     }
 
     public void setName(String name){

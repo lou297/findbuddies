@@ -36,7 +36,7 @@ public class register extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
 
-        Button regist = (Button)findViewById(R.id.regist);
+        Button regist = findViewById(R.id.regist);
         regist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -44,7 +44,7 @@ public class register extends AppCompatActivity {
             }
         });
 
-        Button cancel = (Button)findViewById(R.id.cancel);
+        Button cancel = findViewById(R.id.cancel);
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -55,9 +55,9 @@ public class register extends AppCompatActivity {
 
     public void CheckBlank(){
         id = findViewById(R.id.id_field);
-        name = (EditText)findViewById(R.id.name_field);
-        email = (EditText)findViewById(R.id.email_field);
-        pwd = (EditText)findViewById(R.id.pwd_field);
+        name = findViewById(R.id.name_field);
+        email = findViewById(R.id.email_field);
+        pwd = findViewById(R.id.pwd_field);
 
         String GetId = id.getText().toString();
         String GetName = name.getText().toString();

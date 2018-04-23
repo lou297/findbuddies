@@ -14,7 +14,7 @@ import com.google.firebase.database.ValueEventListener;
 public class FirebaseData {
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    FirebaseUser User = mAuth.getCurrentUser();;
+    FirebaseUser User = mAuth.getCurrentUser();
 
 
     String MyEmail;

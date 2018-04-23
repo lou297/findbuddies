@@ -1,7 +1,6 @@
 package org.capstone.findbuddies;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,14 +11,19 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CalendarView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class CalendarFragment extends Fragment {
@@ -27,6 +31,7 @@ public class CalendarFragment extends Fragment {
     CalendarView calendarView;
     String myEmail;
     FirebaseDatabase database;
+    FirebaseStorage storage;
 
     @Nullable
     @Override
@@ -34,9 +39,10 @@ public class CalendarFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.calendar_view,container,false);
         myEmail = getArguments().getString("myEmail");
         database = FirebaseDatabase.getInstance();
+        storage = FirebaseStorage.getInstance();
         calendarView = rootView.findViewById(R.id.calendarView);
 
-        final ListView listview = (ListView) rootView.findViewById(R.id.SpecificDateMemoList);
+        final ListView listview = rootView.findViewById(R.id.SpecificDateMemoList);
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -118,15 +124,42 @@ public class CalendarFragment extends Fragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            MemoItemView itemview = new MemoItemView(getContext());
-            MemoItem Memo = Memos.get(position);
-            itemview.setTitle(Memo.getTitle());
-            itemview.setContents(Memo.getContents());
-            itemview.setDate(Memo.getDate());
-            File f = new File(Memo.getPictureURI());
-            itemview.setPicture(Uri.fromFile(f));
+            View view = convertView;
+            ViewHolder viewHolder;
+            if(view==null){
+                view = getLayoutInflater().inflate(R.layout.memo_item,null);
+                viewHolder = new ViewHolder();
+                viewHolder.title = view.findViewById(R.id.title);
+                viewHolder.date = view.findViewById(R.id.date);
+                viewHolder.content = view.findViewById(R.id.contents);
+                viewHolder.picture = view.findViewById(R.id.picture);
 
-            return itemview;
+                view.setTag(viewHolder);
+            }
+            else {
+                viewHolder = (ViewHolder)view.getTag();
+            }
+            MemoItem Memo = Memos.get(position);
+            viewHolder.title.setText(Memo.getTitle());
+            viewHolder.date.setText(Memo.getDate());
+            viewHolder.content.setText(Memo.getContents());
+            if(Memo.getPictureURI()!=null){
+                StorageReference storageReference = storage.getReferenceFromUrl(Memo.getPictureURI());
+                Glide.with(getContext())
+                        .using(new FirebaseImageLoader())
+                        .load(storageReference)
+                        .into(viewHolder.picture);
+            }
+
+
+
+            return view;
+        } 
+        class ViewHolder{
+            TextView title;
+            TextView date;
+            TextView content;
+            ImageView picture;
         }
     }
 }

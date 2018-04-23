@@ -40,10 +40,10 @@ public class AddMate extends AppCompatActivity {
             MyMail = User.getEmail();
         }
 
-        searched_id = (TextView)findViewById(R.id.searched_id);
-        searched_name = (TextView)findViewById(R.id.searched_name);
+        searched_id = findViewById(R.id.searched_id);
+        searched_name = findViewById(R.id.searched_name);
 
-        Button search = (Button)findViewById(R.id.search);
+        Button search = findViewById(R.id.search);
         search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,10 +66,10 @@ public class AddMate extends AppCompatActivity {
     }
 
     public void OnOffContents(int set,String ID,String Name){
-        TextView textview1 = (TextView)findViewById(R.id.textview1);
-        TextView textview2 = (TextView)findViewById(R.id.textview2);
-        ImageButton add = (ImageButton)findViewById(R.id.Add);
-        TextView explain = (TextView)findViewById(R.id.explain);
+        TextView textview1 = findViewById(R.id.textview1);
+        TextView textview2 = findViewById(R.id.textview2);
+        ImageButton add = findViewById(R.id.Add);
+        TextView explain = findViewById(R.id.explain);
 
         if(set==0){
             textview1.setVisibility(View.GONE);
@@ -93,7 +93,7 @@ public class AddMate extends AppCompatActivity {
     }
 
     public void CheckUser(){
-        SearchId = (TextView)findViewById(R.id.search_id);
+        SearchId = findViewById(R.id.search_id);
 
         if(SearchId.getText()!=null){
             database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {

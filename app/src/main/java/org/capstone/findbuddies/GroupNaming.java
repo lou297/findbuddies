@@ -22,7 +22,7 @@ public class GroupNaming extends AppCompatActivity {
         MyEmail = getIntent().getStringExtra("MyEmail");
         MyName = getIntent().getStringExtra("MyName");
         
-        Button create = (Button)findViewById(R.id.create);
+        Button create = findViewById(R.id.create);
         create.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -32,12 +32,12 @@ public class GroupNaming extends AppCompatActivity {
     }
 
     public String GetGroupName(){
-        EditText GroupName = (EditText)findViewById(R.id.groupName);
+        EditText GroupName = findViewById(R.id.groupName);
         String GetName = GroupName.getText().toString();
         return GetName;
     }
     public String GetGroupPassword(){
-        EditText GroupPassword = (EditText)findViewById(R.id.groupPassword);
+        EditText GroupPassword = findViewById(R.id.groupPassword);
         String GetPassword = GroupPassword.getText().toString();
         return GetPassword;
     }
