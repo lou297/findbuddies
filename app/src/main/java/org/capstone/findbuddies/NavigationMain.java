@@ -36,6 +36,8 @@ public class NavigationMain extends AppCompatActivity
     private FirebaseDatabase database;
     private FirebaseStorage storage;
     Bundle bundle;
+    private final long FINISH_INTERVAL_TIME = 2000;
+    private long backPressedTime = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,11 +81,16 @@ public class NavigationMain extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
+        long tempTime = System.currentTimeMillis();
+        long intervalTime = tempTime - backPressedTime;
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.END)) {
             drawer.closeDrawer(GravityCompat.END);
-        } else {
+        } else if(0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime){
             super.onBackPressed();
+        }else{
+            backPressedTime = tempTime;
+            Toast.makeText(this, "한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
         }
     }
 

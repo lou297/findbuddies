@@ -65,7 +65,9 @@
             android:theme="@style/AppTheme" />
         <activity android:name=".MemoPicker" />
         <activity android:name=".ParsingMemo" />
-        <activity android:name=".GoogleVision"></activity>
+        <activity android:name=".GoogleVision" />
+        <activity android:name=".ImageTextDetect" />
+        <activity android:name=".ParsingTest"></activity>
     </application>
 
 </manifest>
