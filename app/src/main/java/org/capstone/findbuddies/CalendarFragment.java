@@ -154,7 +154,7 @@ public class CalendarFragment extends Fragment {
 
 
             return view;
-        } 
+        }
         class ViewHolder{
             TextView title;
             TextView date;
