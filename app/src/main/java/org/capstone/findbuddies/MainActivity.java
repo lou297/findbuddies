@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                     // User is signed in
                     Toast.makeText(getApplicationContext(),"zzz",Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(getApplicationContext(),NavigationMain.class);
-//                    Intent intent = new Intent(getApplicationContext(),GoogleVision.class);
+//                    Intent intent = new Intent(getApplicationContext(),SelectMapLocation.class);
                     intent.putExtra("myEmail",user.getEmail());
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);

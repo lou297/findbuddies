@@ -33,6 +33,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/secondLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/firstLayout"
@@ -41,11 +42,11 @@
         <LinearLayout
             android:id="@+id/date_layout"
             android:layout_width="wrap_content"
-            android:layout_height="150dp"
+            android:layout_height="200dp"
             android:layout_margin="5dp"
+            android:background="@drawable/clickevent"
             android:gravity="center"
-            android:orientation="vertical"
-            android:background="@drawable/clickevent">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/parsingDate"
@@ -64,15 +65,31 @@
                 android:textSize="24sp" />
 
         </LinearLayout>
-        <FrameLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-                android:name="com.google.android.gms.maps.MapFragment"
-                android:id="@+id/parsing_map"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+            <FrameLayout
+                android:id="@+id/parsing_map_fragment"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-        </FrameLayout>
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+                <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:name="com.google.android.gms.maps.MapFragment"
+                    android:id="@+id/parsing_map"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+            </FrameLayout>
+            <TextView
+                android:id="@+id/parsing_map_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="3"
+                android:maxWidth="150dp"
+                android:text="TextView"/>
+        </LinearLayout>
+
 
 
     </LinearLayout>
@@ -82,4 +99,6 @@
         android:text="저장"
         android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"/>
+
+
 </RelativeLayout>

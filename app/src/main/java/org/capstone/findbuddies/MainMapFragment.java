@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -58,19 +57,12 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
         marker.position(googleMap.getCameraPosition().target);
         googleMap.addMarker(marker);
 
-        googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-            @Override
-            public void onCameraMove() {
-                Toast.makeText(getContext(), "zzzzzzzzz", Toast.LENGTH_SHORT).show();
-                marker.position(googleMap.getCameraPosition().target);
-            }
-        });
-        googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
-            @Override
-            public void onCameraIdle() {
 
-            }
-        });
+
+
+    }
+
+    public void getLocationAddress(double lat){
 
     }
 
