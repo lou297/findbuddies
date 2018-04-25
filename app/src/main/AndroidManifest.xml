@@ -67,7 +67,8 @@
         <activity android:name=".ParsingMemo" />
         <activity android:name=".GoogleVision" />
         <activity android:name=".ImageTextDetect" />
-        <activity android:name=".SelectMapLocation"></activity>
+        <activity android:name=".SelectMapLocation" />
+        <activity android:name=".AddGroupMemo"></activity>
     </application>
 
 </manifest>

@@ -36,8 +36,11 @@ public class NavigationMain extends AppCompatActivity
     private FirebaseDatabase database;
     private FirebaseStorage storage;
     Bundle bundle;
+    int GroupNo;
     private final long FINISH_INTERVAL_TIME = 2000;
     private long backPressedTime = 0;
+    private static final int GROUP_MEMO_NO = 3000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +50,7 @@ public class NavigationMain extends AppCompatActivity
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
         myEmail = getIntent().getStringExtra("myEmail");
+        GroupNo = 0 ;
         bundle = new Bundle();
         bundle.putString("myEmail",myEmail);
         getSupportFragmentManager().beginTransaction()
@@ -61,11 +65,21 @@ public class NavigationMain extends AppCompatActivity
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
                 MemoEditFragment memoEditFragment = new MemoEditFragment();
+                bundle.putInt("GroupNo",GroupNo);
                 memoEditFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.nav_main,memoEditFragment)
                         .commit();
                 fab.setVisibility(View.INVISIBLE);
+            }
+        });
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Intent intent = new Intent(getApplicationContext(),AddGroupMemo.class);
+                intent.putExtra("MyEmail",myEmail);
+                startActivityForResult(intent,GROUP_MEMO_NO);
+                return true;
             }
         });
 
@@ -170,7 +184,7 @@ public class NavigationMain extends AppCompatActivity
         saveMemo.setUploaderEmail(myEmail);
         saveMemo.setLastEditDate(date);
         saveMemo.setEditSystemTime(Now);
-        saveMemo.setCheckGroupMemo(false);
+        saveMemo.setCheckGroupNo(GroupNo);
         saveMemo.setTitle(Title.getText().toString());
         saveMemo.setMemo(Memo.getText().toString());
         saveMemo.setYear(0);
@@ -224,5 +238,24 @@ public class NavigationMain extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.END);
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == GROUP_MEMO_NO){
+            if(resultCode==RESULT_OK){
+                GroupNo = data.getIntExtra("GroupNo",0);
+                MemoEditFragment memoEditFragment = new MemoEditFragment();
+                bundle.putInt("GroupNo",GroupNo);
+                memoEditFragment.setArguments(bundle);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.nav_main,memoEditFragment)
+                        .commitAllowingStateLoss();
+                fab.setVisibility(View.INVISIBLE);
+            }
+            else {
+
+            }
+        }
     }
 }

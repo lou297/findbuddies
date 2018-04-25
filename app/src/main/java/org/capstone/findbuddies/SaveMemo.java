@@ -4,7 +4,7 @@ public class SaveMemo {
     String uploaderEmail;
     String lastEditDate;
     long editSystemTime;
-    boolean checkGroupMemo;
+    int checkGroupNo;
     String title;
     String memo;
     String imageUrl;
@@ -39,12 +39,12 @@ public class SaveMemo {
         this.editSystemTime = editSystemTime;
     }
 
-    public boolean isCheckGroupMemo() {
-        return checkGroupMemo;
+    public int getCheckGroupNo() {
+        return checkGroupNo;
     }
 
-    public void setCheckGroupMemo(boolean checkGroupMemo) {
-        this.checkGroupMemo = checkGroupMemo;
+    public void setCheckGroupNo(int checkGroupNo) {
+        this.checkGroupNo = checkGroupNo;
     }
 
     public String getTitle() {

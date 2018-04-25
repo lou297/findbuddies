@@ -49,6 +49,7 @@ public class MemoEditFragment extends Fragment{
     TextView PictureViewURI;
     String PicturePath;
     String myEmail;
+    int GroupNo;
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
     String date;
     EditText Title;
@@ -64,6 +65,7 @@ public class MemoEditFragment extends Fragment{
         toolbar.setTitle("");
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         myEmail = getArguments().getString("myEmail");
+        GroupNo = getArguments().getInt("GroupNo");
         return rootView;
     }
 
@@ -88,6 +90,7 @@ public class MemoEditFragment extends Fragment{
         PictureBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(getContext(), "무어ㅑ...", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
 
@@ -110,9 +113,11 @@ public class MemoEditFragment extends Fragment{
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+        Toast.makeText(getContext(), "why....", Toast.LENGTH_SHORT).show();
         if(requestCode == GALLERY_CODE){
+            Toast.makeText(getContext(), "why....", Toast.LENGTH_SHORT).show();
             if(data!=null){
+                Toast.makeText(getContext(), "dd???????", Toast.LENGTH_SHORT).show();
                 PicturePath = getPath(data.getData());
                 Uri file = Uri.fromFile(new File(getPath(data.getData())));
 
@@ -212,7 +217,7 @@ public class MemoEditFragment extends Fragment{
         saveMemo.setUploaderEmail(myEmail);
         saveMemo.setLastEditDate(date);
         saveMemo.setEditSystemTime(Now);
-        saveMemo.setCheckGroupMemo(false);
+        saveMemo.setCheckGroupNo(GroupNo);
         saveMemo.setTitle(Title.toString());
         saveMemo.setMemo(Memo.toString());
         saveMemo.setYear(0);

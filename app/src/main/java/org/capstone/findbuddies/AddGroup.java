@@ -25,7 +25,7 @@ public class AddGroup extends AppCompatActivity {
     String MyName;
     String MyID;
     int GroupNo;
-    int existGroupNo = 0;
+    int existGroupNo;
 
     ArrayList<BuddyItem> buddies;
 
@@ -37,7 +37,7 @@ public class AddGroup extends AppCompatActivity {
 
         buddies = new ArrayList<BuddyItem>();
         database = FirebaseDatabase.getInstance().getReference();
-
+        existGroupNo = 0;
         MyEmail = getIntent().getStringExtra("MyEmail");
         MyName = getIntent().getStringExtra("MyName");
         GetMyID(MyEmail);
@@ -159,24 +159,7 @@ public class AddGroup extends AppCompatActivity {
         NamingActivity.finish();
     }
 
-    public void GetMyName(final String Email){
-        database.child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
-                    SaveRegist value = snapshot.getValue(SaveRegist.class);
-                    if (value != null && (value.getSavedEmail()).equals(Email)) {
-                        MyName = value.getSavedName();
-                    }
-                }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
 
     public void GetMyID(final String Email){
         database.child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -203,7 +186,7 @@ public class AddGroup extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    if(snapshot.getValue()!=null) {
+                    if(snapshot.getValue(int.class)!=null) {
                         //noinspection ConstantConditions
                         GroupNo = snapshot.getValue(int.class);
                         existGroupNo++;
@@ -215,6 +198,7 @@ public class AddGroup extends AppCompatActivity {
                 }
                 else {
                     GroupNo++;
+                    database.child("LastGroupNo").setValue(GroupNo);
                 }
             }
 
