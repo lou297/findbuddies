@@ -113,12 +113,13 @@ public class MemoEditFragment extends Fragment{
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Toast.makeText(getContext(), "why....", Toast.LENGTH_SHORT).show();
+//        super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == GALLERY_CODE){
             Toast.makeText(getContext(), "why....", Toast.LENGTH_SHORT).show();
             if(data!=null){
-                Toast.makeText(getContext(), "dd???????", Toast.LENGTH_SHORT).show();
+
                 PicturePath = getPath(data.getData());
+                Toast.makeText(getContext(), ""+PicturePath, Toast.LENGTH_SHORT).show();
                 Uri file = Uri.fromFile(new File(getPath(data.getData())));
 
                 PictureView.setImageURI(file);

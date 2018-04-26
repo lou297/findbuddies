@@ -37,6 +37,9 @@ public class NavigationMain extends AppCompatActivity
     private FirebaseStorage storage;
     Bundle bundle;
     int GroupNo;
+    String parsingContent;
+    EditText titleEdit;
+    EditText contentEdit;
     private final long FINISH_INTERVAL_TIME = 2000;
     private long backPressedTime = 0;
     private static final int GROUP_MEMO_NO = 3000;
@@ -125,10 +128,13 @@ public class NavigationMain extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if(id == R.id.special){
             Intent intent = new Intent(this,ParsingMemo.class);
-            EditText titleEdit = findViewById(R.id.title_edit);
-            EditText contentEdit = findViewById(R.id.contents_edit);
+            titleEdit = findViewById(R.id.title_edit);
+            contentEdit = findViewById(R.id.contents_edit);
             intent.putExtra("title",titleEdit.getText().toString());
-            intent.putExtra("content",contentEdit.getText().toString());
+//            String content = ParsingText(contentEdit.getText().toString());
+            ParsingText parsingText = new ParsingText();
+            parsingText.new DownloadJson().execute(contentEdit.getText().toString());
+            intent.putExtra("content",parsingContent);
             startActivity(intent);
             return true;
         }
@@ -175,8 +181,8 @@ public class NavigationMain extends AppCompatActivity
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
         String date = simpleDateFormat.format(new Date(Now));
         SaveMemo saveMemo = new SaveMemo();
-        EditText Title = findViewById(R.id.title_edit);
-        EditText Memo = findViewById(R.id.contents_edit);
+        titleEdit = findViewById(R.id.title_edit);
+        contentEdit = findViewById(R.id.contents_edit);
 
         if(URI!=null){
             saveMemo.setImageUrl(URI);
@@ -185,8 +191,8 @@ public class NavigationMain extends AppCompatActivity
         saveMemo.setLastEditDate(date);
         saveMemo.setEditSystemTime(Now);
         saveMemo.setCheckGroupNo(GroupNo);
-        saveMemo.setTitle(Title.getText().toString());
-        saveMemo.setMemo(Memo.getText().toString());
+        saveMemo.setTitle(titleEdit.getText().toString());
+        saveMemo.setMemo(contentEdit.getText().toString());
         saveMemo.setYear(0);
         saveMemo.setMonth(0);
         saveMemo.setDay(0);
@@ -198,6 +204,9 @@ public class NavigationMain extends AppCompatActivity
             }
         });
     }
+
+
+
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -242,6 +251,7 @@ public class NavigationMain extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == GROUP_MEMO_NO){
             if(resultCode==RESULT_OK){
                 GroupNo = data.getIntExtra("GroupNo",0);
