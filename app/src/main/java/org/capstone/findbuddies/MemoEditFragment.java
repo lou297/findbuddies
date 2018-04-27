@@ -90,7 +90,6 @@ public class MemoEditFragment extends Fragment{
         PictureBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "무어ㅑ...", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
 
@@ -115,7 +114,6 @@ public class MemoEditFragment extends Fragment{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 //        super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == GALLERY_CODE){
-            Toast.makeText(getContext(), "why....", Toast.LENGTH_SHORT).show();
             if(data!=null){
 
                 PicturePath = getPath(data.getData());

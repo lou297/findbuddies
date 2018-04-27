@@ -6,6 +6,7 @@ import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -28,8 +29,8 @@ import java.util.Locale;
 
 public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener {
     LinearLayout dateLayout;
-    EditText parsingTitle;
-    EditText parsingContent;
+    EditText Title;
+    EditText Content;
     int year;
     int month;
     int day;
@@ -93,11 +94,12 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
 
     public void setInitialMemo(){
         dateLayout = findViewById(R.id.date_layout);
-        parsingTitle = findViewById(R.id.parsing_title_edit);
-        parsingContent= findViewById(R.id.parsing_contents_edit);
+        Title = findViewById(R.id.parsing_title_edit);
+        Content= findViewById(R.id.parsing_contents_edit);
 
-        parsingTitle.setText(getIntent().getStringExtra("title"));
-        parsingContent.setText(getIntent().getStringExtra("content"));
+        Title.setText(getIntent().getStringExtra("title"));
+        Content.setText(getIntent().getStringExtra("content"));
+        Log.d("ParsingTest",getIntent().getStringExtra("parsingContent"));
     }
 
     public void setInitialDate(){

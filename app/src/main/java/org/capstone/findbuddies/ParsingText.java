@@ -2,6 +2,7 @@ package org.capstone.findbuddies;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ParsingText {
+    TextView ParsingContent;
     static public class NameEntity {
         final String text;
         final String type;
@@ -29,6 +31,8 @@ public class ParsingText {
             this.count = count;
         }
     }
+
+
     public class DownloadJson extends AsyncTask<String, String, String> {
 
         @Override
@@ -43,7 +47,7 @@ public class ParsingText {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-//            parsingContent = s;
+
         }
 
         private String ParsingText(String Text){
@@ -115,7 +119,6 @@ public class ParsingText {
 
                 Map<String, NameEntity> nameEntitiesMap = new HashMap<String, NameEntity>();
                 List<NameEntity> nameEntities = null;
-                Log.d("ParsingTest","123");
                 for( Map<String, Object> sentence : sentences ) {
                     List<Map<String, Object>> nameEntityRecognitionResult = (List<Map<String, Object>>) sentence.get("NE");
                     for( Map<String, Object> nameEntityInfo : nameEntityRecognitionResult ) {
@@ -124,7 +127,6 @@ public class ParsingText {
                         if ( nameEntity == null ) {
                             nameEntity = new NameEntity(name, (String) nameEntityInfo.get("type"), 1);
                             nameEntitiesMap.put(name, nameEntity);
-                            Log.d("ParsingTest","6");
                         } else {
                             nameEntity.count = nameEntity.count + 1;
                         }
@@ -135,6 +137,18 @@ public class ParsingText {
                 }
                 for( NameEntity nameEntity: nameEntities){
                     responBody += nameEntity.text +"("+ nameEntity.type+")\n";
+                    if((nameEntity.type).startsWith("DT_")){
+                        Log.d("ParsingTestee","날짜"+nameEntity.text);
+                    }
+                    else if(nameEntity.type.startsWith("TI_")){
+                        Log.d("ParsingTestee","시간"+nameEntity.text);
+                    }
+                    else if(nameEntity.type.startsWith("OG")||nameEntity.type.startsWith("LC")){
+                        Log.d("ParsingTestee","장소"+nameEntity.text);
+                    }
+                    else {
+                        Log.d("ParsingTestee","그 외"+nameEntity.text);
+                    }
                 }
                 Log.d("ParsingTest",responBody);
             } catch (MalformedURLException e) {
@@ -145,4 +159,6 @@ public class ParsingText {
             return responBody;
         }
     }
+
+
 }
