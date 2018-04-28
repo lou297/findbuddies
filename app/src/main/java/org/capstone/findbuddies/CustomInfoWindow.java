@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
@@ -33,8 +32,8 @@ public class CustomInfoWindow implements GoogleMap.InfoWindowAdapter{
     @Override
     public View getInfoContents(Marker marker) {
         View view = context.getLayoutInflater().inflate(R.layout.custom_window,null);
-        ImageView imageView = view.findViewById(R.id.paranomaView);
-        imageView.setImageDrawable(LoadImageFromWebOperations(37.422, -122.084));
+//        ImageView imageView = view.findViewById(R.id.paranomaView);
+//        imageView.setImageDrawable(LoadImageFromWebOperations(37.422, -122.084));
         return view;
     }
 

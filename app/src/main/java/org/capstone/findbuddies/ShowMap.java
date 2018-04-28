@@ -101,22 +101,7 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
                 .enableAutoManage(this, this)
                 .build();
 
-        ///////////////// 자동 완성
-//        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
-//                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-//        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-//            @Override
-//            public void onPlaceSelected(Place place) {
-//                // TODO: Get info about the selected place.
-//
-//            }
-//
-//            @Override
-//            public void onError(Status status) {
-//                // TODO: Handle the error.
-//
-//            }
-//        });
+
         but = findViewById(R.id.searchButton);
         but.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,9 +114,9 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
                     Log.d("dubug","bbb");
                 } catch (GooglePlayServicesRepairableException e) {
                     Log.d("dubug","aaa");
-                    // TODO: Handle the error.
+                    // Handle the error.
                 } catch (GooglePlayServicesNotAvailableException e) {
-                    // TODO: Handle the error.
+                    // Handle the error.
                     Log.d("dubug","zzbbbz");
                 }
             }
@@ -190,7 +175,7 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
                 Place place = PlaceAutocomplete.getPlace(this, data);
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
-                // TODO: Handle the error.
+                //  Handle the error.
                 Log.d("dubug",status.getStatusMessage());
 
             } else if (resultCode == RESULT_CANCELED) {

@@ -33,24 +33,24 @@ public class ParsingText {
     }
 
 
-    public class DownloadJson extends AsyncTask<String, String, String> {
+    public class DownloadJson extends AsyncTask<String, String, List<NameEntity>> {
 
         @Override
-        protected String doInBackground(String... strings) {
+        protected List<NameEntity> doInBackground(String... strings) {
             try{
                 return ParsingText(strings[0]);
             }catch (Exception e){
-                return "Error";
+                return null;
             }
         }
 
         @Override
-        protected void onPostExecute(String s) {
+        protected void onPostExecute(List<NameEntity> s) {
             super.onPostExecute(s);
 
         }
 
-        private String ParsingText(String Text){
+        private List<NameEntity> ParsingText(String Text){
             String openApiURL = "http://aiopen.etri.re.kr:8000/WiseNLU";
             String accessKey = "b80a3310-cd3a-4bf6-804b-39973c11c27f"; // 발급받은 Access Key
             String analysisCode = "ner"; // 언어 분석 코드
@@ -72,6 +72,7 @@ public class ParsingText {
             String responBodyJson = null;
             String responBody = "";
             Map<String, Object> responeBody = null;
+            List<NameEntity> nameEntities = null;
             try {
                 url = new URL(openApiURL);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -98,7 +99,7 @@ public class ParsingText {
                 if ( responseCode != 200 ) {
                     // 오류 내용 출력
                     Log.d("ParsingTest","responseCode != 200 오류 발생");
-                    return "오류 발생";
+                    return null;
                 }
 
                 responeBody = gson.fromJson(responBodyJson, Map.class);
@@ -111,14 +112,14 @@ public class ParsingText {
 
                     // 오류 내용 출력
                     Log.d("ParsingTest","result != 0 오류 발생");
-                    return "오류 발생";
+                    return null;
                 }
 
                 returnObject = (Map<String, Object>) responeBody.get("return_object");
                 sentences = (List<Map>) returnObject.get("sentence");
 
                 Map<String, NameEntity> nameEntitiesMap = new HashMap<String, NameEntity>();
-                List<NameEntity> nameEntities = null;
+
                 for( Map<String, Object> sentence : sentences ) {
                     List<Map<String, Object>> nameEntityRecognitionResult = (List<Map<String, Object>>) sentence.get("NE");
                     for( Map<String, Object> nameEntityInfo : nameEntityRecognitionResult ) {
@@ -135,28 +136,14 @@ public class ParsingText {
                 if ( 0 < nameEntitiesMap.size() ) {
                     nameEntities = new ArrayList<NameEntity>(nameEntitiesMap.values());
                 }
-                for( NameEntity nameEntity: nameEntities){
-                    responBody += nameEntity.text +"("+ nameEntity.type+")\n";
-                    if((nameEntity.type).startsWith("DT_")){
-                        Log.d("ParsingTestee","날짜"+nameEntity.text);
-                    }
-                    else if(nameEntity.type.startsWith("TI_")){
-                        Log.d("ParsingTestee","시간"+nameEntity.text);
-                    }
-                    else if(nameEntity.type.startsWith("OG")||nameEntity.type.startsWith("LC")){
-                        Log.d("ParsingTestee","장소"+nameEntity.text);
-                    }
-                    else {
-                        Log.d("ParsingTestee","그 외"+nameEntity.text);
-                    }
-                }
+
                 Log.d("ParsingTest",responBody);
             } catch (MalformedURLException e) {
                 Log.d("ParsingTest","1"+e.getMessage());
             } catch (IOException e) {
                 Log.d("ParsingTest","2"+e.getMessage());
             }
-            return responBody;
+            return nameEntities;
         }
     }
 

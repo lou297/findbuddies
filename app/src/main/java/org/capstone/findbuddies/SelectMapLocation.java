@@ -107,7 +107,7 @@ public class SelectMapLocation extends FragmentActivity implements OnMapReadyCal
 
     public void getLocationAddress(LatLng latLng){
         String nowAddress ="현재 위치를 확인 할 수 없습니다.";
-        Geocoder geocoder = new Geocoder(this, Locale.KOREA);
+        Geocoder geocoder = new Geocoder(this, Locale.KOREAN);
         List<Address> address;
         try {
             if (geocoder != null) {

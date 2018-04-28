@@ -11,7 +11,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,7 +28,6 @@ import com.google.firebase.storage.UploadTask;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
 public class NavigationMain extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -132,17 +130,11 @@ public class NavigationMain extends AppCompatActivity
             Intent intent = new Intent(this,ParsingMemo.class);
             titleEdit = findViewById(R.id.title_edit);
             contentEdit = findViewById(R.id.contents_edit);
+            intent.putExtra("myEmail",myEmail);
+            intent.putExtra("GroupNo",GroupNo);
             intent.putExtra("title",titleEdit.getText().toString());
             intent.putExtra("content",contentEdit.getText().toString());
-            ParsingText parsingText = new ParsingText();
-            try {
-                parsingContent = parsingText.new DownloadJson().execute(contentEdit.getText().toString()).get();
-            } catch (InterruptedException e) {
-                Log.d("ParsingTest",e.getMessage());
-            } catch (ExecutionException e) {
-                Log.d("ParsingTest",e.getMessage());
-            }
-            intent.putExtra("parsingContent",parsingContent);
+
             startActivity(intent);
             return true;
         }
@@ -201,9 +193,6 @@ public class NavigationMain extends AppCompatActivity
         saveMemo.setCheckGroupNo(GroupNo);
         saveMemo.setTitle(titleEdit.getText().toString());
         saveMemo.setMemo(contentEdit.getText().toString());
-        saveMemo.setYear(0);
-        saveMemo.setMonth(0);
-        saveMemo.setDay(0);
 
         database.getReference().child("MemoList").push().setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override

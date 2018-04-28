@@ -1,5 +1,7 @@
 package org.capstone.findbuddies;
 
+import com.google.android.gms.maps.model.LatLng;
+
 public class SaveMemo {
     String uploaderEmail;
     String lastEditDate;
@@ -11,6 +13,9 @@ public class SaveMemo {
     int year;
     int month;
     int day;
+    int hour;
+    int minute;
+    LatLng latLng;
 
     public SaveMemo() {
     }
@@ -93,5 +98,29 @@ public class SaveMemo {
 
     public void setDay(int day) {
         this.day = day;
+    }
+
+    public int getHour() {
+        return hour;
+    }
+
+    public void setHour(int hour) {
+        this.hour = hour;
+    }
+
+    public int getMinute() {
+        return minute;
+    }
+
+    public void setMinute(int minute) {
+        this.minute = minute;
+    }
+
+    public LatLng getLatLng() {
+        return latLng;
+    }
+
+    public void setLatLng(LatLng latLng) {
+        this.latLng = latLng;
     }
 }
