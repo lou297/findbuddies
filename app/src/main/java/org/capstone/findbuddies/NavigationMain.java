@@ -130,11 +130,12 @@ public class NavigationMain extends AppCompatActivity
             Intent intent = new Intent(this,ParsingMemo.class);
             titleEdit = findViewById(R.id.title_edit);
             contentEdit = findViewById(R.id.contents_edit);
+            TextView PictureViewURI = findViewById(R.id.PictureViewURI);
             intent.putExtra("myEmail",myEmail);
             intent.putExtra("GroupNo",GroupNo);
             intent.putExtra("title",titleEdit.getText().toString());
             intent.putExtra("content",contentEdit.getText().toString());
-
+            intent.putExtra("pictureViewURI",PictureViewURI.getText().toString());
             startActivity(intent);
             return true;
         }

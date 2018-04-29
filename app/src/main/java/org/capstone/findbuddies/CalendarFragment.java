@@ -84,7 +84,7 @@ public class CalendarFragment extends Fragment {
                                 if(year==0){
                                     addMemo(new MemoItem(value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl()));
                                 }
-                                else if(year==value.getYear()&&month==value.getMonth()&&dayOfMonth==value.getDay()){
+                                else if(year==value.getYear()&&month==value.getMonth()&&dayOfMonth==value.getDate()){
                                     addMemo(new MemoItem(value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl()));
                                 }
                             }

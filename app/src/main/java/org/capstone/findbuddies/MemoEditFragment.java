@@ -33,7 +33,6 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
@@ -205,24 +204,5 @@ public class MemoEditFragment extends Fragment{
         });
     }
 
-    public void UploadMemo(String uri){
-        long Now = System.currentTimeMillis();
-        date = simpleDateFormat.format(new Date(Now));
 
-        SaveMemo saveMemo = new SaveMemo();
-
-
-        saveMemo.setImageUrl(uri.toString());
-        saveMemo.setUploaderEmail(myEmail);
-        saveMemo.setLastEditDate(date);
-        saveMemo.setEditSystemTime(Now);
-        saveMemo.setCheckGroupNo(GroupNo);
-        saveMemo.setTitle(Title.toString());
-        saveMemo.setMemo(Memo.toString());
-        saveMemo.setYear(0);
-        saveMemo.setMonth(0);
-        saveMemo.setDay(0);
-
-        database.getReference().child("MemoList").push().setValue(saveMemo);
-    }
 }

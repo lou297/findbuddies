@@ -42,7 +42,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     EditText Content;
     int year;
     int month;
-    int day;
+    int date;
 
     String AMPM;
     int AMPMhour;
@@ -55,7 +55,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     int today;
 
     String Location;
-
+    String PictureViewURI;
     TextView parsingDate;
     TextView parsingTime;
     TextView parsingMapAddress;
@@ -78,14 +78,15 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 .findFragmentById(R.id.parsing_map);
         mapFragment.getMapAsync(this);
         myEmail = getIntent().getStringExtra("myEmail");
+        PictureViewURI = getIntent().getStringExtra("pictureViewURI");
         database = FirebaseDatabase.getInstance();
         GroupNo = getIntent().getIntExtra("GroupNo",0);
         Date date = new Date(System.currentTimeMillis());
-        today = date.getDay();
+        today = date.getDay()-1;
         todayMonth =date.getMonth();
         setInitialDate();
         setInitialMemo();
-        InitialParsing();
+
 
         dateLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,26 +108,26 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     private void UploadParsingMemo() {
         long Now = System.currentTimeMillis();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
-        String date = simpleDateFormat.format(new Date(Now));
+        String EditDate = simpleDateFormat.format(new Date(Now));
         SaveMemo saveMemo = new SaveMemo();
         Title = findViewById(R.id.parsing_title_edit);
         Content = findViewById(R.id.parsing_contents_edit);
-        TextView PictureViewURI = findViewById(R.id.PictureViewURI);
-        if(PictureViewURI.getText()!=null){
-            saveMemo.setImageUrl(PictureViewURI.getText().toString());
+        if(!PictureViewURI.equals("")){
+            saveMemo.setImageUrl(PictureViewURI);
         }
         saveMemo.setUploaderEmail(myEmail);
-        saveMemo.setLastEditDate(date);
+        saveMemo.setLastEditDate(EditDate);
         saveMemo.setEditSystemTime(Now);
         saveMemo.setCheckGroupNo(GroupNo);
         saveMemo.setTitle(Title.getText().toString());
         saveMemo.setMemo(Content.getText().toString());
         saveMemo.setYear(year);
         saveMemo.setMonth(month);
-        saveMemo.setDay(day);
+        saveMemo.setDate(date);
         saveMemo.setHour(hour);
         saveMemo.setMinute(minute);
-        saveMemo.setLatLng(latLng);
+        saveMemo.setLatitude(latLng.latitude);
+        saveMemo.setLongitude(latLng.longitude);
 
         database.getReference().child("MemoList").push().setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -147,7 +148,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curPoint,15));
         googleMap.getUiSettings().setAllGesturesEnabled(false);
         getLocationAddress(curPoint);
-
+        InitialParsing();
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -169,9 +170,10 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
 
     public void setInitialDate(){
         Date Now = new Date(System.currentTimeMillis());
+
         year = Now.getYear();
-        month = Now.getMonth();
-        day = Now.getDay();
+        month = Now.getMonth()+1;
+        date = Now.getDate();
 
         hour = Now.getHours();
         minute = Now.getMinutes();
@@ -228,52 +230,169 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
             AMPM = "오전";
             AMPMhour = hour;
         }
-        String date = month+"월 "+day+"일";
+        String ParsingDate = month+"월 "+date+"일";
         String time = AMPM + " "+ AMPMhour+"시 "+minute+"분";
-        parsingDate.setText(date);
+        parsingDate.setText(ParsingDate);
         parsingTime.setText(time);
 
     }
-    private void ParsingDate(String Date){
-        int This = Date.indexOf("이번");
-        int next = Date.indexOf("다음");
-        int dayOfWeekIndex = Date.indexOf("요일");
-        int monthIndex = Date.indexOf("월");//월 요일일수도 잇으므로 요일이 있으면 월은 생각 x
-        int dayIndex = Date.indexOf("일");
+    public static boolean isNumeric(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch(NumberFormatException e) {
+            return false;
+        }
+    }
+    private void ParsingDate(String ParseDate){
+        ParseDate = ParseDate.replace(" ","");
+        int This = ParseDate.indexOf("이번");
+        int next = ParseDate.indexOf("다음");
+        int dayOfWeekIndex = ParseDate.indexOf("요일");
+        int monthIndex = ParseDate.indexOf("월");//월 요일일수도 잇으므로 요일이 있으면 월은 생각 x
+        int DmonthIndex = ParseDate.indexOf("달");
+        int week = ParseDate.indexOf("주");
+        int dayIndex = ParseDate.indexOf("일");
+        String isCheck = "";
+        int isDate = 0 ;
+        int comma = ParseDate.indexOf(".");
+
         String dayOfWeek = null;
         String month = null;
         String day = null;
+        Log.d("ParsingTest","파싱??"+this.month+","+date);
+        int subDay = 0;
+        if(This!=-1){
+            if(ParseDate.substring(This+2,This+3).equals("달")){
+                //원래의 month그대로
+            }
+            else if(ParseDate.substring(This+2,This+3).equals("주")){
+                //원래의 week그대로
+            }
+        }
+        else if(next!=-1){
+            if(ParseDate.substring(next+2,next+3).equals("달")){
+                this.month++;
+            }
+            else if(ParseDate.substring(next+2,next+3).equals("주")){
+                subDay+=7;
+            }
+        }
+        if(monthIndex!=-1){
+            if(ParseDate.length()-1>=monthIndex+3){
+                isCheck = ParseDate.substring(monthIndex+1,monthIndex+3);
+            }
+            if(isCheck.equals("요일")){
+                //월요일이었다.
+            }
+            else {
+                if(monthIndex-2>-1&&isNumeric(ParseDate.substring(monthIndex-2,monthIndex))){
+                    month = ParseDate.substring(monthIndex-2,monthIndex);
+                }
+                else if(isNumeric(ParseDate.substring(monthIndex-1,monthIndex))){
+                    month = ParseDate.substring(monthIndex-1,monthIndex);
+                }
+            }
+        }
+        if(month!=null){
+            if(month.equals("1")||month.equals("일")){
+                this.month=1;
+            } else if(month.equals("2")||month.equals("이")){
+                this.month=2;
+            } else if(month.equals("3")||month.equals("삼")){
+                this.month=3;
+            } else if(month.equals("4")||month.equals("사")){
+                this.month=4;
+            } else if(month.equals("5")||month.equals("오")){
+                this.month=5;
+            } else if(month.equals("6")||month.equals("육")||month.equals("유")){
+                this.month=6;
+            } else if(month.equals("7")||month.equals("칠")){
+                this.month=7;
+            } else if(month.equals("8")||month.equals("팔")){
+                this.month=8;
+            } else if(month.equals("9")||month.equals("구")){
+                this.month=9;
+            } else if(month.equals("10")||month.equals("십")||month.equals("시")){
+                this.month=10;
+            } else if(month.equals("11")||month.equals("십일")){
+                this.month=11;
+            } else if(month.equals("12")||month.equals("십이")){
+                this.month=12;
+            }
+
+        }
+
+        if(dayIndex!=-1){
+            if(((ParseDate.length()-1>=dayIndex+1)&&(ParseDate.substring(dayIndex+1,dayIndex+2).equals("요")))||ParseDate.substring(dayIndex-1,dayIndex).equals("요")){
+                //일요일이었다.
+            }
+            else {
+                isDate = 1;
+                if(dayIndex-2>-1&&isNumeric(ParseDate.substring(dayIndex-2,dayIndex))){
+                    day = ParseDate.substring(dayIndex-2,dayIndex);
+                    date = Integer.parseInt(ParseDate.substring(dayIndex-2,dayIndex));
+                    Log.d("ParsingTest",ParseDate.substring(dayIndex-2,dayIndex)+","+date);
+                }
+                else if(isNumeric(ParseDate.substring(dayIndex-1,dayIndex))){
+                    day = ParseDate.substring(dayIndex-1,dayIndex);
+                    date = Integer.parseInt(ParseDate.substring(dayIndex-1,dayIndex));
+                }
+            }
+        }
 
         if(dayOfWeekIndex!=-1){
-            dayOfWeek = Date.substring(dayOfWeekIndex-1,dayOfWeekIndex);
-            if(next!=-1){
+            if(isDate==0){
+                dayOfWeek = ParseDate.substring(dayOfWeekIndex-1,dayOfWeekIndex);
+                if(dayOfWeek.equals("일")){
+                    subDay += today;
+                } else if(dayOfWeek.equals("월")){
+                    subDay += today-1;
+                } else if(dayOfWeek.equals("화")){
+                    subDay += today-2;
+                } else if(dayOfWeek.equals("수")){
+                    subDay += today-3;
+                } else if(dayOfWeek.equals("목")){
+                    subDay += today-4;
+                } else if(dayOfWeek.equals("금")){
+                    subDay += today-5;
+                } else if(dayOfWeek.equals("토")){
+                    subDay += today-6;
+                }
+            }
 
+        }
+        Log.d("ParsingTest","date = "+date+", today = "+today+", subday = "+subDay);
+        if(dayOfWeekIndex!=-1) {
+            if (isDate == 0) {
+                date +=subDay;
             }
         }
-        else{
-            if(monthIndex!=-1){
-                month = Date.substring(monthIndex-1,monthIndex);
-                if(dayIndex!=-1){
-                    day = Date.substring(dayIndex-1,dayIndex);
-                }
-                else{
+        int maxDate =0;
+        switch (this.month){
+            case 2:
+                maxDate = 28;
+                break;
+            case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+                maxDate = 31;
+                break;
 
-                }
-            }
-            else{
-                if(dayIndex!=-1){
-
-                }
-                else{
-
-                }
-            }
+                default:
+                    maxDate = 30;
+                    break;
         }
+        if(date > maxDate){
+            this.month++;
+            date -= maxDate;
+        }
+        Log.d("ParsingTest","파싱 날짜"+this.month+"."+date);
     }
 
     private void ParsingTime(String Time){
+        Time = Time.replace(" ","");
         String TimeHour = null;
         String TimeMinutes = null;
+        int colon = Time.indexOf(":");
         int index1 = Time.indexOf("오전");
         int index2 = Time.indexOf("오후");
         int index = -1;
@@ -283,30 +402,52 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         else if(index2!=-1){
             index = index2;
         }
+        if(colon!=-1){
+            if(index==-1){
+                TimeHour = Time.substring(0,colon);
+            }
+            else{
+                TimeHour = Time.substring(index+2,colon);
+            }
+            if(isNumeric(Time.substring(colon+1,colon+3))){
+                TimeMinutes = Time.substring(colon+1,colon+3);
+            }
+            else{
+                TimeMinutes = Time.substring(colon+1,colon+2);
+            }
+        }
         int index3 = Time.indexOf("시");
         if(index3!=-1){
             if(index==-1){
                 TimeHour = Time.substring(0,index3);
-                TimeHour = TimeHour.trim();
             }
             else{
-                TimeHour = Time.substring(index+1,index3);
-                TimeHour = TimeHour.trim();
+                TimeHour = Time.substring(index+2,index3);
             }
-
+            minute =0;
         }
         int index4 = Time.indexOf("분");
         if(index3!=-1&&index4!=-1){
             TimeMinutes = Time.substring(index3+1,index4);
-            TimeMinutes = TimeMinutes.trim();
         }
         else if(index3==-1&&index4!=-1){
             TimeMinutes = Time.substring(0,index4);
-            TimeMinutes = TimeMinutes.trim();
         }
 
         if(TimeHour!=null){
-            if(TimeHour.equals("한")||TimeHour.equals("1")){
+            if(TimeHour.equals("열한")||TimeHour.equals("11")){
+                hour = 11;
+                if(index2 !=-1){
+                    hour += 12;
+                }
+            }
+            else if(TimeHour.equals("열두")||TimeHour.equals("12")){
+                hour = 12;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }
+            else if(TimeHour.equals("한")||TimeHour.equals("1")){
                 hour = 13;
                 if(index1 !=-1){
                     hour -= 12;
@@ -355,6 +496,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 }
             }
             else if(TimeHour.equals("아홉")||TimeHour.equals("9")){
+                Log.d("ParsingTest","123hour: "+hour+"minute: "+minute);
                 hour = 9;
                 if(index2 !=-1){
                     hour += 12;
@@ -366,18 +508,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                     hour += 12;
                 }
             }
-            else if(TimeHour.equals("열한")||TimeHour.equals("11")){
-                hour = 11;
-                if(index2 !=-1){
-                    hour += 12;
-                }
-            }
-            else if(TimeHour.equals("열두")||TimeHour.equals("12")){
-                hour = 12;
-                if(index1 !=-1){
-                    hour += 12;
-                }
-            }
+
         }
         if(TimeMinutes!=null){
             if(TimeMinutes.equals("오")||TimeMinutes.equals("5")){
@@ -414,6 +545,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 minute = 55;
             }
         }
+        Log.d("ParsingTest","hour: "+hour+"minute: "+minute);
     }
 
 
@@ -426,17 +558,22 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                     10); // 읽을 개수
         } catch (IOException e) {
             e.printStackTrace();
-            Log.e("test","입출력 오류 - 서버에서 주소변환시 에러발생");
+            Log.e("ParsingTest","입출력 오류 - 서버에서 주소변환시 에러발생");
         }
 
         if (AddressList != null) {
             if (AddressList.size() == 0) {
                 Log.d("ParsingTest","해당되는 주소 정보는 없습니다");
             } else {
+                Log.d("ParsingTest",AddressList.get(0).getLatitude()+"");
+                Log.d("ParsingTest",AddressList.get(0).getLongitude()+"");
                 LatLng parsingLatLng = new LatLng(AddressList.get(0).getLatitude(),AddressList.get(0).getLongitude());
+                if(GoogleMap==null){
+                    Log.d("ParsingTest","여기가 문제");
+                }
                 GoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(parsingLatLng,15));
                 latLng = parsingLatLng;
-                getLocationAddress(parsingLatLng);
+                getLocationAddress(latLng);
                 //          list.get(0).getCountryName();  // 국가명
                 //          list.get(0).getLatitude();        // 위도
                 //          list.get(0).getLongitude();    // 경도

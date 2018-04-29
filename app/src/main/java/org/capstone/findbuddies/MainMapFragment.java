@@ -15,6 +15,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Locale;
 
@@ -24,6 +28,7 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
     MarkerOptions marker;
     String myEmail;
     FirebaseAuth auth;
+    FirebaseDatabase database;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -33,13 +38,13 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
         if(user!=null){
             myEmail = user.getEmail();
         }
+        database = FirebaseDatabase.getInstance();
 //        myEmail = getArguments().getString("myEmail");
         mapView = rootView.findViewById(R.id.MainMapView);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
         mapView.getMapAsync(this);
         Locale ko = Locale.KOREA;
-
 
         if(googleMap!=null){
 
@@ -56,14 +61,30 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curPoint,15));
         marker.position(googleMap.getCameraPosition().target);
         googleMap.addMarker(marker);
-
-
-
+        LoadMemoLocation();
 
     }
 
-    public void getLocationAddress(double lat){
+    private void LoadMemoLocation(){
+        database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    SaveMemo value = snapshot.getValue(SaveMemo.class);
+                    if(value!=null&&value.getUploaderEmail().equals(myEmail)){
+                        if(value.getLatitude()>=0){
+                            LatLng getLatLng = new LatLng(value.getLatitude(),value.getLongitude());
+                            googleMap.addMarker(new MarkerOptions().position(getLatLng));
+                        }
+                    }
+                }
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
