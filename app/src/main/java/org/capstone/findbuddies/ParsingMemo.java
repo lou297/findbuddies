@@ -171,7 +171,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     public void setInitialDate(){
         Date Now = new Date(System.currentTimeMillis());
 
-        year = Now.getYear();
+        year = Now.getYear()+1900;
         month = Now.getMonth()+1;
         date = Now.getDate();
 
