@@ -1,16 +1,19 @@
 package org.capstone.findbuddies;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -28,7 +31,6 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -44,7 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class ShowMap extends AppCompatActivity implements OnConnectionFailedListener{
+public class ShowMap extends FragmentActivity implements OnMapReadyCallback,OnConnectionFailedListener{
 
     int PLACE_AUTOCOMPLETE_REQUEST_CODE = 101;
     boolean mLocationPermissionGranted;
@@ -60,6 +62,7 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
     float minDistance = 10;
     ArrayList<MarkerOptions> markerList = new ArrayList<>();
     private GoogleApiClient mGoogleApiClient;
+    LocationManager manager;
     Button but;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,28 +74,10 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
 
         //////////////////////구글 맵
 
-//        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-                Log.d("ShowMap","GoogleMap 준비됨.");
+        MapFragment mapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
-                map = googleMap;
-//                map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-                map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-                    @Override
-                    public void onInfoWindowClick(Marker marker) {
-                        Intent intent = new Intent(getApplicationContext(),StreetView.class);
-                        intent.putExtra("latitude",marker.getPosition().latitude);
-                        intent.putExtra("longitude",marker.getPosition().longitude);
-
-                        startActivity(intent);
-                    }
-                });
-
-            }
-        });
 
         mGoogleApiClient = new GoogleApiClient
                 .Builder(this)
@@ -129,43 +114,64 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
         for(int i = 0 ; i < number; i ++){
             markerList.add(new MarkerOptions());
         }
-        MapsInitializer.initialize(this);
-        requestMyLocation();
+
+        manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        //GPS가 켜져있는지 체크
+        if(!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            //GPS 설정화면으로 이동
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            startActivity(intent);
+        }
 
 
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if(map != null){
-//            map.setMyLocationEnabled(false);
+        //마시멜로 이상이면 권한 요청하기
+        if(Build.VERSION.SDK_INT >= 23){
+            //권한이 없는 경우
+            if(ContextCompat.checkSelfPermission(ShowMap.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(ShowMap.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(ShowMap.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION , Manifest.permission.ACCESS_FINE_LOCATION} , 1);
+            }
+            //권한이 있는 경우
+            else{
+                requestMyLocation();
+            }
+        }
+        //마시멜로 아래
+        else{
+            requestMyLocation();
         }
     }
-
     @Override
-    protected void onResume() {
-        super.onResume();
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
+//                map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+        map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                Intent intent = new Intent(getApplicationContext(),StreetView.class);
+                intent.putExtra("latitude",marker.getPosition().latitude);
+                intent.putExtra("longitude",marker.getPosition().longitude);
 
-//        if(map != null){
-//            map.setMyLocationEnabled(true);
-//        }
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        mLocationPermissionGranted = false;
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mLocationPermissionGranted = true;
-                }
+        if(requestCode==1){
+            //권한받음
+            if(grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                requestMyLocation();
+            }
+            //권한못받음
+            else{
+                Toast.makeText(this, "권한없음", Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
-//        updateLocationUI();
+
     }
 
     @Override
@@ -186,52 +192,34 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
     }
 
     public void requestMyLocation(){
-        Toast.makeText(getApplicationContext(),"requestlocation",Toast.LENGTH_LONG).show();
-
-
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            mLocationPermissionGranted = true;
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        if(ContextCompat.checkSelfPermission(ShowMap.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(ShowMap.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            return;
         }
 
+        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                showCurrentLocation(location);
+                SaveLocationData(location);
+            }
 
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
 
-        LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (manager != null) {
-            manager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
-                    minTime,
-                    minDistance,
-                    new LocationListener() {
-                        @Override
-                        public void onLocationChanged(Location location) {
+            }
 
-                            showCurrentLocation(location);
-                            SaveLocationData(location);
-                        }
+            @Override
+            public void onProviderEnabled(String provider) {
 
-                        @Override
-                        public void onStatusChanged(String s, int i, Bundle bundle) {
+            }
 
-                        }
+            @Override
+            public void onProviderDisabled(String provider) {
 
-                        @Override
-                        public void onProviderEnabled(String s) {
+            }
+        });
 
-                        }
-
-                        @Override
-                        public void onProviderDisabled(String s) {
-
-                        }
-                    }
-            );
-        }
     }
 
 
@@ -459,11 +447,6 @@ public class ShowMap extends AppCompatActivity implements OnConnectionFailedList
         return date[0];
     }
 
-    public void AddMarker(LatLng latLng){
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
-        MarkerOptions marker = new MarkerOptions();
-        marker.position(latLng);
-    }
 
 
     @Override
