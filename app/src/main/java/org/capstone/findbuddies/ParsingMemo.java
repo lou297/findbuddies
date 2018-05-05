@@ -1,11 +1,21 @@
 package org.capstone.findbuddies;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,7 +32,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -54,12 +63,13 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     int todayMonth;
     int today;
 
-    String Location;
+    String ParsingLocationString;
     String PictureViewURI;
     TextView parsingDate;
     TextView parsingTime;
     TextView parsingMapAddress;
     GoogleMap GoogleMap;
+    LocationManager manager;
     private GoogleApiClient mGoogleApiClient;
     int SELECTED_PLACE_REQUEST_CODE = 2001;
     @Override
@@ -74,9 +84,33 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 .enableAutoManage(this, this)
                 .build();
 
-        MapFragment mapFragment = (MapFragment) getFragmentManager()
-                .findFragmentById(R.id.parsing_map);
-        mapFragment.getMapAsync(this);
+        manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        //GPS가 켜져있는지 체크
+        if(!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            //GPS 설정화면으로 이동
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            startActivity(intent);
+        }
+
+
+        //마시멜로 이상이면 권한 요청하기
+        if(Build.VERSION.SDK_INT >= 23){
+            //권한이 없는 경우
+            if(ContextCompat.checkSelfPermission(ParsingMemo.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(ParsingMemo.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(ParsingMemo.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION , Manifest.permission.ACCESS_FINE_LOCATION} , 1);
+            }
+            //권한이 있는 경우
+            else{
+                requestMyLocation();
+            }
+        }
+        //마시멜로 아래
+        else{
+            requestMyLocation();
+        }
+
         myEmail = getIntent().getStringExtra("myEmail");
         PictureViewURI = getIntent().getStringExtra("pictureViewURI");
         database = FirebaseDatabase.getInstance();
@@ -140,14 +174,9 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         GoogleMap = googleMap;
-        LatLng curPoint = new LatLng(37.234, 126.972);
-        latLng = curPoint;
-        MarkerOptions marker = new MarkerOptions();
-        marker.position(curPoint);
-        googleMap.addMarker(marker);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curPoint,15));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
         googleMap.getUiSettings().setAllGesturesEnabled(false);
-        getLocationAddress(curPoint);
+        getLocationAddress(latLng);
         InitialParsing();
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -158,6 +187,44 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         });
 
     }
+
+    public void requestMyLocation(){
+        if(ContextCompat.checkSelfPermission(ParsingMemo.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(ParsingMemo.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            return;
+        }
+
+        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+
+    }
+
+    LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            manager.removeUpdates(locationListener);
+            latLng = new LatLng(location.getLatitude(),location.getLongitude());
+            MapFragment mapFragment = (MapFragment) getFragmentManager()
+                    .findFragmentById(R.id.parsing_map);
+            mapFragment.getMapAsync(ParsingMemo.this);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+
+
 
     public void setInitialMemo(){
         dateLayout = findViewById(R.id.date_layout);
@@ -204,8 +271,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 }
                 else if(nameEntity.type.startsWith("OG")||nameEntity.type.startsWith("LC")){
                     Log.d("ParsingTestee","장소"+nameEntity.text);
-                    Location = nameEntity.text;
-                    ParsingLocation(Location);
+                    ParsingLocationString = nameEntity.text;
+                    ParsingLocation(ParsingLocationString);
                 }
                 else {
                     Log.d("ParsingTestee","그 외"+nameEntity.text);
@@ -623,6 +690,21 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 getLocationAddress(curPoint);
             }
 
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode==1){
+            //권한받음
+            if(grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                requestMyLocation();
+            }
+            //권한못받음
+            else{
+                Toast.makeText(this, "권한없음", Toast.LENGTH_SHORT).show();
+                finish();
+            }
         }
     }
 }

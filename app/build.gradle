@@ -59,6 +59,7 @@ dependencies {
         exclude group: 'org.apache.httpcomponents'
     }
     implementation 'com.google.apis:google-api-services-vision:v1-rev369-1.23.0'
+    implementation 'com.prolificinteractive:material-calendarview:1.4.3'
 
 }
 

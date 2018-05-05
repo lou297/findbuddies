@@ -11,7 +11,8 @@
         android:id="@+id/firstLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_margin="5dp">
         <EditText
             android:id="@+id/parsing_title_edit"
             android:layout_width="match_parent"
@@ -27,7 +28,7 @@
             android:background="@drawable/edit_memo"
             android:gravity="top"
             android:hint="내용"
-            android:inputType="text|textUri|number|phone|datetime|date|time"
+            android:inputType="textMultiLine|textNoSuggestions"
             android:padding="8dp" />
 
     </LinearLayout>
