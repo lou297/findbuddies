@@ -6,8 +6,12 @@ package org.capstone.findbuddies;
 
 public class SaveFriends {
     String myEmail;
+    String myID;
+    String myName;
+    String friendEmail;
     String friendID;
     String friendName;
+
 
 
 
@@ -17,6 +21,30 @@ public class SaveFriends {
 
     public void setMyEmail(String myEmail) {
         this.myEmail = myEmail;
+    }
+
+    public String getMyID() {
+        return myID;
+    }
+
+    public void setMyID(String myID) {
+        this.myID = myID;
+    }
+
+    public String getMyName() {
+        return myName;
+    }
+
+    public void setMyName(String myName) {
+        this.myName = myName;
+    }
+
+    public String getFriendEmail() {
+        return friendEmail;
+    }
+
+    public void setFriendEmail(String friendEmail) {
+        this.friendEmail = friendEmail;
     }
 
     public String getFriendID() {

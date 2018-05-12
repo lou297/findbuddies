@@ -21,6 +21,8 @@ public class AddMate extends AppCompatActivity {
     FirebaseUser User;
     int SET = 0;//ON = 1 OFF = 0
     String MyMail;
+    String MyName;
+    String MyID;
 
     TextView searched_id;
     TextView searched_name;
@@ -38,6 +40,7 @@ public class AddMate extends AppCompatActivity {
 
         if(User!=null){
             MyMail = User.getEmail();
+            getMyInfo(MyMail);
         }
 
         searched_id = findViewById(R.id.searched_id);
@@ -62,6 +65,27 @@ public class AddMate extends AppCompatActivity {
             }
         });
 
+
+    }
+
+    private void getMyInfo(String myMail) {
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if (value != null && (value.getSavedEmail()).equals(myMail)) {
+                        MyName= value.getSavedName();
+                        MyID = value.getSavedID();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
     }
 
@@ -138,7 +162,6 @@ public class AddMate extends AppCompatActivity {
     }
 
     public void MakeFriendInfoList(final String BuddyID){
-        final String MyEmail = User.getEmail();
 
         database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -148,9 +171,10 @@ public class AddMate extends AppCompatActivity {
                     if(value!=null){
 
                         if( (value.getSavedID()).equals(BuddyID) ){
+                            String FriendEmail = value.getSavedEmail();
                             String FriendID = value.getSavedID();
                             String FriendName = value.getSavedName();
-                            AddFriendList(MyEmail,FriendID,FriendName);
+                            AddFriendList(MyMail,MyID,MyName,FriendEmail,FriendID,FriendName);
                         }
 
                     }
@@ -165,9 +189,12 @@ public class AddMate extends AppCompatActivity {
 
     }
 
-    public void AddFriendList(String MyEmail,String FriendID,String FriendName){
+    public void AddFriendList(String MyEmail,String MyID,String MyName,String FriendEmail,String FriendID,String FriendName){
         SaveFriends saveFriends = new SaveFriends();
         saveFriends.setMyEmail(MyEmail);
+        saveFriends.setMyID(MyID);
+        saveFriends.setMyName(MyName);
+        saveFriends.setFriendEmail(FriendEmail);
         saveFriends.setFriendID(FriendID);
         saveFriends.setFriendName(FriendName);
 

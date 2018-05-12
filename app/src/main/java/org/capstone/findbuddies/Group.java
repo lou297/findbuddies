@@ -14,6 +14,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,6 +24,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by user on 2017-12-02.
@@ -37,6 +39,7 @@ public class Group extends Fragment {
     String MyEmail;
     String MyName;
     ArrayList<GroupItem> groups = new ArrayList<GroupItem>();
+    private List<String> uidLists = new ArrayList<>();
 
     @Nullable
     @Override
@@ -95,6 +98,33 @@ public class Group extends Fragment {
 
             }
         });
+        listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+//                builder.setTitle("AlertDialog Title");
+                builder.setMessage("그룹에서 나가시겠습니까?");
+                builder.setPositiveButton("나가기",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                database.child("GroupList").child(uidLists.get(position)).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        groups.remove(position);
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        });
+                builder.setNegativeButton("취소",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which){
+                            }
+                        });
+                builder.show();
+                return false;
+            }
+        });
         return rootView;
     }
 
@@ -126,6 +156,7 @@ public class Group extends Fragment {
             database.child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    uidLists.clear();
                     groups.clear();
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         GroupNo = 0;
@@ -133,6 +164,7 @@ public class Group extends Fragment {
                         isMember = 0;
                         MemberList="";
                         SaveGroupList value = snapshot.getValue(SaveGroupList.class);
+                        String uidKey = snapshot.getKey();
                         if(value!=null){
                             ArrayList<String> members = value.getMembers();
                             for(String memberCheck : members){
@@ -155,6 +187,7 @@ public class Group extends Fragment {
                                 ArrayList<String> memberName = value.getMembers();
                                 ArrayList<String> memberID = value.getMembersID();
                                 addgroup(new GroupItem(GroupNo,GroupName,MemberList,memberName,memberID,R.drawable.family));
+                                uidLists.add(uidKey);
                             }
                         }
 

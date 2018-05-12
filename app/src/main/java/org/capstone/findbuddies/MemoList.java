@@ -38,6 +38,8 @@ public class MemoList extends Fragment {
     FirebaseDatabase database;
     FirebaseStorage storage;
     String myEmail;
+    String myID;
+    boolean Check;
     MemoAdapter adapter;
     private List<String> uidLists = new ArrayList<>();
 
@@ -49,6 +51,7 @@ public class MemoList extends Fragment {
         storage = FirebaseStorage.getInstance();
 
         myEmail = getArguments().getString("myEmail");
+        getMyID(myEmail);
         ListView listview = rootView.findViewById(R.id.MemoListView);
 
         adapter = new MemoAdapter();
@@ -107,7 +110,7 @@ public class MemoList extends Fragment {
                         SaveMemo value = snapshot.getValue(SaveMemo.class);
                         String uidKey = snapshot.getKey();
                         if(value!=null){
-                            if(myEmail.equals(value.getUploaderEmail())){
+                            if(myEmail.equals(value.getUploaderEmail()) || CheckMyEmailInGroup(value.getCheckGroupNo())){
                                 MemoItem memoItem;
                                 String address = null;
                                 if(value.getLatitude()!=0){
@@ -287,5 +290,51 @@ public class MemoList extends Fragment {
             }
             return nowAddress;
         }
+    }
+    private void getMyID(String MyEmail) {
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if (value != null && (value.getSavedEmail()).equals(MyEmail)) {
+                         myID = value.getSavedID();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private boolean CheckMyEmailInGroup(int GroupNo){
+        Check = false;
+        database.getReference().child("GruopList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    SaveGroupList value = snapshot.getValue(SaveGroupList.class);
+                    if(value!=null){
+                        if(value.getGroupNo()==GroupNo){
+                            ArrayList<String> membersID = value.getMembersID();
+                            for(String memberCheck : membersID){
+                                if(memberCheck.equals(myID)){
+                                    Check = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        return Check;
     }
 }

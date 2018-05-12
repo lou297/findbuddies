@@ -57,6 +57,8 @@ public class CalendarFragment extends Fragment {
     MaterialCalendarView MCalendarView;
     ArrayList<String> DateMemoList;
     String myEmail;
+    String myID;
+    boolean Check;
     ListView listview;
     SpecificDateMemoAdapter adapter;
     FirebaseDatabase database;
@@ -68,9 +70,10 @@ public class CalendarFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.calendar_view,container,false);
-        myEmail = getArguments().getString("myEmail");
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
+        myEmail = getArguments().getString("myEmail");
+        getMyID(myID);
         calendarView = rootView.findViewById(R.id.calendarView);
         MCalendarView = rootView.findViewById(R.id.MCalendarView);
         listview = rootView.findViewById(R.id.SpecificDateMemoList);
@@ -163,7 +166,7 @@ public class CalendarFragment extends Fragment {
                     SaveMemo value = snapshot.getValue(SaveMemo.class);
                     String uidKey = snapshot.getKey();
                     if (value != null) {
-                        if (value.getUploaderEmail().equals(myEmail)) {
+                        if (value.getUploaderEmail().equals(myEmail) || CheckMyEmailInGroup(value.getCheckGroupNo())) {
                             MemoItem memoItem = null;
                             String address = null;
                             if(value.getLatitude()!=0){
@@ -201,17 +204,6 @@ public class CalendarFragment extends Fragment {
             }
 
         });
-        Log.d("ParsingTest","SIZE1: "+Memos.size());
-//        for(int i = 0 ; i < Memos.size(); i++){
-//            MemoItem Memo = Memos.get(i);
-//            if(Memo.getYear()!=year||Memo.getMonth()!=month||Memo.getDayOfMonth()!=dayOfMonth){
-//                Memos.remove(i);
-//
-////                listview.removeViewAt(i);
-//                adapter.notifyDataSetChanged();
-////                listview.setAdapter(adapter);
-//            }
-//        }
     }
 
 
@@ -228,7 +220,7 @@ public class CalendarFragment extends Fragment {
                         SaveMemo value = snapshot.getValue(SaveMemo.class);
                         String uidKey = snapshot.getKey();
                         if(value !=null){
-                            if(value.getUploaderEmail().equals(myEmail)){
+                            if(value.getUploaderEmail().equals(myEmail) || CheckMyEmailInGroup(value.getCheckGroupNo())){
                                 MemoItem memoItem = null;
                                 String address = null;
                                 if(year ==0){
@@ -454,6 +446,52 @@ public class CalendarFragment extends Fragment {
 
             }
         });
+    }
+    private void getMyID(String MyEmail) {
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if (value != null && (value.getSavedEmail()).equals(MyEmail)) {
+                        myID = value.getSavedID();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private boolean CheckMyEmailInGroup(int GroupNo){
+        Check = false;
+        database.getReference().child("GruopList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    SaveGroupList value = snapshot.getValue(SaveGroupList.class);
+                    if(value!=null){
+                        if(value.getGroupNo()==GroupNo){
+                            ArrayList<String> membersID = value.getMembersID();
+                            for(String memberCheck : membersID){
+                                if(memberCheck.equals(myID)){
+                                    Check = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        return Check;
     }
 
     private class ApiSimulator extends AsyncTask<Void, Void, List<CalendarDay>> {

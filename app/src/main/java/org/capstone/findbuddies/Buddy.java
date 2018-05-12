@@ -1,17 +1,20 @@
 package org.capstone.findbuddies;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -21,6 +24,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by user on 2017-12-02.
@@ -34,6 +38,11 @@ public class Buddy extends Fragment {
     private FirebaseAuth mAuth;
     FirebaseUser User;
     String MyEmail;
+    String myID;
+    String FriendName;
+    String FriendID;
+    ArrayList<BuddyItem> buddies = new ArrayList<BuddyItem>();
+    private List<String> uidLists = new ArrayList<>();
 
 
     @Nullable
@@ -47,6 +56,7 @@ public class Buddy extends Fragment {
         User = mAuth.getCurrentUser();
         if(User!=null){
             MyEmail = User.getEmail();
+            getMyID(MyEmail);
         }
 
         Button addmate = rootView.findViewById(R.id.addbuddy);
@@ -56,16 +66,38 @@ public class Buddy extends Fragment {
                 Intent intent = new Intent(getActivity().getApplicationContext(),AddMate.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
-//                Intent intent = new Intent(getActivity().getApplicationContext(),CalendarActivity.class);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                startActivity(intent);
-//                Intent intent = new Intent(getActivity().getApplicationContext(),NavigationMain.class);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                startActivity(intent);
             }
         });
 
         ListView listview = rootView.findViewById(R.id.listView);
+
+        listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+//                builder.setTitle("AlertDialog Title");
+                builder.setMessage("친구 목록에서 제거하시겠습니까?");
+                builder.setPositiveButton("제거",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                database.child("UserBuddy").child(uidLists.get(position)).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        buddies.remove(position);
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        });
+                builder.setNegativeButton("취소",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which){
+                            }
+                        });
+                builder.show();
+                return false;
+            }
+        });
 
         adapter = new BuddyAdapter();
 
@@ -74,16 +106,35 @@ public class Buddy extends Fragment {
         return rootView;
     }
 
-//    public void FindMyID(){
-//        final String MyEmail = User.getEmail();
-//
-//        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+    private void getMyID(String MyEmail) {
+        database.child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if (value != null && (value.getSavedEmail()).equals(MyEmail)) {
+                        myID = value.getSavedID();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+//    private String getFriendID(String Email){
+//        final String[] ID = new String[1];
+//        database.child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
 //            @Override
 //            public void onDataChange(DataSnapshot dataSnapshot) {
-//                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+//                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
 //                    SaveRegist value = snapshot.getValue(SaveRegist.class);
-//                    if( (value.getS_email()).equals(MyEmail) ){
-//                        MyID = value.getS_id();
+//                    if (value != null && (value.getSavedEmail()).equals(Email)) {
+//                        ID[0] = value.getSavedID();
+//                        Log.d("ParsingTest","친구 아이디1: "+ID[0]);
 //                    }
 //                }
 //            }
@@ -93,52 +144,20 @@ public class Buddy extends Fragment {
 //
 //            }
 //        });
+//        Log.d("ParsingTest","친구 아이디: "+ID[0]);
+//        return ID[0];
 //    }
-
-    public void MakeFriendsList(){
-
-        //데이터 베이스 친구목록에서 내 이메일에 해당하는 부분 리스트를 읽어온다.
-        database.child("UserBuddy").addListenerForSingleValueEvent(new ValueEventListener() {
+//
+    private void getFriendInfo(String Email){
+        database.child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    SaveFriends value = snapshot.getValue(SaveFriends.class);
-
-                    if(value !=null){
-                        if( (value.getMyEmail()).equals(MyEmail)){
-                            Toast.makeText(getContext(), value.getFriendID(), Toast.LENGTH_SHORT).show();
-                            Toast.makeText(getContext(), value.getFriendName(), Toast.LENGTH_SHORT).show();
-                            adapter.addbuddy(new BuddyItem(value.getFriendName(),value.getFriendID(),R.drawable.boy));
-                        }
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if (value != null && (value.getSavedEmail()).equals(Email)) {
+                        FriendName = value.getSavedName();
+                        FriendID = value.getSavedID();
                     }
-
-                }
-                Toast.makeText(getContext(), adapter.getCount(), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
-    }
-
-    public void ReadData(){
-        database.child("UserBuddy").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Toast.makeText(getContext(), "ddd?", Toast.LENGTH_SHORT).show();
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    SaveFriends value = snapshot.getValue(SaveFriends.class);
-
-                    if(value !=null){
-                        if( (value.getMyEmail()).equals(MyEmail)){
-                            adapter.addbuddy(new BuddyItem(value.getFriendName(),value.getFriendID(),R.drawable.boy));
-                        }
-                    }
-
                 }
             }
 
@@ -151,18 +170,26 @@ public class Buddy extends Fragment {
 
 
     class BuddyAdapter extends BaseAdapter {
-
-        ArrayList<BuddyItem> buddies = new ArrayList<BuddyItem>();
         private BuddyAdapter() {
             database.child("UserBuddy").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    uidLists.clear();
                     buddies.clear();
+                    FriendID= null;
+                    FriendName = null;
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        String uidKey = snapshot.getKey();
                         SaveFriends value = snapshot.getValue(SaveFriends.class);
                         if(value !=null){
-                            if( (value.getMyEmail()).equals(MyEmail)){
-                                addbuddy(new BuddyItem(value.getFriendName(),value.getFriendID(),R.drawable.boy));
+                            if( (value.getMyEmail()).equals(MyEmail) || value.getFriendID().equals(myID)){
+                                uidLists.add(uidKey);
+                                if(value.getFriendID().equals(myID)){
+                                    addbuddy(new BuddyItem(value.getMyName(),value.getMyID(),R.drawable.boy));
+                                }
+                                else{
+                                    addbuddy(new BuddyItem(value.getFriendName(),value.getFriendID(),R.drawable.boy));
+                                }
                             }
                         }
                     }
