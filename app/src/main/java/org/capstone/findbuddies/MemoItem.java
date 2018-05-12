@@ -1,6 +1,7 @@
 package org.capstone.findbuddies;
 
 public class MemoItem {
+    long lastSystemtime;
     String date_label;
     int year;
     int month;
@@ -12,7 +13,8 @@ public class MemoItem {
     String pictureURI;
     String location;
 
-    public MemoItem(String date_label,int year,int month,int dayOfMonth, int group_label, String title, String contents, String date, String pictureURI, String location) {
+    public MemoItem(long lastSystemtime,String date_label,int year,int month,int dayOfMonth, int group_label, String title, String contents, String date, String pictureURI, String location) {
+        this.lastSystemtime = lastSystemtime;
         this.date_label = date_label;
         this.year = year;
         this.month = month;
@@ -25,6 +27,13 @@ public class MemoItem {
         this.location = location;
     }
 
+    public long getLastSystemtime() {
+        return lastSystemtime;
+    }
+
+    public void setLastSystemtime(long lastSystemtime) {
+        this.lastSystemtime = lastSystemtime;
+    }
 
     public String getDate_label() {
         return date_label;

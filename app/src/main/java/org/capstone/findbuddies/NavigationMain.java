@@ -20,7 +20,10 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -40,6 +43,9 @@ public class NavigationMain extends AppCompatActivity
     String parsingContent;
     EditText titleEdit;
     EditText contentEdit;
+    TextView UserID;
+    TextView UserName;
+    NavigationView navigationView;
     private final long FINISH_INTERVAL_TIME = 2000;
     private long backPressedTime = 0;
     private static final int GROUP_MEMO_NO = 3000;
@@ -50,10 +56,12 @@ public class NavigationMain extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
         Toolbar toolbar = findViewById(R.id.MemoToolbar);
+        navigationView = findViewById(R.id.nav_view);
 //        setSupportActionBar(toolbar);
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
         myEmail = getIntent().getStringExtra("myEmail");
+        setIDName(myEmail);
         GroupNo = 0 ;
         bundle = new Bundle();
         bundle.putString("myEmail",myEmail);
@@ -93,8 +101,31 @@ public class NavigationMain extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
+
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void setIDName(String myEmail) {
+        View view = navigationView.getHeaderView(0);
+        UserID = view.findViewById(R.id.userID);
+        UserName = view.findViewById(R.id.userName);
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if (value != null && (value.getSavedEmail()).equals(myEmail)) {
+                        UserID.setText(value.getSavedID());
+                        UserName.setText(value.getSavedName());
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -237,8 +268,6 @@ public class NavigationMain extends AppCompatActivity
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.putExtra("myEmail",myEmail);
             startActivity(intent);
-        } else if (id == R.id.account) {
-
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

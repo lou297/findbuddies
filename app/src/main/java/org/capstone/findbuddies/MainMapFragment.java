@@ -95,7 +95,7 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
                 ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return;
         }
-        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1000, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),15));
@@ -118,14 +118,15 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
         });
     }
 
+
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         this.googleMap = googleMap;
-        marker = new MarkerOptions();
+//        marker = new MarkerOptions();
         LatLng curPoint = new LatLng(37.234, 126.972);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curPoint,15));
-        marker.position(googleMap.getCameraPosition().target);
-        googleMap.addMarker(marker);
+//        marker.position(googleMap.getCameraPosition().target);
+//        googleMap.addMarker(marker);
         LoadMemoLocation();
 
     }
@@ -139,7 +140,12 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
                     if(value!=null&&value.getUploaderEmail().equals(myEmail)){
                         if(value.getLatitude()>=0){
                             LatLng getLatLng = new LatLng(value.getLatitude(),value.getLongitude());
-                            googleMap.addMarker(new MarkerOptions().position(getLatLng));
+                            MarkerOptions marker = new MarkerOptions();
+                            marker.position(getLatLng);
+                            marker.title(value.getTitle());
+                            marker.snippet(value.getMemo());
+//                            googleMap.addMarker(new MarkerOptions().position(getLatLng).title(value.getTitle()).snippet(value.getMemo()));
+                            googleMap.addMarker(marker);
                         }
                     }
                 }

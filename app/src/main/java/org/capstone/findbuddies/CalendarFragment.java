@@ -1,7 +1,7 @@
 package org.capstone.findbuddies;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -60,6 +62,7 @@ public class CalendarFragment extends Fragment {
     FirebaseDatabase database;
     FirebaseStorage storage;
     int isGroup;
+    private List<String> uidLists = new ArrayList<>();
 
     @Nullable
     @Override
@@ -112,12 +115,38 @@ public class CalendarFragment extends Fragment {
         adapter = new SpecificDateMemoAdapter(0,0,0);
         listview.setAdapter(adapter);
 
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                Intent intent = new Intent(getContext(),MemoEdit.class);
+//
+//                startActivity(intent);
+//            }
+//        });
+        listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getContext(),MemoEdit.class);
-
-                startActivity(intent);
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setMessage("정말로 삭제하시겠습니까?");
+                builder.setPositiveButton("삭제",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                database.getReference().child("MemoList").child(uidLists.get(position)).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Memos.remove(position);
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        });
+                builder.setNegativeButton("취소",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which){
+                            }
+                        });
+                builder.show();
+                return false;
             }
         });
         return rootView;
@@ -128,9 +157,11 @@ public class CalendarFragment extends Fragment {
         database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                uidLists.clear();
                 Memos.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     SaveMemo value = snapshot.getValue(SaveMemo.class);
+                    String uidKey = snapshot.getKey();
                     if (value != null) {
                         if (value.getUploaderEmail().equals(myEmail)) {
                             MemoItem memoItem = null;
@@ -142,15 +173,16 @@ public class CalendarFragment extends Fragment {
                             if(year == value.getYear()&& month == value.getMonth()&& dayOfMonth == value.getDate()){
                                 String date_label = value.getMonth()+"월 "+value.getDate()+"일";
                                 if(value.getLatitude()==0){
-                                    memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                    memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
                                             value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
                                 }
                                 else {
-                                    memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                    memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
                                             value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
                                 }
                             }
                             if(memoItem!=null){
+                                uidLists.add(uidKey);
                                 addMemo(memoItem);
                             }
 
@@ -190,9 +222,11 @@ public class CalendarFragment extends Fragment {
             database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    uidLists.clear();
                     Memos.clear();
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         SaveMemo value = snapshot.getValue(SaveMemo.class);
+                        String uidKey = snapshot.getKey();
                         if(value !=null){
                             if(value.getUploaderEmail().equals(myEmail)){
                                 MemoItem memoItem = null;
@@ -204,11 +238,11 @@ public class CalendarFragment extends Fragment {
 
                                     if(value.getMonth()==0){
                                         if(value.getLatitude()==0){
-                                            memoItem = new MemoItem(null,0,0,0,value.getCheckGroupNo(),
+                                            memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
                                                     value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
                                         }
                                         else{
-                                            memoItem = new MemoItem(null,0,0,0,value.getCheckGroupNo(),
+                                            memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
                                                     value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
                                         }
 
@@ -216,15 +250,16 @@ public class CalendarFragment extends Fragment {
                                     else{
                                         String date_label = value.getMonth()+"월 "+value.getDate()+"일";
                                         if(value.getLatitude()==0){
-                                            memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                            memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
                                                     value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
                                         }
                                         else {
-                                            memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                            memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
                                                     value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
                                         }
                                     }
                                     if(memoItem!=null){
+                                        uidLists.add(uidKey);
                                         addMemo(memoItem);
                                     }
 
@@ -237,14 +272,15 @@ public class CalendarFragment extends Fragment {
                                     if(year == value.getYear()&& month == value.getMonth()&& dayOfMonth == value.getDate()){
                                         String date_label = value.getMonth()+"월 "+value.getDate()+"일";
                                         if(value.getLatitude()==0){
-                                            memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                            memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
                                                     value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
                                         }
                                         else {
-                                            memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                            memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
                                                     value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
                                         }
                                     }
+                                    uidLists.add(uidKey);
                                     addMemo(memoItem);
                                 }
                             }
