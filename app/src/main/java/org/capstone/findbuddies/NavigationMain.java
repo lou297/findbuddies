@@ -43,6 +43,7 @@ public class NavigationMain extends AppCompatActivity
     private final long FINISH_INTERVAL_TIME = 2000;
     private long backPressedTime = 0;
     private static final int GROUP_MEMO_NO = 3000;
+    private static final int RETURN_SPECIAL = 3001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +137,7 @@ public class NavigationMain extends AppCompatActivity
             intent.putExtra("title",titleEdit.getText().toString());
             intent.putExtra("content",contentEdit.getText().toString());
             intent.putExtra("pictureViewURI",PictureViewURI.getText().toString());
-            startActivity(intent);
+            startActivityForResult(intent,RETURN_SPECIAL);
             return true;
         }
 
@@ -204,8 +205,6 @@ public class NavigationMain extends AppCompatActivity
     }
 
 
-
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -263,6 +262,16 @@ public class NavigationMain extends AppCompatActivity
             }
             else {
 
+            }
+        }
+        if(requestCode==RETURN_SPECIAL){
+            if(resultCode==RESULT_OK){
+                MemoList memoList = new MemoList();
+                bundle.putString("myEmail",myEmail);
+                memoList.setArguments(bundle);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.nav_main,memoList)
+                        .commitAllowingStateLoss();
             }
         }
     }

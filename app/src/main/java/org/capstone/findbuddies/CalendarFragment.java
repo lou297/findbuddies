@@ -1,14 +1,18 @@
 package org.capstone.findbuddies;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,21 +36,30 @@ import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.DayViewDecorator;
 import com.prolificinteractive.materialcalendarview.DayViewFacade;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
+import com.prolificinteractive.materialcalendarview.spans.DotSpan;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 
 public class CalendarFragment extends Fragment {
     ArrayList<MemoItem> Memos = new ArrayList<>();
     CalendarView calendarView;
     MaterialCalendarView MCalendarView;
+    ArrayList<String> DateMemoList;
     String myEmail;
+    ListView listview;
+    SpecificDateMemoAdapter adapter;
     FirebaseDatabase database;
     FirebaseStorage storage;
+    int isGroup;
 
     @Nullable
     @Override
@@ -57,6 +70,28 @@ public class CalendarFragment extends Fragment {
         storage = FirebaseStorage.getInstance();
         calendarView = rootView.findViewById(R.id.calendarView);
         MCalendarView = rootView.findViewById(R.id.MCalendarView);
+        listview = rootView.findViewById(R.id.SpecificDateMemoList);
+        isGroup = 0;
+        getMemoDate();
+        MCalendarView.setOnDateChangedListener(new OnDateSelectedListener() {
+            @Override
+            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
+                int Year = date.getYear();
+                int Month = date.getMonth()+1;
+                int Date = date.getDay();
+
+                String shot_Day = Year + "," + Month + "," + Date;
+
+
+//                MCalendarView.clearSelection();
+//                adapter = new SpecificDateMemoAdapter(Year,Month,Date);
+//                new SpecificDateMemoAdapter(Year,Month,Date);
+                ShowSelectedDateMemo(Year,Month,Date);
+//                adapter.notifyDataSetChanged();
+                Toast.makeText(getContext(), shot_Day , Toast.LENGTH_SHORT).show();
+
+            }
+        });
 
         MCalendarView.addDecorators(
                 new SaturdayDecorator(),
@@ -64,19 +99,17 @@ public class CalendarFragment extends Fragment {
                 new todayDecorator()
         );
 
-        final ListView listview = rootView.findViewById(R.id.SpecificDateMemoList);
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                SpecificDateMemoAdapter adapter = new SpecificDateMemoAdapter(year,month,dayOfMonth);
-
-                listview.setAdapter(adapter);
+//                SpecificDateMemoAdapter adapter = new SpecificDateMemoAdapter(year,month,dayOfMonth);
+                ShowSelectedDateMemo(year,month,dayOfMonth);
+//                listview.setAdapter(adapter);
             }
         });
 
-        SpecificDateMemoAdapter adapter = new SpecificDateMemoAdapter(0,0,0);
-
+        adapter = new SpecificDateMemoAdapter(0,0,0);
         listview.setAdapter(adapter);
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -88,6 +121,65 @@ public class CalendarFragment extends Fragment {
             }
         });
         return rootView;
+    }
+
+    public void ShowSelectedDateMemo(int year, int month, int dayOfMonth){
+
+        database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Memos.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    SaveMemo value = snapshot.getValue(SaveMemo.class);
+                    if (value != null) {
+                        if (value.getUploaderEmail().equals(myEmail)) {
+                            MemoItem memoItem = null;
+                            String address = null;
+                            if(value.getLatitude()!=0){
+                                address = getLocationAddress(value.getLatitude(),value.getLongitude());
+                            }
+
+                            if(year == value.getYear()&& month == value.getMonth()&& dayOfMonth == value.getDate()){
+                                String date_label = value.getMonth()+"월 "+value.getDate()+"일";
+                                if(value.getLatitude()==0){
+                                    memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                            value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                }
+                                else {
+                                    memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                            value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                }
+                            }
+                            if(memoItem!=null){
+                                addMemo(memoItem);
+                            }
+
+                        }
+                    }
+                }
+                Log.d("ParsingTest","SIZE2: "+Memos.size());
+                adapter.notifyDataSetChanged();
+//                listview.invalidateViews();
+//                listview.refreshDrawableState();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+
+        });
+        Log.d("ParsingTest","SIZE1: "+Memos.size());
+//        for(int i = 0 ; i < Memos.size(); i++){
+//            MemoItem Memo = Memos.get(i);
+//            if(Memo.getYear()!=year||Memo.getMonth()!=month||Memo.getDayOfMonth()!=dayOfMonth){
+//                Memos.remove(i);
+//
+////                listview.removeViewAt(i);
+//                adapter.notifyDataSetChanged();
+////                listview.setAdapter(adapter);
+//            }
+//        }
     }
 
 
@@ -103,49 +195,62 @@ public class CalendarFragment extends Fragment {
                         SaveMemo value = snapshot.getValue(SaveMemo.class);
                         if(value !=null){
                             if(value.getUploaderEmail().equals(myEmail)){
-//                                if(year==0){
-//
-//                                    addMemo(new MemoItem(value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl()));
-//                                }
-//                                else if(year==value.getYear()&&month==value.getMonth()&&dayOfMonth==value.getDate()){
-//                                    addMemo(new MemoItem(value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl()));
-//                                }
-                                MemoItem memoItem;
+                                MemoItem memoItem = null;
                                 String address = null;
-                                if(value.getLatitude()!=0){
-                                    address = getLocationAddress(value.getLatitude(),value.getLongitude());
-                                }
-                                if(value.getMonth()==0){
-                                    if(value.getLatitude()==0){
-                                        memoItem = new MemoItem(null,value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                if(year ==0){
+                                    if(value.getLatitude()!=0){
+                                        address = getLocationAddress(value.getLatitude(),value.getLongitude());
+                                    }
+
+                                    if(value.getMonth()==0){
+                                        if(value.getLatitude()==0){
+                                            memoItem = new MemoItem(null,0,0,0,value.getCheckGroupNo(),
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                        }
+                                        else{
+                                            memoItem = new MemoItem(null,0,0,0,value.getCheckGroupNo(),
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                        }
+
                                     }
                                     else{
-                                        memoItem = new MemoItem(null,value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                        String date_label = value.getMonth()+"월 "+value.getDate()+"일";
+                                        if(value.getLatitude()==0){
+                                            memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                        }
+                                        else {
+                                            memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                        }
+                                    }
+                                    if(memoItem!=null){
+                                        addMemo(memoItem);
                                     }
 
                                 }
-                                else{
-                                    String date_label = value.getMonth()+"월 "+value.getDate()+"일";
-                                    if(value.getLatitude()==0){
-                                        memoItem = new MemoItem(date_label,value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
-                                    }
-                                    else {
-                                        memoItem = new MemoItem(null,value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                else {
+                                    if(value.getLatitude()!=0){
+                                        address = getLocationAddress(value.getLatitude(),value.getLongitude());
                                     }
 
-
+                                    if(year == value.getYear()&& month == value.getMonth()&& dayOfMonth == value.getDate()){
+                                        String date_label = value.getMonth()+"월 "+value.getDate()+"일";
+                                        if(value.getLatitude()==0){
+                                            memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                        }
+                                        else {
+                                            memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                        }
+                                    }
+                                    addMemo(memoItem);
                                 }
-                                addMemo(memoItem);
                             }
-
                         }
-
                     }
-                    notifyDataSetChanged();
+                    adapter.notifyDataSetChanged();
                 }
 
                 @Override
@@ -156,9 +261,7 @@ public class CalendarFragment extends Fragment {
 
         }
 
-        public void addMemo(MemoItem memoItem){
-            Memos.add(memoItem);
-        }
+
 
         @Override
         public int getCount() {
@@ -195,29 +298,22 @@ public class CalendarFragment extends Fragment {
             else {
                 viewHolder = (ViewHolder)view.getTag();
             }
-//            viewHolder.date_label = view.findViewById(R.id.date_label);
-//            viewHolder.group_label = view.findViewById(R.id.group_label);
-//            viewHolder.title = view.findViewById(R.id.title);
-//            viewHolder.date = view.findViewById(R.id.date);
-//            viewHolder.content = view.findViewById(R.id.contents);
-//            viewHolder.picture = view.findViewById(R.id.picture);
-//            viewHolder.location = view.findViewById(R.id.memo_location);
-//            viewHolder.content_layout = view.findViewById(R.id.content_layout);
+
             MemoItem Memo = Memos.get(position);
-            viewHolder.date_label.setText(Memo.getDate_label());
-            if(Memo.getDate_label()==null) {
-                viewHolder.date_label.setVisibility(View.GONE);
-            }
-            else{
-                viewHolder.date_label.setVisibility(View.VISIBLE);
-                viewHolder.date_label.setText(Memo.getDate_label());
-            }
-            if(Memo.getGroup_label()==0){
-                viewHolder.group_label.setVisibility(View.GONE);
-            }
-            else {
-                viewHolder.group_label.setVisibility(View.VISIBLE);
-            }
+            if(Memo!=null){
+                if(Memo.getDate_label()==null) {
+                    viewHolder.date_label.setVisibility(View.GONE);
+                }
+                else{
+                    viewHolder.date_label.setVisibility(View.VISIBLE);
+                    viewHolder.date_label.setText(Memo.getDate_label());
+                }
+                if(Memo.getGroup_label()==0){
+                    viewHolder.group_label.setVisibility(View.GONE);
+                }
+                else {
+                    viewHolder.group_label.setVisibility(View.VISIBLE);
+                }
 
 //            if(Memo.getDate_label()==null&&Memo.getGroup_label()==0){
 //                Resources r = getResources();
@@ -231,28 +327,30 @@ public class CalendarFragment extends Fragment {
 //                viewHolder.content_layout.setLayoutParams(params);
 //            }
 
-            viewHolder.title.setText(Memo.getTitle());
-            viewHolder.date.setText(Memo.getDate());
-            viewHolder.content.setText(Memo.getContents());
-            if(Memo.getPictureURI()!=null){
-                viewHolder.picture.setVisibility(View.VISIBLE);
-                StorageReference storageReference = storage.getReferenceFromUrl(Memo.getPictureURI());
-                Glide.with(getContext())
-                        .using(new FirebaseImageLoader())
-                        .load(storageReference)
-                        .into(viewHolder.picture);
-            }
-            else{
-                viewHolder.picture.setVisibility(View.GONE);
-            }
+                viewHolder.title.setText(Memo.getTitle());
+                viewHolder.date.setText(Memo.getDate());
+                viewHolder.content.setText(Memo.getContents());
+                if(Memo.getPictureURI()!=null){
+                    viewHolder.picture.setVisibility(View.VISIBLE);
+                    StorageReference storageReference = storage.getReferenceFromUrl(Memo.getPictureURI());
+                    Glide.with(getContext())
+                            .using(new FirebaseImageLoader())
+                            .load(storageReference)
+                            .into(viewHolder.picture);
+                }
+                else{
+                    viewHolder.picture.setVisibility(View.GONE);
+                }
 //
-            if(Memo.getLocation()==null){
-                viewHolder.location.setVisibility(View.GONE);
+                if(Memo.getLocation()==null){
+                    viewHolder.location.setVisibility(View.GONE);
+                }
+                else{
+                    viewHolder.location.setVisibility(View.VISIBLE);
+                    viewHolder.location.setText(Memo.getLocation());
+                }
             }
-            else{
-                viewHolder.location.setVisibility(View.VISIBLE);
-                viewHolder.location.setText(Memo.getLocation());
-            }
+
             return view;
         }
         class ViewHolder{
@@ -265,29 +363,135 @@ public class CalendarFragment extends Fragment {
             TextView location;
 //            LinearLayout content_layout;
         }
-        public String getLocationAddress(double latitude,double longitude){
-            String nowAddress ="현재 위치를 확인 할 수 없습니다.";
-            Geocoder geocoder = new Geocoder(getContext(), Locale.KOREA);
-            List<Address> address;
-            try {
-                if (geocoder != null) {
-                    //세번째 파라미터는 좌표에 대해 주소를 리턴 받는 갯수로
-                    //한좌표에 대해 두개이상의 이름이 존재할수있기에 주소배열을 리턴받기 위해 최대갯수 설정
-                    address = geocoder.getFromLocation(latitude, longitude, 1);
 
-                    if (address != null && address.size() > 0) {
-                        // 주소 받아오기
-                        nowAddress  = address.get(0).getAddressLine(0);
+    }
+    public void addMemo(MemoItem memoItem){
+        Memos.add(memoItem);
+    }
+    public String getLocationAddress(double latitude,double longitude){
+        String nowAddress ="현재 위치를 확인 할 수 없습니다.";
+        Geocoder geocoder = new Geocoder(getContext(), Locale.KOREA);
+        List<Address> address;
+        try {
+            if (geocoder != null) {
+                //세번째 파라미터는 좌표에 대해 주소를 리턴 받는 갯수로
+                //한좌표에 대해 두개이상의 이름이 존재할수있기에 주소배열을 리턴받기 위해 최대갯수 설정
+                address = geocoder.getFromLocation(latitude, longitude, 1);
 
+                if (address != null && address.size() > 0) {
+                    // 주소 받아오기
+                    nowAddress  = address.get(0).getAddressLine(0);
+
+                }
+            }
+
+        } catch (IOException e) {
+            Toast.makeText(getContext(), "주소를 가져 올 수 없습니다.", Toast.LENGTH_LONG).show();
+
+            e.printStackTrace();
+        }
+        return nowAddress;
+    }
+
+    private void getMemoDate(){
+        DateMemoList = new ArrayList<>();
+        database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    SaveMemo value = snapshot.getValue(SaveMemo.class);
+                    if (value != null) {
+                        if (value.getUploaderEmail().equals(myEmail)) {
+                            //////Log.d("ParsingTest",value.getMemo()+", "+value.getMonth());
+                            if(value.getMonth()!=0){
+                                String DecoDate = value.getYear()+","+value.getMonth()+","+value.getDate();
+                                DateMemoList.add(DecoDate);
+                            }
+                        }
                     }
                 }
-
-            } catch (IOException e) {
-                Toast.makeText(getContext(), "주소를 가져 올 수 없습니다.", Toast.LENGTH_LONG).show();
-
-                e.printStackTrace();
+                new ApiSimulator(DateMemoList).executeOnExecutor(Executors.newSingleThreadExecutor());
             }
-            return nowAddress;
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private class ApiSimulator extends AsyncTask<Void, Void, List<CalendarDay>> {
+
+        ArrayList<String> Time_Result;
+
+        ApiSimulator(ArrayList<String> Time_Result) {
+            this.Time_Result = Time_Result;
+        }
+
+        @Override
+        protected List<CalendarDay> doInBackground(@NonNull Void... voids) {
+//            try {
+//                Thread.sleep(500);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+
+            Calendar calendar = Calendar.getInstance();
+            ArrayList<CalendarDay> dates = new ArrayList<>();
+
+            /*특정날짜 달력에 점표시해주는곳*/
+            /*월은 0이 1월 년,일은 그대로*/
+            //string 문자열인 Time_Result 을 받아와서 ,를 기준으로짜르고 string을 int 로 변환
+            for (int i = 0; i < Time_Result.size(); i++) {
+                CalendarDay day = CalendarDay.from(calendar);
+
+                String[] time = Time_Result.get(i).split(",");
+                int year = Integer.parseInt(time[0]);
+                int month = Integer.parseInt(time[1]);
+                int date = Integer.parseInt(time[2]);
+                CalendarDay newday = CalendarDay.from(year,month-1,date);
+                dates.add(newday);
+            }
+
+
+            return dates;
+        }
+
+
+                @Override
+        protected void onPostExecute(@NonNull List<CalendarDay> calendarDays) {
+            super.onPostExecute(calendarDays);
+
+
+            if (getActivity().isFinishing()) {
+                return;
+            }
+
+            MCalendarView.addDecorator(new EventDecorator(Color.RED, calendarDays,getActivity()));
+        }
+    }
+
+    private class EventDecorator implements DayViewDecorator {
+
+        private final Drawable drawable;
+        private int color;
+        private HashSet<CalendarDay> dates;
+
+        public EventDecorator(int color, Collection<CalendarDay> dates, Activity context) {
+            drawable = context.getResources().getDrawable(R.drawable.calendar_dot);
+            this.color = color;
+            this.dates = new HashSet<>(dates);
+        }
+
+        @Override
+        public boolean shouldDecorate(CalendarDay day) {
+            return dates.contains(day);
+        }
+
+        @Override
+        public void decorate(DayViewFacade view) {
+//            view.setSelectionDrawable(drawable);
+            view.addSpan(new DotSpan(5, color)); // 날자밑에 점
         }
     }
 
@@ -313,7 +517,6 @@ public class CalendarFragment extends Fragment {
     private class SaturdayDecorator implements DayViewDecorator {
 
         private final Calendar calendar = Calendar.getInstance();
-
         public SaturdayDecorator() {
         }
 
@@ -323,7 +526,6 @@ public class CalendarFragment extends Fragment {
             int weekDay = calendar.get(Calendar.DAY_OF_WEEK);
             return weekDay == Calendar.SATURDAY;
         }
-
         @Override
         public void decorate(DayViewFacade view) {
             view.addSpan(new ForegroundColorSpan(Color.BLUE));

@@ -2,6 +2,9 @@ package org.capstone.findbuddies;
 
 public class MemoItem {
     String date_label;
+    int year;
+    int month;
+    int dayOfMonth;
     int group_label;
     String title;
     String contents;
@@ -9,8 +12,11 @@ public class MemoItem {
     String pictureURI;
     String location;
 
-    public MemoItem(String date_label, int group_label, String title, String contents, String date, String pictureURI, String location) {
+    public MemoItem(String date_label,int year,int month,int dayOfMonth, int group_label, String title, String contents, String date, String pictureURI, String location) {
         this.date_label = date_label;
+        this.year = year;
+        this.month = month;
+        this.dayOfMonth = dayOfMonth;
         this.group_label = group_label;
         this.title = title;
         this.contents = contents;
@@ -26,6 +32,30 @@ public class MemoItem {
 
     public void setDate_label(String date_label) {
         this.date_label = date_label;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public int getMonth() {
+        return month;
+    }
+
+    public void setMonth(int month) {
+        this.month = month;
+    }
+
+    public int getDayOfMonth() {
+        return dayOfMonth;
+    }
+
+    public void setDayOfMonth(int dayOfMonth) {
+        this.dayOfMonth = dayOfMonth;
     }
 
     public int getGroup_label() {

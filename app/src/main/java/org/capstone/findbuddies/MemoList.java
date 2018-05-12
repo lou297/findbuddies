@@ -82,11 +82,11 @@ public class MemoList extends Fragment {
                                 }
                                 if(value.getMonth()==0){
                                     if(value.getLatitude()==0){
-                                        memoItem = new MemoItem(null,value.getCheckGroupNo(),
+                                        memoItem = new MemoItem(null,0,0,0,value.getCheckGroupNo(),
                                                 value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
                                     }
                                     else{
-                                        memoItem = new MemoItem(null,value.getCheckGroupNo(),
+                                        memoItem = new MemoItem(null,0,0,0,value.getCheckGroupNo(),
                                                 value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
                                     }
 
@@ -94,11 +94,11 @@ public class MemoList extends Fragment {
                                 else{
                                     String date_label = value.getMonth()+"월 "+value.getDate()+"일";
                                     if(value.getLatitude()==0){
-                                        memoItem = new MemoItem(date_label,value.getCheckGroupNo(),
+                                        memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
                                                 value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
                                     }
                                     else {
-                                        memoItem = new MemoItem(date_label,value.getCheckGroupNo(),
+                                        memoItem = new MemoItem(date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
                                                 value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
                                     }
 

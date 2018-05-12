@@ -135,6 +135,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
             @Override
             public void onClick(View v) {
                 UploadParsingMemo();
+
             }
         });
     }
@@ -166,7 +167,9 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         database.getReference().child("MemoList").push().setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(ParsingMemo.this, "업로드 완료!", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(ParsingMemo.this, "업로드 완료!", Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK,getIntent());
+                finish();
             }
         });
     }
