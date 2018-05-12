@@ -20,7 +20,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +47,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     String myEmail;
     int GroupNo;
     FirebaseDatabase database;
-    LinearLayout dateLayout;
+    RelativeLayout dateLayout;
     EditText Title;
     EditText Content;
     int year;
@@ -68,6 +69,10 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     TextView parsingDate;
     TextView parsingTime;
     TextView parsingMapAddress;
+    ImageView dateUnable;
+    ImageView mapUnable;
+    int dateunable = 0;
+    int mapunable = 0;
     GoogleMap GoogleMap;
     LocationManager manager;
     private GoogleApiClient mGoogleApiClient;
@@ -77,6 +82,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parsing_memo);
         parsingMapAddress = findViewById(R.id.parsing_map_address);
+        dateUnable = findViewById(R.id.date_unable);
+        mapUnable = findViewById(R.id.map_unable);
         mGoogleApiClient = new GoogleApiClient
                 .Builder(this)
                 .addApi(Places.GEO_DATA_API)
@@ -125,8 +132,24 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         dateLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(),MemoPicker.class);
-                startActivity(intent);
+                if(dateunable==0) {
+                    Intent intent = new Intent(getApplicationContext(), MemoPicker.class);
+                    startActivity(intent);
+                }
+            }
+        });
+        dateLayout.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if(dateunable==0){
+                    dateunable=1;
+                    dateUnable.setVisibility(View.VISIBLE);
+                }
+                else if(dateunable==1){
+                    dateunable=0;
+                    dateUnable.setVisibility(View.GONE);
+                }
+                return false;
             }
         });
 
@@ -135,7 +158,6 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
             @Override
             public void onClick(View v) {
                 UploadParsingMemo();
-
             }
         });
     }
@@ -156,13 +178,17 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         saveMemo.setCheckGroupNo(GroupNo);
         saveMemo.setTitle(Title.getText().toString());
         saveMemo.setMemo(Content.getText().toString());
-        saveMemo.setYear(year);
-        saveMemo.setMonth(month);
-        saveMemo.setDate(date);
-        saveMemo.setHour(hour);
-        saveMemo.setMinute(minute);
-        saveMemo.setLatitude(latLng.latitude);
-        saveMemo.setLongitude(latLng.longitude);
+        if(dateunable==0){
+            saveMemo.setYear(year);
+            saveMemo.setMonth(month);
+            saveMemo.setDate(date);
+            saveMemo.setHour(hour);
+            saveMemo.setMinute(minute);
+        }
+        if(mapunable==0){
+            saveMemo.setLatitude(latLng.latitude);
+            saveMemo.setLongitude(latLng.longitude);
+        }
 
         database.getReference().child("MemoList").push().setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -184,8 +210,23 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                Intent intent = new Intent(getApplicationContext(),SelectMapLocation.class);
-                startActivityForResult(intent,SELECTED_PLACE_REQUEST_CODE);
+                if(mapunable==0){
+                    Intent intent = new Intent(getApplicationContext(),SelectMapLocation.class);
+                    startActivityForResult(intent,SELECTED_PLACE_REQUEST_CODE);
+                }
+            }
+        });
+        googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                if(mapunable==0){
+                    mapunable=1;
+                    mapUnable.setVisibility(View.VISIBLE);
+                }
+                else if(mapunable==1){
+                    mapunable=0;
+                    mapUnable.setVisibility(View.GONE);
+                }
             }
         });
 

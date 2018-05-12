@@ -272,6 +272,7 @@ public class NavigationMain extends AppCompatActivity
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.nav_main,memoList)
                         .commitAllowingStateLoss();
+                fab.setVisibility(View.VISIBLE);
             }
         }
     }
