@@ -10,6 +10,10 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+
+import java.util.Calendar;
+
 public class MemoPicker extends AppCompatActivity {
     DatePicker datePicker;
     TimePicker timePicker;
@@ -34,12 +38,15 @@ public class MemoPicker extends AppCompatActivity {
         dateTextview = findViewById(R.id.dateTextView);
         timeTextview = findViewById(R.id.timeTextView);
 
-        year = 2013;
-        month = 10;
-        day = 20;
+        Calendar calendar = Calendar.getInstance();
+        CalendarDay Day = CalendarDay.today();
 
-        hour = 10;
-        minute = 11;
+        year = getIntent().getIntExtra("year",Day.getYear());
+        month = getIntent().getIntExtra("month",Day.getMonth());
+        day = getIntent().getIntExtra("day",Day.getDay());
+
+        hour = getIntent().getIntExtra("hour",12);
+        minute = getIntent().getIntExtra("minute",0);
         if(hour>=12){
             AMPM = "오후";
             if(hour==12){
@@ -58,13 +65,13 @@ public class MemoPicker extends AppCompatActivity {
         String time = AMPM+" "+AMPMhour+"시 "+minute+"분";
         dateTextview.setText(date);
         timeTextview.setText(time);
-        datePicker.init(year, month, day, new DatePicker.OnDateChangedListener() {
+        datePicker.init(year, month-1, day, new DatePicker.OnDateChangedListener() {
             @Override
             public void onDateChanged(DatePicker view, int yearofDate, int monthOfYear, int dayOfMonth) {
-                String ChangedDate = yearofDate+"년 "+monthOfYear+"월 "+dayOfMonth+"일";
+                String ChangedDate = yearofDate+"년 "+(monthOfYear+1)+"월 "+dayOfMonth+"일";
                 dateTextview.setText(ChangedDate);
                 year = yearofDate;
-                month = monthOfYear;
+                month = monthOfYear+1;
                 day = dayOfMonth;
             }
         });
@@ -109,6 +116,12 @@ public class MemoPicker extends AppCompatActivity {
                 intent.putExtra("day",day);
                 intent.putExtra("hour",hour);
                 intent.putExtra("minute",minute);
+
+                intent.putExtra("myEmail",getIntent().getStringExtra("myEmail"));
+                intent.putExtra("pictureViewURI",getIntent().getStringExtra("pictureViewURI"));
+                intent.putExtra("GroupNo",getIntent().getIntExtra("GroupNo",0));
+                intent.putExtra("title",getIntent().getStringExtra("title"));
+                intent.putExtra("content",getIntent().getStringExtra("content"));
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }

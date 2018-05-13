@@ -1,6 +1,7 @@
 package org.capstone.findbuddies;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -35,15 +36,18 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.FirebaseDatabase;
+import com.prolificinteractive.materialcalendarview.CalendarDay;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener {
+    ProgressDialog asyncDialog;
     String myEmail;
     int GroupNo;
     FirebaseDatabase database;
@@ -81,6 +85,14 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parsing_memo);
+
+        asyncDialog = new ProgressDialog(
+                ParsingMemo.this);
+        asyncDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        asyncDialog.setMessage("Parsing..");
+        asyncDialog.setCancelable(false);
+        asyncDialog.show();
+
         parsingMapAddress = findViewById(R.id.parsing_map_address);
         dateUnable = findViewById(R.id.date_unable);
         mapUnable = findViewById(R.id.map_unable);
@@ -122,9 +134,9 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         PictureViewURI = getIntent().getStringExtra("pictureViewURI");
         database = FirebaseDatabase.getInstance();
         GroupNo = getIntent().getIntExtra("GroupNo",0);
-        Date date = new Date(System.currentTimeMillis());
-        today = date.getDay()-1;
-        todayMonth =date.getMonth();
+        Date dAte = new Date(System.currentTimeMillis());
+        today = dAte.getDay()-1;
+        todayMonth =dAte.getMonth();
         setInitialDate();
         setInitialMemo();
 
@@ -134,6 +146,16 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
             public void onClick(View v) {
                 if(dateunable==0) {
                     Intent intent = new Intent(getApplicationContext(), MemoPicker.class);
+                    intent.putExtra("myEmail",myEmail);
+                    intent.putExtra("pictureViewURI",PictureViewURI);
+                    intent.putExtra("GroupNo",GroupNo);
+                    intent.putExtra("title",getIntent().getStringExtra("title"));
+                    intent.putExtra("content",getIntent().getStringExtra("content"));
+                    intent.putExtra("year",year);
+                    intent.putExtra("month",month);
+                    intent.putExtra("day",date);
+                    intent.putExtra("hour",hour);
+                    intent.putExtra("minute",minute);
                     startActivity(intent);
                 }
             }
@@ -232,6 +254,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+
     public void requestMyLocation(){
         if(ContextCompat.checkSelfPermission(ParsingMemo.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(ParsingMemo.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
@@ -280,14 +303,16 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     }
 
     public void setInitialDate(){
+        Calendar calendar = Calendar.getInstance();
+        CalendarDay day = CalendarDay.today();
+
+        year = getIntent().getIntExtra("year",day.getYear());
+        month = getIntent().getIntExtra("month",day.getMonth()+1);
+        date = getIntent().getIntExtra("day",day.getDay());
         Date Now = new Date(System.currentTimeMillis());
 
-        year = Now.getYear()+1900;
-        month = Now.getMonth()+1;
-        date = Now.getDate();
-
-        hour = Now.getHours();
-        minute = Now.getMinutes();
+        hour = getIntent().getIntExtra("hour",12);
+        minute = getIntent().getIntExtra("minute",0);
 
 
 
@@ -304,17 +329,22 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
             Log.d("ParsingTest",e.getMessage());
         }
         if(nameEntities!=null){
+            int IsDTorTI = 0;
+            int IsOGorLC = 0;
             for( ParsingText.NameEntity nameEntity: nameEntities){
                 if((nameEntity.type).startsWith("DT_")){
                     Log.d("ParsingTestee","날짜"+nameEntity.text);
+                    IsDTorTI = 1;
                     ParsingDate(nameEntity.text);
                 }
                 else if(nameEntity.type.startsWith("TI_")){
                     Log.d("ParsingTestee","시간"+nameEntity.text);
+                    IsDTorTI = 1;
                     ParsingTime(nameEntity.text);
                 }
                 else if(nameEntity.type.startsWith("OG")||nameEntity.type.startsWith("LC")){
                     Log.d("ParsingTestee","장소"+nameEntity.text);
+                    IsOGorLC = 1;
                     ParsingLocationString = nameEntity.text;
                     ParsingLocation(ParsingLocationString);
                 }
@@ -322,6 +352,15 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                     Log.d("ParsingTestee","그 외"+nameEntity.text);
                 }
             }
+            if(IsDTorTI==0){
+                dateunable=1;
+                dateUnable.setVisibility(View.VISIBLE);
+            }
+            if(IsOGorLC==0){
+                mapunable=1;
+                mapUnable.setVisibility(View.VISIBLE);
+            }
+            asyncDialog.dismiss();
         }
 
         parsingDate = findViewById(R.id.parsingDate);
@@ -451,6 +490,51 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 }
             }
         }
+        if(comma!=-1){
+            isDate = 1;
+            String Tyear;
+            String Tmonth;
+            String Tdate;
+            String first;
+            String second;
+            int secondComma=ParseDate.indexOf(".",comma+1);
+            if(secondComma!=-1){
+                Tyear = ParseDate.substring(0,comma);
+                Tyear = Tyear.trim();
+                year = Integer.parseInt(Tyear);
+                Tmonth = ParseDate.substring(comma+1,secondComma);
+                Tmonth = Tmonth.trim();
+                this.month = Integer.parseInt(Tmonth);
+                if(isNumeric(ParseDate.substring(secondComma+1,secondComma+3))){
+                    date = Integer.parseInt(ParseDate.substring(secondComma+1,secondComma+3));
+                }
+                else{
+                    date = Integer.parseInt(ParseDate.substring(secondComma+1,secondComma+2));
+                }
+            }
+            else {
+                first = ParseDate.substring(0,comma);
+                first = first.trim();
+                if(Integer.parseInt(first)>12){
+                    year = Integer.parseInt(first);
+                    if(isNumeric(ParseDate.substring(comma+1,comma+3))){
+                        this.month = Integer.parseInt(ParseDate.substring(comma+1,comma+3));
+                    }
+                    else{
+                        this.month = Integer.parseInt(ParseDate.substring(comma+1,comma+2));
+                    }
+                }
+                else{
+                    this.month = Integer.parseInt(first);
+                    if(isNumeric(ParseDate.substring(comma+1,comma+3))){
+                        date = Integer.parseInt(ParseDate.substring(comma+1,comma+3));
+                    }
+                    else{
+                        date = Integer.parseInt(ParseDate.substring(comma+1,comma+2));
+                    }
+                }
+            }
+        }
 
         if(dayOfWeekIndex!=-1){
             if(isDate==0){
@@ -496,7 +580,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
             this.month++;
             date -= maxDate;
         }
-        Log.d("ParsingTest","파싱 날짜"+this.month+"."+date);
+        Log.d("ParsingTest","파싱 날짜"+year+"."+this.month+"."+date);
     }
 
     private void ParsingTime(String Time){
@@ -715,6 +799,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
             e.printStackTrace();
         }
         parsingMapAddress.setText(nowAddress);
+
     }
 
     @Override
