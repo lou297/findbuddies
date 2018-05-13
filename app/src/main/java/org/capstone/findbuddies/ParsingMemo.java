@@ -2,17 +2,13 @@ package org.capstone.findbuddies;
 
 import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -26,15 +22,16 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.FirebaseDatabase;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 
@@ -46,7 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
-public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.OnConnectionFailedListener {
+public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback {
     ProgressDialog asyncDialog;
     String myEmail;
     int GroupNo;
@@ -67,7 +64,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
 
     int todayMonth;
     int today;
-
+    MapFragment mapFragment;
     String ParsingLocationString;
     String PictureViewURI;
     TextView parsingDate;
@@ -78,8 +75,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     int dateunable = 0;
     int mapunable = 0;
     GoogleMap GoogleMap;
-    LocationManager manager;
-    private GoogleApiClient mGoogleApiClient;
+    FusedLocationProviderClient mFusedLocationProviderClient;
     int SELECTED_PLACE_REQUEST_CODE = 2001;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,28 +86,13 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 ParsingMemo.this);
         asyncDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         asyncDialog.setMessage("Parsing..");
-        asyncDialog.setCancelable(false);
+//        asyncDialog.setCancelable(false);
         asyncDialog.show();
-
+        Log.d("ParsingTest","777");
         parsingMapAddress = findViewById(R.id.parsing_map_address);
         dateUnable = findViewById(R.id.date_unable);
         mapUnable = findViewById(R.id.map_unable);
-        mGoogleApiClient = new GoogleApiClient
-                .Builder(this)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(this, this)
-                .build();
-
-        manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        //GPS가 켜져있는지 체크
-        if(!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-            //GPS 설정화면으로 이동
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            intent.addCategory(Intent.CATEGORY_DEFAULT);
-            startActivity(intent);
-        }
-
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         //마시멜로 이상이면 권한 요청하기
         if(Build.VERSION.SDK_INT >= 23){
@@ -129,7 +110,6 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         else{
             requestMyLocation();
         }
-
         myEmail = getIntent().getStringExtra("myEmail");
         PictureViewURI = getIntent().getStringExtra("pictureViewURI");
         database = FirebaseDatabase.getInstance();
@@ -222,14 +202,15 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         });
     }
 
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         GoogleMap = googleMap;
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
-        googleMap.getUiSettings().setAllGesturesEnabled(false);
+        GoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
+        GoogleMap.getUiSettings().setAllGesturesEnabled(false);
         getLocationAddress(latLng);
         InitialParsing();
-        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        GoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
                 if(mapunable==0){
@@ -238,7 +219,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 }
             }
         });
-        googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+        GoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
                 if(mapunable==0){
@@ -260,36 +241,22 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 ContextCompat.checkSelfPermission(ParsingMemo.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return;
         }
-
-        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        OnCompleteListener<Location> onCompleteListener = new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if(task.isSuccessful()&&task.getResult()!=null){
+                    Location location = task.getResult();
+                    latLng = new LatLng(location.getLatitude(),location.getLongitude());
+                    mapFragment = (MapFragment) getFragmentManager()
+                            .findFragmentById(R.id.parsing_map);
+                    mapFragment.getMapAsync(ParsingMemo.this);
+                }
+            }
+        };
+        mFusedLocationProviderClient.getLastLocation().addOnCompleteListener(onCompleteListener);
 
     }
 
-    LocationListener locationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            manager.removeUpdates(locationListener);
-            latLng = new LatLng(location.getLatitude(),location.getLongitude());
-            MapFragment mapFragment = (MapFragment) getFragmentManager()
-                    .findFragmentById(R.id.parsing_map);
-            mapFragment.getMapAsync(ParsingMemo.this);
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-
-        }
-    };
 
 
 
@@ -360,7 +327,6 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
                 mapunable=1;
                 mapUnable.setVisibility(View.VISIBLE);
             }
-            asyncDialog.dismiss();
         }
 
         parsingDate = findViewById(R.id.parsingDate);
@@ -384,7 +350,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
         String time = AMPM + " "+ AMPMhour+"시 "+minute+"분";
         parsingDate.setText(ParsingDate);
         parsingTime.setText(time);
-
+        asyncDialog.dismiss();
     }
     public static boolean isNumeric(String s) {
         try {
@@ -777,6 +743,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
     }
 
     public void getLocationAddress(LatLng latLng){
+        Log.d("ParsingTest","222");
         String nowAddress ="현재 위치를 확인 할 수 없습니다.";
         Geocoder geocoder = new Geocoder(this, Locale.KOREA);
         List<Address> address;
@@ -799,13 +766,10 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
             e.printStackTrace();
         }
         parsingMapAddress.setText(nowAddress);
+        Log.d("ParsingTest","333");
 
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -836,4 +800,5 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback,
             }
         }
     }
+
 }

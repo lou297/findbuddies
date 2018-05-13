@@ -61,7 +61,7 @@ public class MemoEditFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_memo_edit,container,false);
         toolbar = rootView.findViewById(R.id.MemoToolbar);
-        toolbar.setTitle("Memo");
+//        toolbar.setTitle("Memo");
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         myEmail = getArguments().getString("myEmail");
         GroupNo = getArguments().getInt("GroupNo");
@@ -127,13 +127,16 @@ public class MemoEditFragment extends Fragment{
 
         }
         else if(requestCode == LONG_GALLERY_CODE){
-            PicturePath = getPath(data.getData());
-            Uri file = Uri.fromFile(new File(getPath(data.getData())));
-            PictureView.setImageURI(file);
-            PictureViewURI.setText(file.toString());
-            Intent intent = new Intent(getContext(),ImageTextDetect.class);
-            intent.putExtra("imageUri",file.toString());
-            startActivityForResult(intent,CHOOSE_DETEC_IMAGE);
+            if(data!=null){
+                PicturePath = getPath(data.getData());
+                Uri file = Uri.fromFile(new File(getPath(data.getData())));
+                PictureView.setImageURI(file);
+                PictureViewURI.setText(file.toString());
+                Intent intent = new Intent(getContext(),ImageTextDetect.class);
+                intent.putExtra("imageUri",file.toString());
+                startActivityForResult(intent,CHOOSE_DETEC_IMAGE);
+            }
+
         }
         else if(requestCode == CHOOSE_DETEC_IMAGE){
             if(resultCode == RESULT_OK){

@@ -9,9 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:title="메모장"
-        android:background="#FFFFFF">
-
-    </android.support.v7.widget.Toolbar>
+        android:background="#FFFFFF"/>
 
     <ListView
         android:id="@+id/MemoListView"
