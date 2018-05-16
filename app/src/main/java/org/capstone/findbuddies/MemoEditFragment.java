@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
+import static org.capstone.findbuddies.NavigationMain.RETURN_SPECIAL;
 
 public class MemoEditFragment extends Fragment{
     FloatingActionButton PictureBut;
@@ -58,6 +59,7 @@ public class MemoEditFragment extends Fragment{
     String date;
     EditText Title;
     EditText Memo;
+    FloatingActionButton fab;
     int AddedPicture;
     int UploadedPic = 0;
     int READ = 0;
@@ -87,6 +89,7 @@ public class MemoEditFragment extends Fragment{
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
         AddedPicture = 0;
+        fab = view.findViewById(R.id.fab);
         PictureBut = view.findViewById(R.id.AddPictureBut);
         PictureView = view.findViewById(R.id.PictureView);
         PictureViewURI = view.findViewById(R.id.PictureViewURI);
@@ -327,8 +330,27 @@ public class MemoEditFragment extends Fragment{
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.nav_main,memoList)
                         .commit();
+                fab.setVisibility(View.VISIBLE);
             }
         });
+    }
+    public void MoveToSpecial(){
+        Intent intent = new Intent(getContext(),ParsingMemo.class);
+        intent.putExtra("READ",READ);
+        intent.putExtra("myEmail",myEmail);
+        intent.putExtra("GroupNo",GroupNo);
+        intent.putExtra("title",Title.getText().toString());
+        intent.putExtra("content",Memo.getText().toString());
+        intent.putExtra("UploadedPic",UploadedPic);
+        intent.putExtra("pictureViewURI",PictureViewURI.getText().toString());
+        intent.putExtra("ReadYear",getArguments().getInt("ReadYear",0));
+        intent.putExtra("ReadMonth",getArguments().getInt("ReadMonth",0));
+        intent.putExtra("ReadDay",getArguments().getInt("ReadDay",0));
+        intent.putExtra("ReadHour",getArguments().getInt("ReadHour",0));
+        intent.putExtra("ReadMinute",getArguments().getInt("ReadMinute",0));
+        intent.putExtra("ReadLatitude",ReadLatitude);
+        intent.putExtra("ReadLongitude",ReadLongitude);
+        startActivityForResult(intent,RETURN_SPECIAL);
     }
 
 }

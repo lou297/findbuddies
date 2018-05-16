@@ -53,7 +53,7 @@ public class NavigationMain extends AppCompatActivity
     private final long FINISH_INTERVAL_TIME = 2000;
     private long backPressedTime = 0;
     private static final int GROUP_MEMO_NO = 3000;
-    private static final int RETURN_SPECIAL = 3001;
+    public static final int RETURN_SPECIAL = 3001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,16 +163,22 @@ public class NavigationMain extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if(id == R.id.special){
-            Intent intent = new Intent(this,ParsingMemo.class);
-            titleEdit = findViewById(R.id.title_edit);
-            contentEdit = findViewById(R.id.contents_edit);
-            TextView PictureViewURI = findViewById(R.id.PictureViewURI);
-            intent.putExtra("myEmail",myEmail);
-            intent.putExtra("GroupNo",GroupNo);
-            intent.putExtra("title",titleEdit.getText().toString());
-            intent.putExtra("content",contentEdit.getText().toString());
-            intent.putExtra("pictureViewURI",PictureViewURI.getText().toString());
-            startActivityForResult(intent,RETURN_SPECIAL);
+            MemoEditFragment memoEditFragment = (MemoEditFragment)getSupportFragmentManager().findFragmentById(R.id.nav_main);
+            if(memoEditFragment.READ==0) {
+                Intent intent = new Intent(this, ParsingMemo.class);
+                titleEdit = findViewById(R.id.title_edit);
+                contentEdit = findViewById(R.id.contents_edit);
+                TextView PictureViewURI = findViewById(R.id.PictureViewURI);
+                intent.putExtra("myEmail", myEmail);
+                intent.putExtra("GroupNo", GroupNo);
+                intent.putExtra("title", titleEdit.getText().toString());
+                intent.putExtra("content", contentEdit.getText().toString());
+                intent.putExtra("pictureViewURI", PictureViewURI.getText().toString());
+                startActivityForResult(intent, RETURN_SPECIAL);
+            }
+            else {
+                memoEditFragment.MoveToSpecial();
+            }
             return true;
         }
 

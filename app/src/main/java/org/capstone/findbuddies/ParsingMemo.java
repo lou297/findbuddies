@@ -82,6 +82,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
     ImageView mapUnable;
     int dateunable = 0;
     int mapunable = 0;
+    int READ;
+    int UploadedPic;
     GoogleMap GoogleMap;
     FusedLocationProviderClient mFusedLocationProviderClient;
     int SELECTED_PLACE_REQUEST_CODE = 2001;
@@ -90,13 +92,15 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parsing_memo);
 
+        READ = getIntent().getIntExtra("READ",0);
         asyncDialog = new ProgressDialog(
                 ParsingMemo.this);
         asyncDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         asyncDialog.setMessage("Parsing..");
 //        asyncDialog.setCancelable(false);
-        asyncDialog.show();
-        Log.d("ParsingTest","777");
+        if(READ==0) {
+            asyncDialog.show();
+        }
         parsingMapAddress = findViewById(R.id.parsing_map_address);
         dateUnable = findViewById(R.id.date_unable);
         mapUnable = findViewById(R.id.map_unable);
@@ -119,6 +123,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
             requestMyLocation();
         }
         myEmail = getIntent().getStringExtra("myEmail");
+        UploadedPic = getIntent().getIntExtra("UploadedPic",0);
         PictureViewURI = getIntent().getStringExtra("pictureViewURI");
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
@@ -245,7 +250,9 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         GoogleMap.getUiSettings().setAllGesturesEnabled(false);
         GoogleMap.getUiSettings().setMapToolbarEnabled(false);
         getLocationAddress(latLng);
-        InitialParsing();
+        if(READ==0) {
+            InitialParsing();
+        }
         GoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -282,7 +289,22 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
             public void onComplete(@NonNull Task<Location> task) {
                 if(task.isSuccessful()&&task.getResult()!=null){
                     Location location = task.getResult();
-                    latLng = new LatLng(location.getLatitude(),location.getLongitude());
+                    if(READ==1){
+                        if(getIntent().getDoubleExtra("ReadLatitude",0)!=0){
+                            latLng = new LatLng(getIntent().getDoubleExtra("ReadLatitude",0),
+                                    getIntent().getDoubleExtra("ReadLongitude",0));
+                            mapunable=0;
+                            mapUnable.setVisibility(View.GONE);
+                        }
+                        else {
+                            latLng = new LatLng(location.getLatitude(),location.getLongitude());
+                            mapunable=1;
+                            mapUnable.setVisibility(View.VISIBLE);
+                        }
+                    }
+                    else {
+                        latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                    }
                     mapFragment = (MapFragment) getFragmentManager()
                             .findFragmentById(R.id.parsing_map);
                     mapFragment.getMapAsync(ParsingMemo.this);
@@ -308,15 +330,74 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
     public void setInitialDate(){
         Calendar calendar = Calendar.getInstance();
         CalendarDay day = CalendarDay.today();
+        parsingDate = findViewById(R.id.parsingDate);
+        parsingTime = findViewById(R.id.parsingTime);
+        if(READ==0) {
+            year = getIntent().getIntExtra("year", day.getYear());
+            month = getIntent().getIntExtra("month", day.getMonth() + 1);
+            date = getIntent().getIntExtra("day", day.getDay());
+            Date Now = new Date(System.currentTimeMillis());
 
-        year = getIntent().getIntExtra("year",day.getYear());
-        month = getIntent().getIntExtra("month",day.getMonth()+1);
-        date = getIntent().getIntExtra("day",day.getDay());
-        Date Now = new Date(System.currentTimeMillis());
+            hour = getIntent().getIntExtra("hour", 12);
+            minute = getIntent().getIntExtra("minute", 0);
+        }
+        else if(READ==1){
+            if(getIntent().getIntExtra("ReadMonth",0)!=0){
+                year = getIntent().getIntExtra("ReadYear",0);
+                month = getIntent().getIntExtra("ReadMonth",0);
+                date = getIntent().getIntExtra("ReadDay",0);
+                hour = getIntent().getIntExtra("ReadHour",0);
+                minute = getIntent().getIntExtra("ReadMinute",0);
 
-        hour = getIntent().getIntExtra("hour",12);
-        minute = getIntent().getIntExtra("minute",0);
+                if(hour>=12){
+                    AMPM = "오후";
+                    if(hour==12){
+                        AMPMhour = 12;
+                    }
+                    else{
+                        AMPMhour = hour-12;
+                    }
 
+                }
+                else {
+                    AMPM = "오전";
+                    AMPMhour = hour;
+                }
+                String ParsingDate = month+"월 "+date+"일";
+                String time = AMPM + " "+ AMPMhour+"시 "+minute+"분";
+                parsingDate.setText(ParsingDate);
+                parsingTime.setText(time);
+                dateunable=0;
+                dateUnable.setVisibility(View.GONE);
+            }
+            else {
+                year = getIntent().getIntExtra("year", day.getYear());
+                month = getIntent().getIntExtra("month", day.getMonth() + 1);
+                date = getIntent().getIntExtra("day", day.getDay());
+                hour = getIntent().getIntExtra("hour", 12);
+                minute = getIntent().getIntExtra("minute", 0);
+                if(hour>=12){
+                    AMPM = "오후";
+                    if(hour==12){
+                        AMPMhour = 12;
+                    }
+                    else{
+                        AMPMhour = hour-12;
+                    }
+
+                }
+                else {
+                    AMPM = "오전";
+                    AMPMhour = hour;
+                }
+                String ParsingDate = month+"월 "+date+"일";
+                String time = AMPM + " "+ AMPMhour+"시 "+minute+"분";
+                parsingDate.setText(ParsingDate);
+                parsingTime.setText(time);
+                dateunable=1;
+                dateUnable.setVisibility(View.VISIBLE);
+            }
+        }
 
 
     }

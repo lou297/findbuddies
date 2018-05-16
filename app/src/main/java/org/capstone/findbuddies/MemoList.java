@@ -5,6 +5,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -41,6 +42,7 @@ public class MemoList extends Fragment {
     String myID;
     boolean Check;
     MemoAdapter adapter;
+    FloatingActionButton fab;
     private List<String> uidLists = new ArrayList<>();
     private ArrayList<Integer> hour = new ArrayList<>();
     private ArrayList<Integer> minute = new ArrayList<>();
@@ -52,7 +54,7 @@ public class MemoList extends Fragment {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.memo_list,container,false);
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
-
+        fab = rootView.findViewById(R.id.fab);
         myEmail = getArguments().getString("myEmail");
         getMyID(myEmail);
         ListView listview = rootView.findViewById(R.id.MemoListView);
@@ -64,7 +66,6 @@ public class MemoList extends Fragment {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                 ReadMemo(position);
             }
         });
@@ -392,5 +393,6 @@ public class MemoList extends Fragment {
         getActivity().getSupportFragmentManager().beginTransaction()
                 .replace(R.id.nav_main,memoEditFragment)
                 .commit();
+//        fab.setVisibility(View.GONE);
     }
 }
