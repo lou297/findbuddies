@@ -42,6 +42,9 @@ public class MemoList extends Fragment {
     boolean Check;
     MemoAdapter adapter;
     private List<String> uidLists = new ArrayList<>();
+    private ArrayList<Integer> hour = new ArrayList<>();
+    private ArrayList<Integer> minute = new ArrayList<>();
+    private ArrayList<String> Uploader = new ArrayList<>();
 
     @Nullable
     @Override
@@ -61,9 +64,8 @@ public class MemoList extends Fragment {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent intent = new Intent(getContext(),MemoEdit.class);
-//
-//                startActivity(intent);
+
+                ReadMemo(position);
             }
         });
         listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -79,6 +81,10 @@ public class MemoList extends Fragment {
                                     @Override
                                     public void onSuccess(Void aVoid) {
                                         Memos.remove(position);
+                                        uidLists.remove(position);
+                                        hour.remove(position);
+                                        minute.remove(position);
+                                        Uploader.remove(position);
                                         adapter.notifyDataSetChanged();
                                     }
                                 });
@@ -106,6 +112,9 @@ public class MemoList extends Fragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     uidLists.clear();
                     Memos.clear();
+                    hour.clear();
+                    minute.clear();
+                    Uploader.clear();
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         SaveMemo value = snapshot.getValue(SaveMemo.class);
                         String uidKey = snapshot.getKey();
@@ -119,11 +128,11 @@ public class MemoList extends Fragment {
                                 if(value.getMonth()==0){
                                     if(value.getLatitude()==0){
                                         memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
                                     }
                                     else{
                                         memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
                                     }
 
                                 }
@@ -131,17 +140,20 @@ public class MemoList extends Fragment {
                                     String date_label = value.getMonth()+"월 "+value.getDate()+"일";
                                     if(value.getLatitude()==0){
                                         memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
                                     }
                                     else {
                                         memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
                                     }
 
 
                                 }
                                 uidLists.add(uidKey);
                                 addMemo(memoItem);
+                                hour.add(value.getHour());
+                                minute.add(value.getMinute());
+                                Uploader.add(value.getUploaderEmail());
                             }
                         }
                     }
@@ -242,6 +254,14 @@ public class MemoList extends Fragment {
                         .using(new FirebaseImageLoader())
                         .load(storageReference)
                         .into(viewHolder.picture);
+                viewHolder.picture.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+//                        Intent intent = new Intent(getContext(),FullScreenImageView.class);
+//                        intent.putExtra("imageUri",viewHolder.picture.getDrawable());
+//                        startActivity(intent);
+                    }
+                });
             }
             else{
                 viewHolder.picture.setVisibility(View.GONE);
@@ -279,6 +299,10 @@ public class MemoList extends Fragment {
                     if (address != null && address.size() > 0) {
                         // 주소 받아오기
                         nowAddress  = address.get(0).getAddressLine(0);
+                        int nation = nowAddress.indexOf("대한민국");
+                        if(nation!=-1){
+                            nowAddress = nowAddress.substring(nation+5);
+                        }
 
                     }
                 }
@@ -336,5 +360,37 @@ public class MemoList extends Fragment {
         });
 
         return Check;
+    }
+
+    private void ReadMemo(int position){
+        MemoItem memo = Memos.get(position);
+        Bundle bundle = new Bundle();
+        bundle.putString("myEmail",myEmail);
+        bundle.putInt("GroupNo",memo.getGroup_label());
+        bundle.putInt("READ",1);
+        bundle.putString("ReadTitle",memo.getTitle());
+        bundle.putString("ReadContent",memo.getContents());
+        bundle.putString("UidKey",uidLists.get(position));
+        if(memo.getPictureURI()!=null){
+            bundle.putString("ReadPictureURI",memo.getPictureURI());
+        }
+        if(memo.getLatitude()!=0){
+            bundle.putDouble("ReadLatitude",memo.getLatitude());
+            bundle.putDouble("ReadLongitude",memo.getLongitude());
+        }
+        if(memo.getDayOfMonth()!=0){
+            bundle.putInt("ReadYear",memo.getYear());
+            bundle.putInt("ReadMonth",memo.getMonth());
+            bundle.putInt("ReadDay",memo.getDayOfMonth());
+            bundle.putInt("ReadHour",hour.get(position));
+            bundle.putInt("ReadMinute",minute.get(position));
+        }
+        bundle.putString("ReadUploader",Uploader.get(position));
+
+        MemoEditFragment memoEditFragment = new MemoEditFragment();
+        memoEditFragment.setArguments(bundle);
+        getActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.nav_main,memoEditFragment)
+                .commit();
     }
 }

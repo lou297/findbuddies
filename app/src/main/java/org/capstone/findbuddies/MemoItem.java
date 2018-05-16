@@ -12,8 +12,12 @@ public class MemoItem {
     String date;
     String pictureURI;
     String location;
+    double latitude;
+    double longitude;
 
-    public MemoItem(long lastSystemtime,String date_label,int year,int month,int dayOfMonth, int group_label, String title, String contents, String date, String pictureURI, String location) {
+    public MemoItem(long lastSystemtime,String date_label,int year,int month,int dayOfMonth, int group_label
+            , String title, String contents, String date, String pictureURI, String location
+    ,double latitude,double longitude) {
         this.lastSystemtime = lastSystemtime;
         this.date_label = date_label;
         this.year = year;
@@ -25,6 +29,8 @@ public class MemoItem {
         this.date = date;
         this.pictureURI = pictureURI;
         this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public long getLastSystemtime() {
@@ -113,6 +119,22 @@ public class MemoItem {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 }
 

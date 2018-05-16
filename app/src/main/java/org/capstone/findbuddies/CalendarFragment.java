@@ -19,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.CalendarView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -53,7 +52,6 @@ import java.util.concurrent.Executors;
 
 public class CalendarFragment extends Fragment {
     ArrayList<MemoItem> Memos = new ArrayList<>();
-    CalendarView calendarView;
     MaterialCalendarView MCalendarView;
     ArrayList<String> DateMemoList;
     String myEmail;
@@ -74,7 +72,6 @@ public class CalendarFragment extends Fragment {
         storage = FirebaseStorage.getInstance();
         myEmail = getArguments().getString("myEmail");
         getMyID(myID);
-        calendarView = rootView.findViewById(R.id.calendarView);
         MCalendarView = rootView.findViewById(R.id.MCalendarView);
         listview = rootView.findViewById(R.id.SpecificDateMemoList);
         isGroup = 0;
@@ -106,26 +103,11 @@ public class CalendarFragment extends Fragment {
         );
 
 
-        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-//                SpecificDateMemoAdapter adapter = new SpecificDateMemoAdapter(year,month,dayOfMonth);
-                ShowSelectedDateMemo(year,month,dayOfMonth);
-//                listview.setAdapter(adapter);
-            }
-        });
+
 
         adapter = new SpecificDateMemoAdapter(0,0,0);
         listview.setAdapter(adapter);
 
-//        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent intent = new Intent(getContext(),MemoEdit.class);
-//
-//                startActivity(intent);
-//            }
-//        });
         listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -177,11 +159,11 @@ public class CalendarFragment extends Fragment {
                                 String date_label = value.getMonth()+"월 "+value.getDate()+"일";
                                 if(value.getLatitude()==0){
                                     memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                            value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                            value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
                                 }
                                 else {
                                     memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                            value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                            value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
                                 }
                             }
                             if(memoItem!=null){
@@ -231,11 +213,11 @@ public class CalendarFragment extends Fragment {
                                     if(value.getMonth()==0){
                                         if(value.getLatitude()==0){
                                             memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
-                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
                                         }
                                         else{
                                             memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
-                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
                                         }
 
                                     }
@@ -243,11 +225,11 @@ public class CalendarFragment extends Fragment {
                                         String date_label = value.getMonth()+"월 "+value.getDate()+"일";
                                         if(value.getLatitude()==0){
                                             memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
                                         }
                                         else {
                                             memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
                                         }
                                     }
                                     if(memoItem!=null){
@@ -265,11 +247,11 @@ public class CalendarFragment extends Fragment {
                                         String date_label = value.getMonth()+"월 "+value.getDate()+"일";
                                         if(value.getLatitude()==0){
                                             memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null);
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
                                         }
                                         else {
                                             memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address);
+                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
                                         }
                                     }
                                     uidLists.add(uidKey);
@@ -409,7 +391,10 @@ public class CalendarFragment extends Fragment {
                 if (address != null && address.size() > 0) {
                     // 주소 받아오기
                     nowAddress  = address.get(0).getAddressLine(0);
-
+                    int nation = nowAddress.indexOf("대한민국");
+                    if(nation!=-1){
+                        nowAddress = nowAddress.substring(nation+5);
+                    }
                 }
             }
 

@@ -46,6 +46,10 @@ public class NavigationMain extends AppCompatActivity
     TextView UserID;
     TextView UserName;
     NavigationView navigationView;
+    MainMapFragment mainMapFragment = new MainMapFragment();
+    MemoEditFragment memoEditFragment = new MemoEditFragment();
+    MemoList memoList = new MemoList();
+    CalendarFragment calendarFragment = new CalendarFragment();
     private final long FINISH_INTERVAL_TIME = 2000;
     private long backPressedTime = 0;
     private static final int GROUP_MEMO_NO = 3000;
@@ -62,7 +66,7 @@ public class NavigationMain extends AppCompatActivity
         storage = FirebaseStorage.getInstance();
         myEmail = getIntent().getStringExtra("myEmail");
         setIDName(myEmail);
-        GroupNo = 0 ;
+        GroupNo = 0;
         bundle = new Bundle();
         bundle.putString("myEmail",myEmail);
         getSupportFragmentManager().beginTransaction()
@@ -76,7 +80,7 @@ public class NavigationMain extends AppCompatActivity
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-                MemoEditFragment memoEditFragment = new MemoEditFragment();
+                GroupNo = 0 ;
                 bundle.putInt("GroupNo",GroupNo);
                 memoEditFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction()
@@ -173,37 +177,39 @@ public class NavigationMain extends AppCompatActivity
         }
 
         if (id == R.id.save) {
+            MemoEditFragment memoEditFragment = (MemoEditFragment)getSupportFragmentManager().findFragmentById(R.id.nav_main);
+            if(memoEditFragment.READ==0) {
+                TextView PictureViewURI = findViewById(R.id.PictureViewURI);
+                Toast.makeText(this, PictureViewURI.getText(), Toast.LENGTH_SHORT).show();
+                if (!PictureViewURI.getText().toString().equals("")) {
+                    StorageReference storageRef = storage.getReferenceFromUrl("gs://map-api-187214.appspot.com");
+                    Uri file = Uri.parse(PictureViewURI.getText().toString());
+                    StorageReference riversRef = storageRef.child("images/" + file.getLastPathSegment());
+                    UploadTask uploadTask = riversRef.putFile(file);
 
-            TextView PictureViewURI = findViewById(R.id.PictureViewURI);
-            Toast.makeText(this, PictureViewURI.getText(), Toast.LENGTH_SHORT).show();
-            if(!PictureViewURI.getText().toString().equals("")){
-                StorageReference storageRef = storage.getReferenceFromUrl("gs://map-api-187214.appspot.com");
-                Uri file = Uri.parse(PictureViewURI.getText().toString());
-                StorageReference riversRef = storageRef.child("images/"+file.getLastPathSegment());
-                UploadTask uploadTask = riversRef.putFile(file);
+                    // Register observers to listen for when the download is done or if it fails
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Handle unsuccessful uploads
+                            Toast.makeText(NavigationMain.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                            Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                            UploadMemo(downloadUrl.toString());
 
-                // Register observers to listen for when the download is done or if it fails
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                        Toast.makeText(NavigationMain.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        UploadMemo(downloadUrl.toString());
-
-                    }
-                });
+                        }
+                    });
+                } else {
+                    UploadMemo(null);
+                }
             }
-            else {
-                UploadMemo(null);
+            else if(memoEditFragment.READ==1){
+                memoEditFragment.Upload();
             }
-
-
         }
 
         return super.onOptionsItemSelected(item);
@@ -244,21 +250,20 @@ public class NavigationMain extends AppCompatActivity
 
         int id = item.getItemId();
         if(id == R.id.map) {
-            MainMapFragment mainMapFragment = new MainMapFragment();
+
             mainMapFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,mainMapFragment)
                     .commit();
         }
         else if (id == R.id.note) {
-            MemoList memoList = new MemoList();
+
             memoList.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,memoList)
                     .commit();
-
         } else if (id == R.id.calendar) {
-            CalendarFragment calendarFragment = new CalendarFragment();
+
             calendarFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,calendarFragment)
@@ -293,7 +298,7 @@ public class NavigationMain extends AppCompatActivity
 
             }
         }
-        if(requestCode==RETURN_SPECIAL){
+        else if(requestCode==RETURN_SPECIAL){
             if(resultCode==RESULT_OK){
                 MemoList memoList = new MemoList();
                 bundle.putString("myEmail",myEmail);

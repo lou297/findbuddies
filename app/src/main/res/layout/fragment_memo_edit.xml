@@ -70,6 +70,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="invisible"/>
+            <TextView
+                android:id="@+id/ReadLatitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"/>
+            <TextView
+                android:id="@+id/ReadLongitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"/>
         </LinearLayout>
     </ScrollView>
 

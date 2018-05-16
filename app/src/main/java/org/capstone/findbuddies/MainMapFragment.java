@@ -1,15 +1,12 @@
 package org.capstone.findbuddies;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -18,14 +15,24 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -33,6 +40,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class MainMapFragment extends Fragment implements OnMapReadyCallback{
@@ -40,34 +50,57 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
     private MapView mapView;
     MarkerOptions marker;
     String myEmail;
+    String myID;
+    Boolean Check;
     FirebaseAuth auth;
     FirebaseDatabase database;
-    LocationManager manager;
+    LatLng latLng;
+    ListView listview;
+    MapMemoAdaptor adaptor;
+    ArrayList<MemoItem> Memos = new ArrayList<>();
+    ArrayList<Double> latitudes = new ArrayList<>();
+    ArrayList<Double> longitudes = new ArrayList<>();
+    FusedLocationProviderClient mFusedLocationProviderClient;
+    int ReadMemo = 0;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.main_map, container, false);
         auth = FirebaseAuth.getInstance();
         FirebaseUser user = auth.getCurrentUser();
+        database = FirebaseDatabase.getInstance();
         if(user!=null){
             myEmail = user.getEmail();
+            getMyID(myEmail);
         }
-        database = FirebaseDatabase.getInstance();
-//        myEmail = getArguments().getString("myEmail");
+
+
+        listview = rootView.findViewById(R.id.map_memo_listView);
+        adaptor = new MapMemoAdaptor();
+        listview.setAdapter(adaptor);
+
+        Locale ko = Locale.KOREA;
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+
         mapView = rootView.findViewById(R.id.MainMapView);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
-        mapView.getMapAsync(this);
-        Locale ko = Locale.KOREA;
 
-        manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        //GPS가 켜져있는지 체크
-        if(!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-            //GPS 설정화면으로 이동
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            intent.addCategory(Intent.CATEGORY_DEFAULT);
-            startActivity(intent);
-        }
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MemoItem memo = Memos.get(position);
+                listview.setVisibility(View.GONE);
+                TextView title = rootView.findViewById(R.id.title);
+                TextView content = rootView.findViewById(R.id.content);
+                title.setText(memo.getTitle());
+                content.setText(memo.getContents());
+                LinearLayout MapMemo = rootView.findViewById(R.id.map_memo);
+                MapMemo.setVisibility(View.VISIBLE);
+                ReadMemo = 1;
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitudes.get(position),longitudes.get(position)),15));
+            }
+        });
 
 
         //마시멜로 이상이면 권한 요청하기
@@ -90,41 +123,216 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
         return rootView;
     }
 
+    class MapMemoAdaptor extends BaseAdapter{
+        private MapMemoAdaptor(){
+            database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Memos.clear();
+                    latitudes.clear();
+                    longitudes.clear();
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        SaveMemo value = snapshot.getValue(SaveMemo.class);
+                        String uidKey = snapshot.getKey();
+                        if(value!=null){
+                            if(myEmail.equals(value.getUploaderEmail()) || CheckMyEmailInGroup(value.getCheckGroupNo())){
+                                MemoItem memoItem;
+                                String address = null;
+                                if(value.getLatitude()!=0){
+                                    address = getLocationAddress(value.getLatitude(),value.getLongitude());
+                                    if(value.getMonth()==0){
+                                        memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
+                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
+                                    }
+                                    else{
+                                        String date_label = value.getMonth()+"월 "+value.getDate()+"일";
+                                        memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
+                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
+                                    }
+                                    addMemo(memoItem);
+                                    latitudes.add(value.getLatitude());
+                                    longitudes.add(value.getLongitude());
+                                }
+                            }
+                        }
+                    }
+                    notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        public void addMemo(MemoItem memoItem){
+            Memos.add(memoItem);
+        }
+
+        @Override
+        public int getCount() {
+            return Memos.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return Memos.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View view = convertView;
+            ViewHolder viewHolder;
+            if(view==null) {
+                view = getLayoutInflater().inflate(R.layout.map_memo_item, null);
+                viewHolder = new ViewHolder();
+                viewHolder.memo = view.findViewById(R.id.two_line_memo);
+                viewHolder.location = view.findViewById(R.id.two_line_location);
+                viewHolder.group = view.findViewById(R.id.group_image);
+                viewHolder.date = view.findViewById(R.id.date_image);
+                viewHolder.photo = view.findViewById(R.id.photo_image);
+                view.setTag(viewHolder);
+            }
+            else {
+                viewHolder = (ViewHolder)view.getTag();
+            }
+            MemoItem Memo = Memos.get(position);
+            viewHolder.memo.setText(Memo.getContents());
+            viewHolder.location.setText(Memo.getLocation());
+            if(Memo.getGroup_label()!=0){
+                viewHolder.group.setVisibility(View.VISIBLE);
+            }
+            else {
+                viewHolder.group.setVisibility(View.GONE);
+            }
+            if(Memo.getDayOfMonth()!=0){
+                viewHolder.date.setVisibility(View.VISIBLE);
+            }
+            else {
+                viewHolder.date.setVisibility(View.GONE);
+            }
+            if(Memo.getPictureURI()!=null){
+                viewHolder.photo.setVisibility(View.VISIBLE);
+            }
+            else {
+                viewHolder.photo.setVisibility(View.GONE);
+            }
+            return view;
+        }
+        class ViewHolder{
+            TextView memo;
+            TextView location;
+            ImageView group;
+            ImageView date;
+            ImageView photo;
+        }
+    }
+    public String getLocationAddress(double latitude,double longitude){
+        String nowAddress ="현재 위치를 확인 할 수 없습니다.";
+        Geocoder geocoder = new Geocoder(getContext(), Locale.KOREA);
+        List<Address> address;
+        try {
+            if (geocoder != null) {
+                //세번째 파라미터는 좌표에 대해 주소를 리턴 받는 갯수로
+                //한좌표에 대해 두개이상의 이름이 존재할수있기에 주소배열을 리턴받기 위해 최대갯수 설정
+                address = geocoder.getFromLocation(latitude, longitude, 1);
+
+                if (address != null && address.size() > 0) {
+                    // 주소 받아오기
+                    nowAddress  = address.get(0).getAddressLine(0);
+                    int nation = nowAddress.indexOf("대한민국");
+                    if(nation!=-1){
+                        nowAddress = nowAddress.substring(nation+5);
+                    }
+
+                }
+            }
+
+        } catch (IOException e) {
+            Toast.makeText(getContext(), "주소를 가져 올 수 없습니다.", Toast.LENGTH_LONG).show();
+
+            e.printStackTrace();
+        }
+        return nowAddress;
+    }
+    private void getMyID(String MyEmail) {
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if (value != null && (value.getSavedEmail()).equals(MyEmail)) {
+                        myID = value.getSavedID();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private boolean CheckMyEmailInGroup(int GroupNo){
+        Check = false;
+        database.getReference().child("GruopList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    SaveGroupList value = snapshot.getValue(SaveGroupList.class);
+                    if(value!=null){
+                        if(value.getGroupNo()==GroupNo){
+                            ArrayList<String> membersID = value.getMembersID();
+                            for(String memberCheck : membersID){
+                                if(memberCheck.equals(myID)){
+                                    Check = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        return Check;
+    }
+
     private void requestMyLocation() {
         if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             return;
         }
-        manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1000, new LocationListener() {
+        OnCompleteListener<Location> onCompleteListener = new OnCompleteListener<Location>() {
             @Override
-            public void onLocationChanged(Location location) {
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),15));
+            public void onComplete(@NonNull Task<Location> task) {
+                if(task.isSuccessful()&&task.getResult()!=null){
+                    Location location = task.getResult();
+                    latLng = new LatLng(location.getLatitude(),location.getLongitude());
+                    mapView.getMapAsync(MainMapFragment.this);
+                }
             }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        });
+        };
+        mFusedLocationProviderClient.getLastLocation().addOnCompleteListener(onCompleteListener);
     }
 
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         this.googleMap = googleMap;
-//        marker = new MarkerOptions();
-        LatLng curPoint = new LatLng(37.234, 126.972);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curPoint,15));
+        googleMap.getUiSettings().setMapToolbarEnabled(false);
+//        googleMap.setMyLocationEnabled(true);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
 //        marker.position(googleMap.getCameraPosition().target);
 //        googleMap.addMarker(marker);
         LoadMemoLocation();

@@ -68,7 +68,8 @@
         <activity android:name=".GoogleVision" />
         <activity android:name=".ImageTextDetect" />
         <activity android:name=".SelectMapLocation" />
-        <activity android:name=".AddGroupMemo"></activity>
+        <activity android:name=".AddGroupMemo" />
+        <activity android:name=".FullScreenImageView"></activity>
     </application>
 
 </manifest>

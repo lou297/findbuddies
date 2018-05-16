@@ -16,6 +16,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.FirebaseDatabase;
@@ -33,6 +36,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
@@ -46,14 +50,18 @@ public class MemoEditFragment extends Fragment{
     private FirebaseDatabase database;
     ImageView PictureView;
     TextView PictureViewURI;
+    Double ReadLatitude;
+    Double ReadLongitude;
     String PicturePath;
     String myEmail;
     int GroupNo;
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
     String date;
     EditText Title;
     EditText Memo;
     int AddedPicture;
+    int UploadedPic = 0;
+    int READ = 0;
+
 
     Toolbar toolbar;
     @Nullable
@@ -84,6 +92,10 @@ public class MemoEditFragment extends Fragment{
         PictureViewURI = view.findViewById(R.id.PictureViewURI);
         Title = view.findViewById(R.id.title_edit);
         Memo = view.findViewById(R.id.contents_edit);
+        READ = getArguments().getInt("READ",0);
+        if(READ==1){
+            SettingMemoEdit();
+        }
 
 
         PictureBut.setOnClickListener(new View.OnClickListener() {
@@ -106,6 +118,48 @@ public class MemoEditFragment extends Fragment{
             }
         });
 
+        PictureView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                PictureView.setImageURI(null);
+                PictureView.setVisibility(View.GONE);
+                PictureViewURI.setText(null);
+                UploadedPic = 0;
+                return false;
+            }
+        });
+        PictureView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(PictureViewURI.getText()!=null){
+                    Intent intent = new Intent(getContext(),FullScreenImageView.class);
+                    if(UploadedPic==1){
+                        intent.putExtra("Uploaded",1);
+                    }
+                    intent.putExtra("imageUri",PictureViewURI.getText().toString());
+                    startActivity(intent);
+                }
+            }
+        });
+
+    }
+
+    private void SettingMemoEdit() {
+        Title.setText(getArguments().getString("ReadTitle"));
+        Memo.setText(getArguments().getString("ReadContent"));
+        if(getArguments().getString("ReadPictureURI",null)!=null){
+            StorageReference storageReference = storage.getReferenceFromUrl(getArguments().getString("ReadPictureURI"));
+            PictureView.setVisibility(View.VISIBLE);
+            Glide.with(getContext())
+                    .using(new FirebaseImageLoader())
+                    .load(storageReference)
+                    .into(PictureView);
+//            PictureView.setImageDrawabl(Uri.parse(getArguments().getString("ReadPictureURI")));
+            PictureViewURI.setText(getArguments().getString("ReadPictureURI"));
+            UploadedPic=1;
+        }
+        ReadLatitude = getArguments().getDouble("ReadLatitude",0);
+        ReadLongitude = getArguments().getDouble("ReadLongitude",0);
 
     }
 
@@ -114,15 +168,15 @@ public class MemoEditFragment extends Fragment{
 //        super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == GALLERY_CODE){
             if(data!=null){
-
                 PicturePath = getPath(data.getData());
                 Toast.makeText(getContext(), ""+PicturePath, Toast.LENGTH_SHORT).show();
                 Uri file = Uri.fromFile(new File(getPath(data.getData())));
-
                 PictureView.setImageURI(file);
+                PictureView.setVisibility(View.VISIBLE);
 //                UploadUri(file);
                 PictureViewURI.setText(file.toString());
                 AddedPicture = 1;
+                UploadedPic =0;
             }
 
         }
@@ -206,6 +260,75 @@ public class MemoEditFragment extends Fragment{
             }
         });
     }
+    public void Upload(){
+        if(PictureViewURI.getText()!=null){
+            Log.d("ParsingTest","PIC: "+UploadedPic);
+            if(UploadedPic==1){
+                mofidifyMemo(PictureViewURI.getText().toString());
+            }
+            else {
+                StorageReference storageRef = storage.getReferenceFromUrl("gs://map-api-187214.appspot.com");
+                Uri file = Uri.parse(PictureViewURI.getText().toString());
+                StorageReference riversRef = storageRef.child("images/"+file.getLastPathSegment());
+                UploadTask uploadTask = riversRef.putFile(file);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        Toast.makeText(getContext(), exception.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        mofidifyMemo(downloadUrl.toString());
 
+                    }
+                });
+            }
+        }
+        else {
+            mofidifyMemo(null);
+        }
+    }
+    private void mofidifyMemo(String URI){
+        String uidKey = getArguments().getString("UidKey");
+        SaveMemo saveMemo = new SaveMemo();
+        saveMemo.setUploaderEmail(getArguments().getString("ReadUploader"));
+        saveMemo.setTitle(Title.getText().toString());
+        saveMemo.setMemo(Memo.getText().toString());
+        if(URI!=null){
+            saveMemo.setImageUrl(URI);
+        }
+        saveMemo.setLatitude(ReadLatitude);
+        saveMemo.setLatitude(ReadLongitude);
+        saveMemo.setCheckGroupNo(GroupNo);
+
+        long Now = System.currentTimeMillis();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
+        String date = simpleDateFormat.format(new Date(Now));
+
+        saveMemo.setLastEditDate(date);
+        saveMemo.setEditSystemTime(Now);
+        saveMemo.setYear(getArguments().getInt("ReadYear",0));
+        saveMemo.setMonth(getArguments().getInt("ReadMonth",0));
+        saveMemo.setDate(getArguments().getInt("ReadDay",0));
+        saveMemo.setHour(getArguments().getInt("ReadHour",0));
+        saveMemo.setMinute(getArguments().getInt("ReadMinute",0));
+
+        database.getReference().child("MemoList").child(uidKey).setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Bundle bundle = new Bundle();
+                bundle.putString("myEmail",myEmail);
+                MemoList memoList = new MemoList();
+                memoList.setArguments(bundle);
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.nav_main,memoList)
+                        .commit();
+            }
+        });
+    }
 
 }

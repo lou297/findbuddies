@@ -79,6 +79,8 @@ public class SelectMapLocation extends FragmentActivity implements OnMapReadyCal
     @Override
     public void onMapReady(GoogleMap googleMap) {
         GoogleMap = googleMap;
+        GoogleMap.getUiSettings().setMapToolbarEnabled(false);
+//        GoogleMap.setMyLocationEnabled(true);
         getPlace = googleMap.getCameraPosition().target;
         googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
@@ -119,7 +121,10 @@ public class SelectMapLocation extends FragmentActivity implements OnMapReadyCal
                     // 주소 받아오기
                     String currentLocationAddress = address.get(0).getAddressLine(0).toString();
                     nowAddress  = currentLocationAddress;
-
+                    int nation = nowAddress.indexOf("대한민국");
+                    if(nation!=-1){
+                        nowAddress = nowAddress.substring(nation+5);
+                    }
                 }
             }
 

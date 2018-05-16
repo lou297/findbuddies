@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -30,9 +31,13 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 
 import java.io.IOException;
@@ -48,6 +53,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
     String myEmail;
     int GroupNo;
     FirebaseDatabase database;
+    FirebaseStorage storage;
     RelativeLayout dateLayout;
     EditText Title;
     EditText Content;
@@ -59,6 +65,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
     int AMPMhour;
     int hour;
     int minute;
+    int decideDate = 0 ;
+    int decideTime = 0 ;
 
     LatLng latLng;
 
@@ -113,6 +121,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         myEmail = getIntent().getStringExtra("myEmail");
         PictureViewURI = getIntent().getStringExtra("pictureViewURI");
         database = FirebaseDatabase.getInstance();
+        storage = FirebaseStorage.getInstance();
         GroupNo = getIntent().getIntExtra("GroupNo",0);
         Date dAte = new Date(System.currentTimeMillis());
         today = dAte.getDay()-1;
@@ -159,20 +168,46 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UploadParsingMemo();
+                UploadImage();
             }
         });
     }
+    private void UploadImage(){
+        if(!PictureViewURI.equals("")){
+            StorageReference storageRef = storage.getReferenceFromUrl("gs://map-api-187214.appspot.com");
+            Uri file = Uri.parse(PictureViewURI);
+            StorageReference riversRef = storageRef.child("images/"+file.getLastPathSegment());
+            UploadTask uploadTask = riversRef.putFile(file);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                    Toast.makeText(ParsingMemo.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    UploadParsingMemo(downloadUrl.toString());
 
-    private void UploadParsingMemo() {
+                }
+            });
+        }
+        else {
+            UploadParsingMemo(null);
+        }
+    }
+
+    private void UploadParsingMemo(String URI) {
         long Now = System.currentTimeMillis();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
         String EditDate = simpleDateFormat.format(new Date(Now));
         SaveMemo saveMemo = new SaveMemo();
         Title = findViewById(R.id.parsing_title_edit);
         Content = findViewById(R.id.parsing_contents_edit);
-        if(!PictureViewURI.equals("")){
-            saveMemo.setImageUrl(PictureViewURI);
+        if(URI!=null){
+            saveMemo.setImageUrl(URI);
         }
         saveMemo.setUploaderEmail(myEmail);
         saveMemo.setLastEditDate(EditDate);
@@ -208,6 +243,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         GoogleMap = googleMap;
         GoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
         GoogleMap.getUiSettings().setAllGesturesEnabled(false);
+        GoogleMap.getUiSettings().setMapToolbarEnabled(false);
         getLocationAddress(latLng);
         InitialParsing();
         GoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -302,12 +338,18 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 if((nameEntity.type).startsWith("DT_")){
                     Log.d("ParsingTestee","날짜"+nameEntity.text);
                     IsDTorTI = 1;
-                    ParsingDate(nameEntity.text);
+                    if(decideDate==0) {
+                        ParsingDate(nameEntity.text);
+                    }
+                    decideDate = 1;
                 }
                 else if(nameEntity.type.startsWith("TI_")){
                     Log.d("ParsingTestee","시간"+nameEntity.text);
                     IsDTorTI = 1;
-                    ParsingTime(nameEntity.text);
+                    if(decideTime==0) {
+                        ParsingTime(nameEntity.text);
+                    }
+                    decideTime = 1;
                 }
                 else if(nameEntity.type.startsWith("OG")||nameEntity.type.startsWith("LC")){
                     Log.d("ParsingTestee","장소"+nameEntity.text);
@@ -372,6 +414,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         String isCheck = "";
         int isDate = 0 ;
         int comma = ParseDate.indexOf(".");
+        int slash = ParseDate.indexOf("/");
 
         String dayOfWeek = null;
         String month = null;
@@ -500,6 +543,52 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                     }
                 }
             }
+        }
+        if(slash!=-1) {
+            isDate = 1;
+            String Tyear;
+            String Tmonth;
+            String Tdate;
+            String first;
+            String second;
+            int secondSlash=ParseDate.indexOf(".",slash+1);
+            if(secondSlash!=-1){
+                Tyear = ParseDate.substring(0,slash);
+                Tyear = Tyear.trim();
+                year = Integer.parseInt(Tyear);
+                Tmonth = ParseDate.substring(slash+1,secondSlash);
+                Tmonth = Tmonth.trim();
+                this.month = Integer.parseInt(Tmonth);
+                if(isNumeric(ParseDate.substring(secondSlash+1,secondSlash+3))){
+                    date = Integer.parseInt(ParseDate.substring(secondSlash+1,secondSlash+3));
+                }
+                else{
+                    date = Integer.parseInt(ParseDate.substring(secondSlash+1,secondSlash+2));
+                }
+            }
+            else {
+                first = ParseDate.substring(0,slash);
+                first = first.trim();
+                if(Integer.parseInt(first)>12){
+                    year = Integer.parseInt(first);
+                    if(isNumeric(ParseDate.substring(slash+1,slash+3))){
+                        this.month = Integer.parseInt(ParseDate.substring(slash+1,slash+3));
+                    }
+                    else{
+                        this.month = Integer.parseInt(ParseDate.substring(slash+1,slash+2));
+                    }
+                }
+                else{
+                    this.month = Integer.parseInt(first);
+                    if(isNumeric(ParseDate.substring(slash+1,slash+3))){
+                        date = Integer.parseInt(ParseDate.substring(slash+1,slash+3));
+                    }
+                    else{
+                        date = Integer.parseInt(ParseDate.substring(slash+1,slash+2));
+                    }
+                }
+            }
+
         }
 
         if(dayOfWeekIndex!=-1){
