@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:background="#fff">
+    android:background="#ACA4FF">
 
 
     <com.prolificinteractive.materialcalendarview.MaterialCalendarView
@@ -14,11 +14,23 @@
         app:mcv_selectionColor="#CAFFCE"
         app:mcv_tileSize="45dp"
         android:layout_marginTop="20dp"
-        android:background="#FFF"/>
+        android:layout_alignParentTop="true"
+        android:background="#ACA4FF"/>
 
     <ListView
+        android:layout_below="@+id/MCalendarView"
         android:id="@+id/SpecificDateMemoList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:divider="#FFFFFF"/>
-</LinearLayout>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/AddCalendarMemoBut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/ic_plus"
+        android:backgroundTint="#FFFFFF"
+        android:layout_margin="16dp"/>
+
+</RelativeLayout>

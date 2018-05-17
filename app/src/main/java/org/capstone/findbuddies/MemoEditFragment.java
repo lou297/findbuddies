@@ -63,6 +63,10 @@ public class MemoEditFragment extends Fragment{
     int AddedPicture;
     int UploadedPic = 0;
     int READ = 0;
+    int CalendarAdd = 0 ;
+    int Year;
+    int Month;
+    int Date;
 
 
     Toolbar toolbar;
@@ -75,6 +79,14 @@ public class MemoEditFragment extends Fragment{
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         myEmail = getArguments().getString("myEmail");
         GroupNo = getArguments().getInt("GroupNo");
+        CalendarAdd = getArguments().getInt("CalendarAdd",0);
+        if(CalendarAdd==1){
+            Year = getArguments().getInt("Year",0);
+            Month = getArguments().getInt("Month",0);
+            Date = getArguments().getInt("Date",0);
+            String title = Month +"월 "+Date+"일";
+            toolbar.setTitle(title);
+        }
         return rootView;
     }
 
@@ -89,13 +101,13 @@ public class MemoEditFragment extends Fragment{
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
         AddedPicture = 0;
-        fab = view.findViewById(R.id.fab);
         PictureBut = view.findViewById(R.id.AddPictureBut);
         PictureView = view.findViewById(R.id.PictureView);
         PictureViewURI = view.findViewById(R.id.PictureViewURI);
         Title = view.findViewById(R.id.title_edit);
         Memo = view.findViewById(R.id.contents_edit);
         READ = getArguments().getInt("READ",0);
+
         if(READ==1){
             SettingMemoEdit();
         }
@@ -226,6 +238,17 @@ public class MemoEditFragment extends Fragment{
                 Toast.makeText(getContext(), "텍스트 불러오기 실패", Toast.LENGTH_SHORT).show();
             }
         }
+        else if(requestCode == RETURN_SPECIAL){
+            if(resultCode == RESULT_OK){
+                Bundle bundle = new Bundle();
+                MemoList memoList = new MemoList();
+                bundle.putString("myEmail",myEmail);
+                memoList.setArguments(bundle);
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.nav_main,memoList)
+                        .commit();
+            }
+        }
     }
 
 
@@ -330,7 +353,6 @@ public class MemoEditFragment extends Fragment{
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.nav_main,memoList)
                         .commit();
-                fab.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -350,6 +372,8 @@ public class MemoEditFragment extends Fragment{
         intent.putExtra("ReadMinute",getArguments().getInt("ReadMinute",0));
         intent.putExtra("ReadLatitude",ReadLatitude);
         intent.putExtra("ReadLongitude",ReadLongitude);
+        intent.putExtra("UidKey",getArguments().getString("UidKey"));
+        Log.d("ParsingTest","111   "+getArguments().getString("UidKey"));
         startActivityForResult(intent,RETURN_SPECIAL);
     }
 

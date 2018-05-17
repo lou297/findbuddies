@@ -81,6 +81,11 @@ public class SelectMapLocation extends FragmentActivity implements OnMapReadyCal
         GoogleMap = googleMap;
         GoogleMap.getUiSettings().setMapToolbarEnabled(false);
 //        GoogleMap.setMyLocationEnabled(true);
+        Double latitude = getintent.getDoubleExtra("ReadLatitude",0);
+        Double longitude = getintent.getDoubleExtra("ReadLongitude",0);
+        if(latitude!=0) {
+            GoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longitude), 15));
+        }
         getPlace = googleMap.getCameraPosition().target;
         googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override

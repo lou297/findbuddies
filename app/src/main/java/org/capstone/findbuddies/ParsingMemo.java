@@ -83,6 +83,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
     int dateunable = 0;
     int mapunable = 0;
     int READ;
+    int CalendarAdd;
     int UploadedPic;
     GoogleMap GoogleMap;
     FusedLocationProviderClient mFusedLocationProviderClient;
@@ -91,8 +92,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parsing_memo);
-
         READ = getIntent().getIntExtra("READ",0);
+        CalendarAdd = getIntent().getIntExtra("CalendarAdd",0);
         asyncDialog = new ProgressDialog(
                 ParsingMemo.this);
         asyncDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -128,6 +129,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
         GroupNo = getIntent().getIntExtra("GroupNo",0);
+        Log.d("ParsingTest","no111111: "+GroupNo);
         Date dAte = new Date(System.currentTimeMillis());
         today = dAte.getDay()-1;
         todayMonth =dAte.getMonth();
@@ -143,6 +145,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                     intent.putExtra("myEmail",myEmail);
                     intent.putExtra("pictureViewURI",PictureViewURI);
                     intent.putExtra("GroupNo",GroupNo);
+                    intent.putExtra("UploadedPic",UploadedPic);
                     intent.putExtra("title",getIntent().getStringExtra("title"));
                     intent.putExtra("content",getIntent().getStringExtra("content"));
                     intent.putExtra("year",year);
@@ -150,6 +153,9 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                     intent.putExtra("day",date);
                     intent.putExtra("hour",hour);
                     intent.putExtra("minute",minute);
+                    intent.putExtra("ReadLatitude",getIntent().getDoubleExtra("ReadLatitude",0));
+                    intent.putExtra("ReadLongitude",getIntent().getDoubleExtra("ReadLongitude",0));
+                    intent.putExtra("UidKey",getIntent().getStringExtra("UidKey"));
                     startActivity(intent);
                 }
             }
@@ -178,7 +184,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         });
     }
     private void UploadImage(){
-        if(!PictureViewURI.equals("")){
+        if(!PictureViewURI.equals("") && UploadedPic==0){
             StorageReference storageRef = storage.getReferenceFromUrl("gs://map-api-187214.appspot.com");
             Uri file = Uri.parse(PictureViewURI);
             StorageReference riversRef = storageRef.child("images/"+file.getLastPathSegment());
@@ -198,6 +204,9 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
 
                 }
             });
+        }
+        else if(!PictureViewURI.equals("") && UploadedPic==1){
+            UploadParsingMemo(PictureViewURI);
         }
         else {
             UploadParsingMemo(null);
@@ -231,15 +240,28 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
             saveMemo.setLatitude(latLng.latitude);
             saveMemo.setLongitude(latLng.longitude);
         }
-
-        database.getReference().child("MemoList").push().setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
+        String uidKey = getIntent().getStringExtra("UidKey");
+        Log.d("ParsingTest","?? "+uidKey);
+        if(uidKey==null) {
+            database.getReference().child("MemoList").push().setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
 //                Toast.makeText(ParsingMemo.this, "업로드 완료!", Toast.LENGTH_SHORT).show();
-                setResult(RESULT_OK,getIntent());
-                finish();
-            }
-        });
+                    setResult(RESULT_OK, getIntent());
+                    finish();
+                }
+            });
+        }
+        else{
+            database.getReference().child("MemoList").child(uidKey).setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+//                Toast.makeText(ParsingMemo.this, "업로드 완료!", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK, getIntent());
+                    finish();
+                }
+            });
+        }
     }
 
 
@@ -258,6 +280,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
             public void onMapClick(LatLng latLng) {
                 if(mapunable==0){
                     Intent intent = new Intent(getApplicationContext(),SelectMapLocation.class);
+                    intent.putExtra("ReadLatitude",latLng.latitude);
+                    intent.putExtra("ReadLongitude",latLng.longitude);
                     startActivityForResult(intent,SELECTED_PLACE_REQUEST_CODE);
                 }
             }
@@ -332,12 +356,17 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         CalendarDay day = CalendarDay.today();
         parsingDate = findViewById(R.id.parsingDate);
         parsingTime = findViewById(R.id.parsingTime);
-        if(READ==0) {
+        if(READ==0&&CalendarAdd==0) {
             year = getIntent().getIntExtra("year", day.getYear());
             month = getIntent().getIntExtra("month", day.getMonth() + 1);
             date = getIntent().getIntExtra("day", day.getDay());
-            Date Now = new Date(System.currentTimeMillis());
-
+            hour = getIntent().getIntExtra("hour", 12);
+            minute = getIntent().getIntExtra("minute", 0);
+        }
+        else if(READ==0&&CalendarAdd==1){
+            year = getIntent().getIntExtra("Year", day.getYear());
+            month = getIntent().getIntExtra("Month", day.getMonth() + 1);
+            date = getIntent().getIntExtra("Date", day.getDay());
             hour = getIntent().getIntExtra("hour", 12);
             minute = getIntent().getIntExtra("minute", 0);
         }
@@ -394,8 +423,10 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 String time = AMPM + " "+ AMPMhour+"시 "+minute+"분";
                 parsingDate.setText(ParsingDate);
                 parsingTime.setText(time);
-                dateunable=1;
-                dateUnable.setVisibility(View.VISIBLE);
+                if(getIntent().getIntExtra("ReturnDate",0)==0) {
+                    dateunable = 1;
+                    dateUnable.setVisibility(View.VISIBLE);
+                }
             }
         }
 
@@ -420,7 +451,9 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                     Log.d("ParsingTestee","날짜"+nameEntity.text);
                     IsDTorTI = 1;
                     if(decideDate==0) {
-                        ParsingDate(nameEntity.text);
+                        if(CalendarAdd!=1) {
+                            ParsingDate(nameEntity.text);
+                        }
                     }
                     decideDate = 1;
                 }

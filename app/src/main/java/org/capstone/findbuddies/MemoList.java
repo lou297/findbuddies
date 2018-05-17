@@ -1,6 +1,7 @@
 package org.capstone.findbuddies;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static android.app.Activity.RESULT_OK;
+
 public class MemoList extends Fragment {
     ArrayList<MemoItem> Memos = new ArrayList<>();
     FirebaseDatabase database;
@@ -47,6 +51,8 @@ public class MemoList extends Fragment {
     private ArrayList<Integer> hour = new ArrayList<>();
     private ArrayList<Integer> minute = new ArrayList<>();
     private ArrayList<String> Uploader = new ArrayList<>();
+    private static final int GROUP_MEMO_NO = 3000;
+    int GroupNo;
 
     @Nullable
     @Override
@@ -54,9 +60,9 @@ public class MemoList extends Fragment {
         ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.memo_list,container,false);
         database = FirebaseDatabase.getInstance();
         storage = FirebaseStorage.getInstance();
-        fab = rootView.findViewById(R.id.fab);
         myEmail = getArguments().getString("myEmail");
         getMyID(myEmail);
+        fab = rootView.findViewById(R.id.fab);
         ListView listview = rootView.findViewById(R.id.MemoListView);
 
         adapter = new MemoAdapter();
@@ -98,6 +104,30 @@ public class MemoList extends Fragment {
                         });
                 builder.show();
                 return false;
+            }
+        });
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bundle bundle = new Bundle();
+                bundle.putString("myEmail",myEmail);
+                GroupNo = 0 ;
+                bundle.putInt("GroupNo",GroupNo);
+                MemoEditFragment memoEditFragment = new MemoEditFragment();
+                memoEditFragment.setArguments(bundle);
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.nav_main,memoEditFragment)
+                        .commit();
+                ((NavigationMain)getActivity()).isEdit =1;
+            }
+        });
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Intent intent = new Intent(getContext(),AddGroupMemo.class);
+                intent.putExtra("MyEmail",myEmail);
+                startActivityForResult(intent,GROUP_MEMO_NO);
+                return true;
             }
         });
 
@@ -393,6 +423,26 @@ public class MemoList extends Fragment {
         getActivity().getSupportFragmentManager().beginTransaction()
                 .replace(R.id.nav_main,memoEditFragment)
                 .commit();
-//        fab.setVisibility(View.GONE);
+        ((NavigationMain)getActivity()).isEdit =1;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == GROUP_MEMO_NO){
+            if(resultCode==RESULT_OK){
+                GroupNo = data.getIntExtra("GroupNo",0);
+                MemoEditFragment memoEditFragment = new MemoEditFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("myEmail",myEmail);
+                Log.d("ParsingTest","no: "+GroupNo);
+                bundle.putInt("GroupNo",GroupNo);
+                memoEditFragment.setArguments(bundle);
+                getActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.nav_main,memoEditFragment)
+                        .commit();
+                ((NavigationMain)getActivity()).isEdit =1;
+            }
+        }
     }
 }

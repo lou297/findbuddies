@@ -116,14 +116,21 @@ public class MemoPicker extends AppCompatActivity {
                 intent.putExtra("day",day);
                 intent.putExtra("hour",hour);
                 intent.putExtra("minute",minute);
-
+                intent.putExtra("READ",1);
+                intent.putExtra("UploadedPic",getIntent().getIntExtra("UploadedPic",0));
                 intent.putExtra("myEmail",getIntent().getStringExtra("myEmail"));
                 intent.putExtra("pictureViewURI",getIntent().getStringExtra("pictureViewURI"));
                 intent.putExtra("GroupNo",getIntent().getIntExtra("GroupNo",0));
                 intent.putExtra("title",getIntent().getStringExtra("title"));
                 intent.putExtra("content",getIntent().getStringExtra("content"));
+                intent.putExtra("ReadLatitude",getIntent().getDoubleExtra("ReadLatitude",0));
+                intent.putExtra("ReadLongitude",getIntent().getDoubleExtra("ReadLongitude",0));
+                intent.putExtra("ReturnDate",1);
+                String uidKey = getIntent().getStringExtra("UidKey");
+                intent.putExtra("UidKey",uidKey);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+                finish();
             }
         });
 

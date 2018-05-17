@@ -4,13 +4,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,17 +34,16 @@ import java.util.Locale;
 
 public class NavigationMain extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    FloatingActionButton fab;
     String myEmail;
     private FirebaseDatabase database;
     private FirebaseStorage storage;
     Bundle bundle;
-    int GroupNo;
     String parsingContent;
     EditText titleEdit;
     EditText contentEdit;
     TextView UserID;
     TextView UserName;
+    int isEdit = 0;
     NavigationView navigationView;
     MainMapFragment mainMapFragment = new MainMapFragment();
     MemoEditFragment memoEditFragment = new MemoEditFragment();
@@ -66,38 +65,12 @@ public class NavigationMain extends AppCompatActivity
         storage = FirebaseStorage.getInstance();
         myEmail = getIntent().getStringExtra("myEmail");
         setIDName(myEmail);
-        GroupNo = 0;
         bundle = new Bundle();
         bundle.putString("myEmail",myEmail);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.nav_main,new MainMapFragment())
                 .commit();
 
-
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-                GroupNo = 0 ;
-                bundle.putInt("GroupNo",GroupNo);
-                memoEditFragment.setArguments(bundle);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.nav_main,memoEditFragment)
-                        .commit();
-                fab.setVisibility(View.INVISIBLE);
-            }
-        });
-        fab.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Intent intent = new Intent(getApplicationContext(),AddGroupMemo.class);
-                intent.putExtra("MyEmail",myEmail);
-                startActivityForResult(intent,GROUP_MEMO_NO);
-                return true;
-            }
-        });
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -139,11 +112,24 @@ public class NavigationMain extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.END)) {
             drawer.closeDrawer(GravityCompat.END);
-        } else if(0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime){
-            super.onBackPressed();
+        }else if(isEdit==1) {
+            memoList.setArguments(bundle);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.nav_main,memoList)
+                    .commit();
+            isEdit=0;
+        } else if(isEdit==2) {
+            calendarFragment.setArguments(bundle);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.nav_main,calendarFragment)
+                    .commit();
+            isEdit = 0;
+        }
+        else if(0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime){
+                super.onBackPressed();
         }else{
-            backPressedTime = tempTime;
-            Toast.makeText(this, "한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
+                backPressedTime = tempTime;
+                Toast.makeText(this, "한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -170,10 +156,17 @@ public class NavigationMain extends AppCompatActivity
                 contentEdit = findViewById(R.id.contents_edit);
                 TextView PictureViewURI = findViewById(R.id.PictureViewURI);
                 intent.putExtra("myEmail", myEmail);
-                intent.putExtra("GroupNo", GroupNo);
+                Log.d("ParsingTest","No3 : "+memoEditFragment.GroupNo);
+                intent.putExtra("GroupNo", memoEditFragment.GroupNo);
                 intent.putExtra("title", titleEdit.getText().toString());
                 intent.putExtra("content", contentEdit.getText().toString());
                 intent.putExtra("pictureViewURI", PictureViewURI.getText().toString());
+                intent.putExtra("CalendarAdd",memoEditFragment.CalendarAdd);
+                if(memoEditFragment.CalendarAdd==1){
+                    intent.putExtra("Year",memoEditFragment.Year);
+                    intent.putExtra("Month",memoEditFragment.Month);
+                    intent.putExtra("Date",memoEditFragment.Date);
+                }
                 startActivityForResult(intent, RETURN_SPECIAL);
             }
             else {
@@ -224,6 +217,7 @@ public class NavigationMain extends AppCompatActivity
     public void UploadMemo(String URI){
         long Now = System.currentTimeMillis();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd hh:mm:ss", Locale.KOREA);
+        MemoEditFragment memoEditFragment = (MemoEditFragment)getSupportFragmentManager().findFragmentById(R.id.nav_main);
         String date = simpleDateFormat.format(new Date(Now));
         SaveMemo saveMemo = new SaveMemo();
         titleEdit = findViewById(R.id.title_edit);
@@ -235,24 +229,48 @@ public class NavigationMain extends AppCompatActivity
         saveMemo.setUploaderEmail(myEmail);
         saveMemo.setLastEditDate(date);
         saveMemo.setEditSystemTime(Now);
-        saveMemo.setCheckGroupNo(GroupNo);
+        Log.d("ParsingTest","No2 : "+memoEditFragment.GroupNo);
+        saveMemo.setCheckGroupNo(memoEditFragment.GroupNo);
         saveMemo.setTitle(titleEdit.getText().toString());
         saveMemo.setMemo(contentEdit.getText().toString());
+        if(memoEditFragment.CalendarAdd==1){
+            saveMemo.setYear(memoEditFragment.Year);
+            saveMemo.setMonth(memoEditFragment.Month);
+            saveMemo.setDate(memoEditFragment.Date);
+            saveMemo.setHour(12);
+            saveMemo.setMinute(0);
+        }
 
         database.getReference().child("MemoList").push().setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(NavigationMain.this, "업로드 완료!", Toast.LENGTH_SHORT).show();
+                if(memoEditFragment.CalendarAdd==0) {
+                    memoList.setArguments(bundle);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.nav_main, memoList)
+                            .commit();
+                    isEdit = 0;
+                }
+                else if(memoEditFragment.CalendarAdd==1){
+                    calendarFragment.setArguments(bundle);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.nav_main, calendarFragment)
+                            .commit();
+                    isEdit = 0;
+                }
             }
         });
     }
 
 
+
+
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        fab.setVisibility(View.VISIBLE);
+
 
         int id = item.getItemId();
         if(id == R.id.map) {
@@ -261,6 +279,7 @@ public class NavigationMain extends AppCompatActivity
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,mainMapFragment)
                     .commit();
+            isEdit = 0;
         }
         else if (id == R.id.note) {
 
@@ -268,16 +287,19 @@ public class NavigationMain extends AppCompatActivity
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,memoList)
                     .commit();
+            isEdit = 0;
         } else if (id == R.id.calendar) {
 
             calendarFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,calendarFragment)
                     .commit();
+            isEdit = 0;
         } else if (id == R.id.group) {
             Intent intent = new Intent(getApplicationContext(),messenger.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.putExtra("myEmail",myEmail);
+            isEdit = 0;
             startActivity(intent);
         }
 
@@ -289,30 +311,22 @@ public class NavigationMain extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == GROUP_MEMO_NO){
+        if(requestCode==RETURN_SPECIAL){
             if(resultCode==RESULT_OK){
-                GroupNo = data.getIntExtra("GroupNo",0);
-                MemoEditFragment memoEditFragment = new MemoEditFragment();
-                bundle.putInt("GroupNo",GroupNo);
-                memoEditFragment.setArguments(bundle);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.nav_main,memoEditFragment)
-                        .commitAllowingStateLoss();
-                fab.setVisibility(View.INVISIBLE);
-            }
-            else {
-
-            }
-        }
-        else if(requestCode==RETURN_SPECIAL){
-            if(resultCode==RESULT_OK){
-                MemoList memoList = new MemoList();
-                bundle.putString("myEmail",myEmail);
-                memoList.setArguments(bundle);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.nav_main,memoList)
-                        .commitAllowingStateLoss();
-                fab.setVisibility(View.VISIBLE);
+                if(memoEditFragment.CalendarAdd==0) {
+                    memoList.setArguments(bundle);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.nav_main, memoList)
+                            .commit();
+                    isEdit = 0;
+                }
+                else if(memoEditFragment.CalendarAdd==1){
+                    calendarFragment.setArguments(bundle);
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.nav_main, calendarFragment)
+                            .commit();
+                    isEdit = 0;
+                }
             }
         }
     }

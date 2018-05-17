@@ -3,6 +3,7 @@ package org.capstone.findbuddies;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,6 +69,7 @@ public class AddGroupMemo extends AppCompatActivity {
                 }
 
                 getIntent.putExtra("GroupNo",GroupNo);
+                Log.d("ParsingTest","no??: "+GroupNo);
                 setResult(RESULT_OK,getIntent);
                 finish();
             }
