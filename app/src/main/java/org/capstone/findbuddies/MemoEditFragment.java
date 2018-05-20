@@ -53,6 +53,7 @@ public class MemoEditFragment extends Fragment{
     TextView PictureViewURI;
     Double ReadLatitude;
     Double ReadLongitude;
+    String ReadAddress;
     String PicturePath;
     String myEmail;
     int GroupNo;
@@ -175,7 +176,9 @@ public class MemoEditFragment extends Fragment{
         }
         ReadLatitude = getArguments().getDouble("ReadLatitude",0);
         ReadLongitude = getArguments().getDouble("ReadLongitude",0);
-
+        if(ReadLatitude!=0){
+            ReadAddress = getArguments().getString("ReadAddress",null);
+        }
     }
 
     @Override
@@ -328,7 +331,10 @@ public class MemoEditFragment extends Fragment{
             saveMemo.setImageUrl(URI);
         }
         saveMemo.setLatitude(ReadLatitude);
-        saveMemo.setLatitude(ReadLongitude);
+        saveMemo.setLongitude(ReadLongitude);
+        if(ReadLatitude!=0){
+            saveMemo.setAddress(ReadAddress);
+        }
         saveMemo.setCheckGroupNo(GroupNo);
 
         long Now = System.currentTimeMillis();

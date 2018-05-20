@@ -227,7 +227,7 @@ public class CalendarFragment extends Fragment {
 
                             if(year == value.getYear()&& month == value.getMonth()&& dayOfMonth == value.getDate()){
                                 memoItem = new CalendarMemoItem(value.getCheckGroupNo(),value.getUploaderEmail(),snapshot.getKey(),value.getYear(),value.getMonth(),value.getDate(),
-                                        value.getHour(),value.getMinute(),value.getTitle(),value.getMemo(),value.getImageUrl(),value.getLatitude(),value.getLongitude());
+                                        value.getHour(),value.getMinute(),value.getTitle(),value.getMemo(),value.getImageUrl(),value.getLatitude(),value.getLongitude(),value.getAddress());
                                 Memos.add(memoItem);
                             }
 

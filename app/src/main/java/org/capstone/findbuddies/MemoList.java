@@ -2,8 +2,6 @@ package org.capstone.findbuddies;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Address;
-import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -16,10 +14,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
@@ -31,10 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -47,10 +41,6 @@ public class MemoList extends Fragment {
     boolean Check;
     MemoAdapter adapter;
     FloatingActionButton fab;
-    private List<String> uidLists = new ArrayList<>();
-    private ArrayList<Integer> hour = new ArrayList<>();
-    private ArrayList<Integer> minute = new ArrayList<>();
-    private ArrayList<String> Uploader = new ArrayList<>();
     private static final int GROUP_MEMO_NO = 3000;
     int GroupNo;
 
@@ -68,13 +58,6 @@ public class MemoList extends Fragment {
         adapter = new MemoAdapter();
 
         listview.setAdapter(adapter);
-
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ReadMemo(position);
-            }
-        });
         listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -84,14 +67,10 @@ public class MemoList extends Fragment {
                 builder.setPositiveButton("삭제",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                database.getReference().child("MemoList").child(uidLists.get(position)).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                database.getReference().child("MemoList").child(Memos.get(position).getUidKey()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
                                         Memos.remove(position);
-                                        uidLists.remove(position);
-                                        hour.remove(position);
-                                        minute.remove(position);
-                                        Uploader.remove(position);
                                         adapter.notifyDataSetChanged();
                                     }
                                 });
@@ -141,50 +120,25 @@ public class MemoList extends Fragment {
             database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    uidLists.clear();
                     Memos.clear();
-                    hour.clear();
-                    minute.clear();
-                    Uploader.clear();
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         SaveMemo value = snapshot.getValue(SaveMemo.class);
                         String uidKey = snapshot.getKey();
                         if(value!=null){
                             if(myEmail.equals(value.getUploaderEmail()) || CheckMyEmailInGroup(value.getCheckGroupNo())){
                                 MemoItem memoItem;
-                                String address = null;
-                                if(value.getLatitude()!=0){
-                                    address = getLocationAddress(value.getLatitude(),value.getLongitude());
-                                }
-                                if(value.getMonth()==0){
-                                    if(value.getLatitude()==0){
-                                        memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
-                                    }
-                                    else{
-                                        memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
-                                    }
 
+                                if(value.getLatitude()==0){
+                                    memoItem = new MemoItem(value.getEditSystemTime(), value.getCheckGroupNo(), value.getUploaderEmail(), uidKey,value.getYear(), value.getMonth(),
+                                            value.getDate(), value.getHour(), value.getMinute(),value.getTitle(),value.getMemo(),value.getImageUrl(),
+                                            0, 0, null);
                                 }
                                 else{
-                                    String date_label = value.getMonth()+"월 "+value.getDate()+"일";
-                                    if(value.getLatitude()==0){
-                                        memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
-                                    }
-                                    else {
-                                        memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
-                                    }
-
-
+                                    memoItem = new MemoItem(value.getEditSystemTime(), value.getCheckGroupNo(), value.getUploaderEmail(), uidKey,value.getYear(), value.getMonth(),
+                                            value.getDate(), value.getHour(), value.getMinute(),value.getTitle(),value.getMemo(),value.getImageUrl(),
+                                            value.getLatitude(), value.getLongitude(), value.getAddress());
                                 }
-                                uidLists.add(uidKey);
                                 addMemo(memoItem);
-                                hour.add(value.getHour());
-                                minute.add(value.getMinute());
-                                Uploader.add(value.getUploaderEmail());
                             }
                         }
                     }
@@ -223,127 +177,101 @@ public class MemoList extends Fragment {
             View view = convertView;
             ViewHolder viewHolder;
             if(view==null){
-                view = getLayoutInflater().inflate(R.layout.memo_item,null);
+                view = getLayoutInflater().inflate(R.layout.memo_list_item,null);
                 viewHolder = new ViewHolder();
-                viewHolder.date_label = view.findViewById(R.id.date_label);
-                viewHolder.group_label = view.findViewById(R.id.group_label);
-                viewHolder.title = view.findViewById(R.id.title);
-                viewHolder.date = view.findViewById(R.id.date);
-                viewHolder.content = view.findViewById(R.id.contents);
-                viewHolder.picture = view.findViewById(R.id.picture);
-                viewHolder.location = view.findViewById(R.id.memo_location);
-                viewHolder.content_layout = view.findViewById(R.id.content_layout);
+                viewHolder.DtContainer = view.findViewById(R.id.dt_container);
+                viewHolder.TmContainer = view.findViewById(R.id.tm_container);
+                viewHolder.AddrContainer = view.findViewById(R.id.addr_container);
+                viewHolder.DtLoad = view.findViewById(R.id.dt_load);
+                viewHolder.TmLoad = view.findViewById(R.id.tm_load);
+                viewHolder.AddrLoad = view.findViewById(R.id.addr_load);
+                viewHolder.TitleLoad = view.findViewById(R.id.title_load);
+                viewHolder.ContentLoad = view.findViewById(R.id.content_load);
+                viewHolder.ShowMapBut = view.findViewById(R.id.show_map_but);
+                viewHolder.ShowPicBut = view.findViewById(R.id.show_pic_but);
+                viewHolder.EditMemoBut = view.findViewById(R.id.edit_memo_but);
+                viewHolder.PicLoad = view.findViewById(R.id.pic_load);
 
                 view.setTag(viewHolder);
             }
             else {
                 viewHolder = (ViewHolder)view.getTag();
             }
-//            viewHolder.date_label = view.findViewById(R.id.date_label);
-//            viewHolder.group_label = view.findViewById(R.id.group_label);
-//            viewHolder.title = view.findViewById(R.id.title);
-//            viewHolder.date = view.findViewById(R.id.date);
-//            viewHolder.content = view.findViewById(R.id.contents);
-//            viewHolder.picture = view.findViewById(R.id.picture);
-//            viewHolder.location = view.findViewById(R.id.memo_location);
-//            viewHolder.content_layout = view.findViewById(R.id.content_layout);
             MemoItem Memo = Memos.get(position);
-            viewHolder.date_label.setText(Memo.getDate_label());
-            if(Memo.getDate_label()==null) {
-                viewHolder.date_label.setVisibility(View.GONE);
+
+            if(Memo.getMonth()==0){
+                viewHolder.DtContainer.setVisibility(View.GONE);
+                viewHolder.TmContainer.setVisibility(View.GONE);
             }
             else{
-                viewHolder.date_label.setVisibility(View.VISIBLE);
-                viewHolder.date_label.setText(Memo.getDate_label());
+                viewHolder.DtContainer.setVisibility(View.VISIBLE);
+                viewHolder.TmContainer.setVisibility(View.VISIBLE);
+                String DT = Memo.getYear()+"."+Memo.getMonth()+"."+Memo.getDate();
+                viewHolder.DtLoad.setText(DT);
+                String TM = Memo.getHour()+"시 "+Memo.getMinute()+"분";
+                viewHolder.TmLoad.setText(TM);
             }
-            if(Memo.getGroup_label()==0){
-                viewHolder.group_label.setVisibility(View.GONE);
+            if(Memo.getLatitude()==0){
+                viewHolder.AddrContainer.setVisibility(View.GONE);
             }
-            else {
-                viewHolder.group_label.setVisibility(View.VISIBLE);
+            else{
+                viewHolder.AddrContainer.setVisibility(View.VISIBLE);
+                viewHolder.AddrLoad.setText(Memo.getAddress());
             }
-
-//            if(Memo.getDate_label()==null&&Memo.getGroup_label()==0){
-//                Resources r = getResources();
-//                float pxLeftMargin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, r.getDisplayMetrics());
-//                float pxTopMargin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, r.getDisplayMetrics());
-//                float pxRightMargin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, r.getDisplayMetrics());
-//                float pxBottomMargin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, r.getDisplayMetrics());
-//
-//                LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-//                params.setMargins(Math.round(pxLeftMargin), Math.round(pxTopMargin), Math.round(pxRightMargin), Math.round(pxBottomMargin));
-//                viewHolder.content_layout.setLayoutParams(params);
-//            }
-
-            viewHolder.title.setText(Memo.getTitle());
-            viewHolder.date.setText(Memo.getDate());
-            viewHolder.content.setText(Memo.getContents());
+            viewHolder.TitleLoad.setText(Memo.getTitle());
+            viewHolder.ContentLoad.setText(Memo.getContent());
+            viewHolder.EditMemoBut.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ReadMemo(position);
+                }
+            });
             if(Memo.getPictureURI()!=null){
-                viewHolder.picture.setVisibility(View.VISIBLE);
+                viewHolder.ShowPicBut.setVisibility(View.VISIBLE);
                 StorageReference storageReference = storage.getReferenceFromUrl(Memo.getPictureURI());
                 Glide.with(getContext())
                         .using(new FirebaseImageLoader())
                         .load(storageReference)
-                        .into(viewHolder.picture);
-                viewHolder.picture.setOnClickListener(new View.OnClickListener() {
+                        .into(viewHolder.PicLoad);
+                viewHolder.PicLoad.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        Intent intent = new Intent(getContext(),FullScreenImageView.class);
-//                        intent.putExtra("imageUri",viewHolder.picture.getDrawable());
-//                        startActivity(intent);
+                        Intent intent = new Intent(getContext(),FullScreenImageView.class);
+                        intent.putExtra("imageUri",Memo.getPictureURI());
+                        startActivity(intent);
                     }
                 });
+                viewHolder.ShowPicBut.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(viewHolder.PicLoad.getVisibility()==View.GONE){
+                            viewHolder.PicLoad.setVisibility(View.VISIBLE);
+                        }
+                        else if(viewHolder.PicLoad.getVisibility()==View.VISIBLE){
+                            viewHolder.PicLoad.setVisibility(View.GONE);
+                        }
+                    }
+                });
+
             }
             else{
-                viewHolder.picture.setVisibility(View.GONE);
-            }
-//
-            if(Memo.getLocation()==null){
-                viewHolder.location.setVisibility(View.GONE);
-            }
-            else{
-                viewHolder.location.setVisibility(View.VISIBLE);
-                viewHolder.location.setText(Memo.getLocation());
+                viewHolder.ShowPicBut.setVisibility(View.GONE);
             }
             return view;
         }
         class ViewHolder{
-            TextView date_label;
-            TextView group_label;
-            TextView title;
-            TextView date;
-            TextView content;
-            ImageView picture;
-            TextView location;
-            LinearLayout content_layout;
-        }
-        public String getLocationAddress(double latitude,double longitude){
-            String nowAddress ="현재 위치를 확인 할 수 없습니다.";
-            Geocoder geocoder = new Geocoder(getContext(), Locale.KOREA);
-            List<Address> address;
-            try {
-                if (geocoder != null) {
-                    //세번째 파라미터는 좌표에 대해 주소를 리턴 받는 갯수로
-                    //한좌표에 대해 두개이상의 이름이 존재할수있기에 주소배열을 리턴받기 위해 최대갯수 설정
-                    address = geocoder.getFromLocation(latitude, longitude, 1);
-
-                    if (address != null && address.size() > 0) {
-                        // 주소 받아오기
-                        nowAddress  = address.get(0).getAddressLine(0);
-                        int nation = nowAddress.indexOf("대한민국");
-                        if(nation!=-1){
-                            nowAddress = nowAddress.substring(nation+5);
-                        }
-
-                    }
-                }
-
-            } catch (IOException e) {
-                Toast.makeText(getContext(), "주소를 가져 올 수 없습니다.", Toast.LENGTH_LONG).show();
-
-                e.printStackTrace();
-            }
-            return nowAddress;
+            RelativeLayout DtContainer;
+            RelativeLayout TmContainer;
+            RelativeLayout AddrContainer;
+            TextView DtLoad;
+            TextView TmLoad;
+            TextView AddrLoad;
+            TextView TitleLoad;
+            TextView ContentLoad;
+            ImageView ShowMapBut;
+            ImageView ShowPicBut;
+            ImageView EditMemoBut;
+            ImageView PicLoad;
         }
     }
     private void getMyID(String MyEmail) {
@@ -397,26 +325,27 @@ public class MemoList extends Fragment {
         MemoItem memo = Memos.get(position);
         Bundle bundle = new Bundle();
         bundle.putString("myEmail",myEmail);
-        bundle.putInt("GroupNo",memo.getGroup_label());
+        bundle.putInt("GroupNo",memo.getGroupNo());
         bundle.putInt("READ",1);
         bundle.putString("ReadTitle",memo.getTitle());
-        bundle.putString("ReadContent",memo.getContents());
-        bundle.putString("UidKey",uidLists.get(position));
+        bundle.putString("ReadContent",memo.getContent());
+        bundle.putString("UidKey",memo.getUidKey());
         if(memo.getPictureURI()!=null){
             bundle.putString("ReadPictureURI",memo.getPictureURI());
         }
         if(memo.getLatitude()!=0){
             bundle.putDouble("ReadLatitude",memo.getLatitude());
             bundle.putDouble("ReadLongitude",memo.getLongitude());
+            bundle.putString("ReadAddress",memo.getAddress());
         }
-        if(memo.getDayOfMonth()!=0){
+        if(memo.getMonth()!=0){
             bundle.putInt("ReadYear",memo.getYear());
             bundle.putInt("ReadMonth",memo.getMonth());
-            bundle.putInt("ReadDay",memo.getDayOfMonth());
-            bundle.putInt("ReadHour",hour.get(position));
-            bundle.putInt("ReadMinute",minute.get(position));
+            bundle.putInt("ReadDay",memo.getDate());
+            bundle.putInt("ReadHour",memo.getHour());
+            bundle.putInt("ReadMinute",memo.getMinute());
         }
-        bundle.putString("ReadUploader",Uploader.get(position));
+        bundle.putString("ReadUploader",memo.getUploader());
 
         MemoEditFragment memoEditFragment = new MemoEditFragment();
         memoEditFragment.setArguments(bundle);

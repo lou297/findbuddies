@@ -4,139 +4,174 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#ACA4FF"
     tools:context=".ParsingMemo">
 
-
-    <LinearLayout
-        android:id="@+id/firstLayout"
+    <Toolbar
+        android:id="@+id/ParsingToolbar"
+        android:title="자세히"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_margin="5dp">
-        <EditText
-            android:id="@+id/parsing_title_edit"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="제목"
-            android:inputType="text"
-            android:maxLines="1" />
+        android:layout_alignParentTop="true"
+        android:background="#ACA4FF"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        tools:ignore="NewApi" />
 
-        <EditText
-            android:id="@+id/parsing_contents_edit"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:background="@drawable/edit_memo"
-            android:gravity="top"
-            android:hint="내용"
-            android:inputType="textMultiLine|textNoSuggestions"
-            android:padding="8dp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/secondLayout"
-        android:layout_width="match_parent"
+    <RelativeLayout
+        android:id="@+id/date_layout"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/firstLayout"
-        android:orientation="horizontal">
+        android:layout_below="@+id/ParsingToolbar"
+        android:layout_margin="10dp"
+        android:background="@drawable/clickevent"
+        android:gravity="center">
 
-        <RelativeLayout
-            android:id="@+id/date_layout"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="200dp"
-            android:layout_margin="5dp"
-            android:background="@drawable/clickevent"
-            android:gravity="center">
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_centerInParent="true"
+            <TextView
+                android:id="@+id/parsingDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_gravity="center"
-                    android:id="@+id/parsingDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="4월 14일"
-                    android:textColor="#000000"
-                    android:textSize="30sp" />
+                android:layout_gravity="center"
+                android:layout_marginRight="20dp"
+                android:background="#FFF"
+                android:padding="5sp"
+                android:text="4/14 (토)"
+                android:textColor="#ACA4FF"
+                android:textSize="24sp" />
 
-                <TextView
-                    android:layout_gravity="center"
-                    android:id="@+id/parsingTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="오후 7시 35분"
-                    android:textColor="#000000"
-                    android:textSize="24sp" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/parsingTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="#FFF"
+                android:text="오후 7: 35"
+                android:textColor="#ACA4FF"
+                android:textSize="30sp" />
+        </LinearLayout>
 
-            <ImageView
-                android:id="@+id/date_unable"
-                android:layout_width="100dp"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
-                android:background="@drawable/ic_unable"
-                android:visibility="gone" />
+        <ImageView
+            android:id="@+id/date_unable"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@drawable/ic_unable"
+            android:visibility="gone" />
 
-        </RelativeLayout>
+    </RelativeLayout>
 
-        <RelativeLayout
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/date_layout"
+        android:orientation="horizontal">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center">
-            <LinearLayout
-                android:layout_centerInParent="true"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_border"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/parsing_title_edit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <FrameLayout
-                    android:id="@+id/parsing_map_fragment"
+                android:hint="제목"
+                android:textColor="#ACA4FF"
+                android:inputType="text"
+                android:maxLines="1" />
+
+            <EditText
+                android:id="@+id/parsing_contents_edit"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:gravity="top"
+                android:hint="내용"
+                android:textColor="#ACA4FF"
+                android:inputType="textMultiLine|textNoSuggestions"
+                android:padding="8dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:background="#FFF"
+                android:gravity="center">
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="170dp">
-
-                    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-                        xmlns:map="http://schemas.android.com/apk/res-auto"
-                        android:id="@+id/parsing_map"
-                        android:name="com.google.android.gms.maps.MapFragment"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        map:mapType="terrain"
-                        map:liteMode="true"/>
-                </FrameLayout>
-
-                <TextView
-                    android:layout_gravity="center"
-                    android:id="@+id/parsing_map_address"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/parsing_map_fragment"
-                    android:maxLines="3"
-                    android:maxWidth="150dp"
-                    android:text="TextView" />
-            </LinearLayout>
+                    android:layout_centerInParent="true"
+                    android:orientation="vertical">
 
+                    <FrameLayout
+                        android:id="@+id/parsing_map_fragment"
+                        android:layout_width="match_parent"
+                        android:layout_height="170dp">
+
+                        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+                            xmlns:map="http://schemas.android.com/apk/res-auto"
+                            android:id="@+id/parsing_map"
+                            android:name="com.google.android.gms.maps.MapFragment"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            map:liteMode="true"
+                            map:mapType="terrain" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/parsing_map_address"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/parsing_map_fragment"
+                        android:layout_gravity="center"
+                        android:maxLines="3"
+                        android:maxWidth="150dp"
+                        android:text="TextView"
+                        android:textColor="#ACA4FF"/>
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/map_unable"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/ic_unable"
+                    android:visibility="gone" />
+            </RelativeLayout>
 
             <ImageView
-                android:id="@+id/map_unable"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
-                android:background="@drawable/ic_unable"
-                android:visibility="gone" />
-        </RelativeLayout>
-
+                android:layout_height="150dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/boy" />
+        </LinearLayout>
 
 
     </LinearLayout>
+
+
     <Button
         android:id="@+id/save_parsing_memo_but"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="저장"
         android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true"
+        android:text="저장" />
 
 
 </RelativeLayout>

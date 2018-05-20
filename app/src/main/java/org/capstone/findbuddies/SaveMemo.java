@@ -15,6 +15,7 @@ public class SaveMemo {
     int minute;
     double latitude;
     double longitude;
+    String address;
 
     public SaveMemo() {
     }
@@ -129,5 +130,13 @@ public class SaveMemo {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

@@ -40,7 +40,6 @@ public class MemoPicker extends AppCompatActivity {
 
         Calendar calendar = Calendar.getInstance();
         CalendarDay Day = CalendarDay.today();
-
         year = getIntent().getIntExtra("year",Day.getYear());
         month = getIntent().getIntExtra("month",Day.getMonth());
         day = getIntent().getIntExtra("day",Day.getDay());

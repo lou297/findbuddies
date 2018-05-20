@@ -15,6 +15,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -67,7 +70,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
     int minute;
     int decideDate = 0 ;
     int decideTime = 0 ;
-
+    int IsDTorTI = 0;
+    int IsOGorLC = 0;
     LatLng latLng;
 
     int todayMonth;
@@ -92,6 +96,10 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parsing_memo);
+        Toolbar toolbar = findViewById(R.id.ParsingToolbar);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            setActionBar(toolbar);
+        }
         READ = getIntent().getIntExtra("READ",0);
         CalendarAdd = getIntent().getIntExtra("CalendarAdd",0);
         asyncDialog = new ProgressDialog(
@@ -130,9 +138,12 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         storage = FirebaseStorage.getInstance();
         GroupNo = getIntent().getIntExtra("GroupNo",0);
         Log.d("ParsingTest","no111111: "+GroupNo);
-        Date dAte = new Date(System.currentTimeMillis());
-        today = dAte.getDay()-1;
-        todayMonth =dAte.getMonth();
+
+        Calendar cal = Calendar.getInstance();
+        today = cal.get(Calendar.DAY_OF_WEEK)-1;
+        CalendarDay Day = CalendarDay.today();
+        todayMonth = Day.getMonth();
+
         setInitialDate();
         setInitialMemo();
 
@@ -239,9 +250,9 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         if(mapunable==0){
             saveMemo.setLatitude(latLng.latitude);
             saveMemo.setLongitude(latLng.longitude);
+            saveMemo.setAddress(parsingMapAddress.getText().toString());
         }
         String uidKey = getIntent().getStringExtra("UidKey");
-        Log.d("ParsingTest","?? "+uidKey);
         if(uidKey==null) {
             database.getReference().child("MemoList").push().setValue(saveMemo).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
@@ -264,43 +275,6 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         }
     }
 
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        GoogleMap = googleMap;
-        GoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
-        GoogleMap.getUiSettings().setAllGesturesEnabled(false);
-        GoogleMap.getUiSettings().setMapToolbarEnabled(false);
-        getLocationAddress(latLng);
-        if(READ==0) {
-            InitialParsing();
-        }
-        GoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                if(mapunable==0){
-                    Intent intent = new Intent(getApplicationContext(),SelectMapLocation.class);
-                    intent.putExtra("ReadLatitude",latLng.latitude);
-                    intent.putExtra("ReadLongitude",latLng.longitude);
-                    startActivityForResult(intent,SELECTED_PLACE_REQUEST_CODE);
-                }
-            }
-        });
-        GoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng latLng) {
-                if(mapunable==0){
-                    mapunable=1;
-                    mapUnable.setVisibility(View.VISIBLE);
-                }
-                else if(mapunable==1){
-                    mapunable=0;
-                    mapUnable.setVisibility(View.GONE);
-                }
-            }
-        });
-
-    }
 
 
     public void requestMyLocation(){
@@ -437,16 +411,18 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         ParsingText parsingText = new ParsingText();
         List<ParsingText.NameEntity> nameEntities = null;
         try {
+            Log.d("ParsingTest","7");
             nameEntities = parsingText.new DownloadJson().execute(getIntent().getStringExtra("content")).get();
         } catch (InterruptedException e) {
+            Log.d("ParsingTest","1");
             Log.d("ParsingTest",e.getMessage());
         } catch (ExecutionException e) {
+            Log.d("ParsingTest","2");
             Log.d("ParsingTest",e.getMessage());
         }
         if(nameEntities!=null){
-            int IsDTorTI = 0;
-            int IsOGorLC = 0;
             for( ParsingText.NameEntity nameEntity: nameEntities){
+                Log.d("ParsingTest","11");
                 if((nameEntity.type).startsWith("DT_")){
                     Log.d("ParsingTestee","날짜"+nameEntity.text);
                     IsDTorTI = 1;
@@ -475,16 +451,17 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                     Log.d("ParsingTestee","그 외"+nameEntity.text);
                 }
             }
-            if(IsDTorTI==0){
-                dateunable=1;
-                dateUnable.setVisibility(View.VISIBLE);
-            }
-            if(IsOGorLC==0){
-                mapunable=1;
-                mapUnable.setVisibility(View.VISIBLE);
-            }
+            Log.d("ParsingTest","10");
         }
-
+        if(IsDTorTI==0){
+            dateunable=1;
+            dateUnable.setVisibility(View.VISIBLE);
+        }
+        if(IsOGorLC==0){
+            mapunable=1;
+            mapUnable.setVisibility(View.VISIBLE);
+        }
+        Log.d("ParsingTest","8");
         parsingDate = findViewById(R.id.parsingDate);
         parsingTime = findViewById(R.id.parsingTime);
 
@@ -507,6 +484,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         parsingDate.setText(ParsingDate);
         parsingTime.setText(time);
         asyncDialog.dismiss();
+        Log.d("ParsingTest","9");
     }
     public static boolean isNumeric(String s) {
         try {
@@ -711,17 +689,17 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 if(dayOfWeek.equals("일")){
                     subDay += today;
                 } else if(dayOfWeek.equals("월")){
-                    subDay += today-1;
-                } else if(dayOfWeek.equals("화")){
-                    subDay += today-2;
-                } else if(dayOfWeek.equals("수")){
-                    subDay += today-3;
-                } else if(dayOfWeek.equals("목")){
-                    subDay += today-4;
-                } else if(dayOfWeek.equals("금")){
-                    subDay += today-5;
-                } else if(dayOfWeek.equals("토")){
                     subDay += today-6;
+                } else if(dayOfWeek.equals("화")){
+                    subDay += today-5;
+                } else if(dayOfWeek.equals("수")){
+                    subDay += today-4;
+                } else if(dayOfWeek.equals("목")){
+                    subDay += today-3;
+                } else if(dayOfWeek.equals("금")){
+                    subDay += today-2;
+                } else if(dayOfWeek.equals("토")){
+                    subDay += today-1;
                 }
             }
 
@@ -790,6 +768,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
             }
             minute =0;
         }
+        Log.d("ParsingTest","시 : ! "+TimeHour);
         int index4 = Time.indexOf("분");
         if(index3!=-1&&index4!=-1){
             TimeMinutes = Time.substring(index3+1,index4);
@@ -807,6 +786,73 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
             }
             else if(TimeHour.equals("열두")||TimeHour.equals("12")){
                 hour = 12;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }
+            else if(TimeHour.equals("열세")||TimeHour.equals("13")){
+                hour = 13;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }
+            else if(TimeHour.equals("열네")||TimeHour.equals("14")){
+                hour = 14;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }
+            else if(TimeHour.equals("열다섯")||TimeHour.equals("15")){
+                hour = 15;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }else if(TimeHour.equals("열여섯")||TimeHour.equals("16")){
+                hour = 16;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }else if(TimeHour.equals("열일곱")||TimeHour.equals("17")){
+                hour = 17;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }else if(TimeHour.equals("열여덟")||TimeHour.equals("18")){
+                hour = 18;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }else if(TimeHour.equals("열아홉")||TimeHour.equals("19")){
+                hour = 19;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }else if(TimeHour.equals("이십")||TimeHour.equals("20")){
+                hour = 20;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }
+            else if(TimeHour.equals("이십일")||TimeHour.equals("21")){
+                hour = 21;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }
+            else if(TimeHour.equals("이십이")||TimeHour.equals("22")){
+                hour = 22;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }
+            else if(TimeHour.equals("이십삼")||TimeHour.equals("23")){
+                hour = 23;
+                if(index1 !=-1){
+                    hour += 12;
+                }
+            }
+            else if(TimeHour.equals("이십사")||TimeHour.equals("24")){
+                hour = 24;
                 if(index1 !=-1){
                     hour += 12;
                 }
@@ -959,7 +1005,10 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 if (address != null && address.size() > 0) {
                     // 주소 받아오기
                     nowAddress  = address.get(0).getAddressLine(0);
-
+                    int nation = nowAddress.indexOf("대한민국");
+                    if(nation!=-1){
+                        nowAddress = nowAddress.substring(nation+5);
+                    }
                 }
             }
 
@@ -1003,5 +1052,54 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
             }
         }
     }
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        GoogleMap = googleMap;
+        GoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
+        GoogleMap.getUiSettings().setAllGesturesEnabled(false);
+        GoogleMap.getUiSettings().setMapToolbarEnabled(false);
+        getLocationAddress(latLng);
+        if(READ==0) {
+            InitialParsing();
+        }
+        GoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if(mapunable==0){
+                    Intent intent = new Intent(getApplicationContext(),SelectMapLocation.class);
+                    intent.putExtra("ReadLatitude",latLng.latitude);
+                    intent.putExtra("ReadLongitude",latLng.longitude);
+                    startActivityForResult(intent,SELECTED_PLACE_REQUEST_CODE);
+                }
+            }
+        });
+        GoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                if(mapunable==0){
+                    mapunable=1;
+                    mapUnable.setVisibility(View.VISIBLE);
+                }
+                else if(mapunable==1){
+                    mapunable=0;
+                    mapUnable.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_parsing, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.save){
+            UploadImage();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

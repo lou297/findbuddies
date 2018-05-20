@@ -2,35 +2,37 @@ package org.capstone.findbuddies;
 
 public class MemoItem {
     long lastSystemtime;
-    String date_label;
+    int GroupNo;
+    String uploader;
+    String uidKey;
     int year;
     int month;
-    int dayOfMonth;
-    int group_label;
+    int date;
+    int hour;
+    int minute;
     String title;
-    String contents;
-    String date;
+    String content;
     String pictureURI;
-    String location;
     double latitude;
     double longitude;
+    String address;
 
-    public MemoItem(long lastSystemtime,String date_label,int year,int month,int dayOfMonth, int group_label
-            , String title, String contents, String date, String pictureURI, String location
-    ,double latitude,double longitude) {
+    public MemoItem(long lastSystemtime, int groupNo, String uploader, String uidKey, int year, int month, int date, int hour, int minute, String title, String content, String pictureURI, double latitude, double longitude, String address) {
         this.lastSystemtime = lastSystemtime;
-        this.date_label = date_label;
+        GroupNo = groupNo;
+        this.uploader = uploader;
+        this.uidKey = uidKey;
         this.year = year;
         this.month = month;
-        this.dayOfMonth = dayOfMonth;
-        this.group_label = group_label;
-        this.title = title;
-        this.contents = contents;
         this.date = date;
+        this.hour = hour;
+        this.minute = minute;
+        this.title = title;
+        this.content = content;
         this.pictureURI = pictureURI;
-        this.location = location;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.address = address;
     }
 
     public long getLastSystemtime() {
@@ -41,12 +43,28 @@ public class MemoItem {
         this.lastSystemtime = lastSystemtime;
     }
 
-    public String getDate_label() {
-        return date_label;
+    public int getGroupNo() {
+        return GroupNo;
     }
 
-    public void setDate_label(String date_label) {
-        this.date_label = date_label;
+    public void setGroupNo(int groupNo) {
+        GroupNo = groupNo;
+    }
+
+    public String getUploader() {
+        return uploader;
+    }
+
+    public void setUploader(String uploader) {
+        this.uploader = uploader;
+    }
+
+    public String getUidKey() {
+        return uidKey;
+    }
+
+    public void setUidKey(String uidKey) {
+        this.uidKey = uidKey;
     }
 
     public int getYear() {
@@ -65,20 +83,28 @@ public class MemoItem {
         this.month = month;
     }
 
-    public int getDayOfMonth() {
-        return dayOfMonth;
+    public int getDate() {
+        return date;
     }
 
-    public void setDayOfMonth(int dayOfMonth) {
-        this.dayOfMonth = dayOfMonth;
+    public void setDate(int date) {
+        this.date = date;
     }
 
-    public int getGroup_label() {
-        return group_label;
+    public int getHour() {
+        return hour;
     }
 
-    public void setGroup_label(int group_label) {
-        this.group_label = group_label;
+    public void setHour(int hour) {
+        this.hour = hour;
+    }
+
+    public int getMinute() {
+        return minute;
+    }
+
+    public void setMinute(int minute) {
+        this.minute = minute;
     }
 
     public String getTitle() {
@@ -89,20 +115,12 @@ public class MemoItem {
         this.title = title;
     }
 
-    public String getContents() {
-        return contents;
+    public String getContent() {
+        return content;
     }
 
-    public void setContents(String contents) {
-        this.contents = contents;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public String getPictureURI() {
@@ -111,14 +129,6 @@ public class MemoItem {
 
     public void setPictureURI(String pictureURI) {
         this.pictureURI = pictureURI;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
     }
 
     public double getLatitude() {
@@ -135,6 +145,14 @@ public class MemoItem {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
 

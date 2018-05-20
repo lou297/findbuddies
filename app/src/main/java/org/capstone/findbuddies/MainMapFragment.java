@@ -15,10 +15,8 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,9 +56,8 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
     ListView listview;
     MapMemoAdaptor adaptor;
     ArrayList<MemoItem> Memos = new ArrayList<>();
-    ArrayList<Double> latitudes = new ArrayList<>();
-    ArrayList<Double> longitudes = new ArrayList<>();
     FusedLocationProviderClient mFusedLocationProviderClient;
+    int GroupItemSelect = 0;
     int ReadMemo = 0;
     @Nullable
     @Override
@@ -86,21 +83,6 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
 
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MemoItem memo = Memos.get(position);
-                listview.setVisibility(View.GONE);
-                TextView title = rootView.findViewById(R.id.title);
-                TextView content = rootView.findViewById(R.id.content);
-                title.setText(memo.getTitle());
-                content.setText(memo.getContents());
-                LinearLayout MapMemo = rootView.findViewById(R.id.map_memo);
-                MapMemo.setVisibility(View.VISIBLE);
-                ReadMemo = 1;
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitudes.get(position),longitudes.get(position)),15));
-            }
-        });
 
 
         //마시멜로 이상이면 권한 요청하기
@@ -129,8 +111,6 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Memos.clear();
-                    latitudes.clear();
-                    longitudes.clear();
                     for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                         SaveMemo value = snapshot.getValue(SaveMemo.class);
                         String uidKey = snapshot.getKey();
@@ -139,19 +119,13 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
                                 MemoItem memoItem;
                                 String address = null;
                                 if(value.getLatitude()!=0){
-                                    address = getLocationAddress(value.getLatitude(),value.getLongitude());
-                                    if(value.getMonth()==0){
-                                        memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
-                                    }
-                                    else{
-                                        String date_label = value.getMonth()+"월 "+value.getDate()+"일";
-                                        memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-                                                value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
-                                    }
+
+                                    memoItem = new MemoItem(value.getEditSystemTime(),value.getCheckGroupNo(),value.getUploaderEmail(),uidKey,value.getYear(),
+                                            value.getMonth(),value.getDate(),value.getHour(),value.getMinute(),value.getTitle(),value.getMemo(),
+                                            value.getImageUrl(),value.getLatitude(),value.getLongitude(),value.getAddress());
+
+
                                     addMemo(memoItem);
-                                    latitudes.add(value.getLatitude());
-                                    longitudes.add(value.getLongitude());
                                 }
                             }
                         }
@@ -203,15 +177,15 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
                 viewHolder = (ViewHolder)view.getTag();
             }
             MemoItem Memo = Memos.get(position);
-            viewHolder.memo.setText(Memo.getContents());
-            viewHolder.location.setText(Memo.getLocation());
-            if(Memo.getGroup_label()!=0){
+            viewHolder.memo.setText(Memo.getContent());
+            viewHolder.location.setText(Memo.getAddress());
+            if(Memo.getGroupNo()!=0){
                 viewHolder.group.setVisibility(View.VISIBLE);
             }
             else {
                 viewHolder.group.setVisibility(View.GONE);
             }
-            if(Memo.getDayOfMonth()!=0){
+            if(Memo.getMonth()!=0){
                 viewHolder.date.setVisibility(View.VISIBLE);
             }
             else {
@@ -223,6 +197,22 @@ public class MainMapFragment extends Fragment implements OnMapReadyCallback{
             else {
                 viewHolder.photo.setVisibility(View.GONE);
             }
+            viewHolder.group.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(GroupItemSelect==0){
+                        viewHolder.memo.setText("일");
+                    }else if(GroupItemSelect==1){
+                        viewHolder.memo.setText("영");
+                    }
+
+                    if(GroupItemSelect==0){
+                        GroupItemSelect=1;
+                    }else if(GroupItemSelect==1){
+                        GroupItemSelect=0;
+                    }
+                }
+            });
             return view;
         }
         class ViewHolder{
