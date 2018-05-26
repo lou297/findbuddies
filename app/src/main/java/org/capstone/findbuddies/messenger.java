@@ -10,7 +10,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -83,9 +82,10 @@ public class messenger extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.notice_ballon:
-                Toast.makeText(this, "버튼 눌림", Toast.LENGTH_SHORT).show();
-                Intent notice = new Intent(getApplication(),NoticeList.class);
-                startActivity(notice);
+//                Toast.makeText(this, "버튼 눌림", Toast.LENGTH_SHORT).show();
+//                Intent notice = new Intent(getApplication(),NoticeList.class);
+//                startActivity(notice);
+                startService(new Intent(this,NotificationService.class));
                 return true;
 
             case R.id.logout:

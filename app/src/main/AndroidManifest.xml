@@ -63,6 +63,14 @@
             android:name=".NavigationMain"
             android:label="@string/title_activity_navigation_main"
             android:theme="@style/AppTheme" />
+        <service
+            android:name=".NotificationService"
+            android:exported="false" />
+
+        <receiver
+            android:name=".NotificationReceiver"
+            android:enabled="true"
+            android:exported="false" />
         <activity android:name=".MemoPicker" />
         <activity android:name=".ParsingMemo" />
         <activity android:name=".GoogleVision" />

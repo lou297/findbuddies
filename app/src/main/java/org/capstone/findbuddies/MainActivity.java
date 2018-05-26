@@ -1,6 +1,12 @@
 package org.capstone.findbuddies;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -63,7 +69,17 @@ public class MainActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                        NotificationChannel channelMessage  = new NotificationChannel("ChannelId","ChannelName", NotificationManager.IMPORTANCE_DEFAULT);
+                        channelMessage.setDescription("channel description");
+                        channelMessage.enableLights(true);
+                        channelMessage.setLightColor(Color.GREEN);
+                        channelMessage.enableVibration(true);
+                        channelMessage.setVibrationPattern(new long[]{100, 200, 100, 200});
+                        channelMessage.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+                        notificationManager.createNotificationChannel(channelMessage);
+                    }
                     // User is signed in
                     Toast.makeText(getApplicationContext(),"zzz",Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(getApplicationContext(),NavigationMain.class);
