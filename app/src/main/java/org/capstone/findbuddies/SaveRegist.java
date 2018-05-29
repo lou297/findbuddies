@@ -9,8 +9,7 @@ public class SaveRegist {
     String savedName;
     String savedEmail;
     String savedPwd;
-
-
+    int notificationOn;
 
     public String getSavedID() {
         return savedID;
@@ -42,5 +41,13 @@ public class SaveRegist {
 
     public void setSavedPwd(String savedPwd) {
         this.savedPwd = savedPwd;
+    }
+
+    public int getNotificationOn() {
+        return notificationOn;
+    }
+
+    public void setNotificationOn(int notificationOn) {
+        this.notificationOn = notificationOn;
     }
 }

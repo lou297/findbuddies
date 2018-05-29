@@ -49,6 +49,7 @@ public class NavigationMain extends AppCompatActivity
     MemoEditFragment memoEditFragment = new MemoEditFragment();
     MemoList memoList = new MemoList();
     CalendarFragment calendarFragment = new CalendarFragment();
+    SettingFragment settingFragment = new SettingFragment();
     private final long FINISH_INTERVAL_TIME = 2000;
     private long backPressedTime = 0;
     private static final int GROUP_MEMO_NO = 3000;
@@ -67,8 +68,9 @@ public class NavigationMain extends AppCompatActivity
         setIDName(myEmail);
         bundle = new Bundle();
         bundle.putString("myEmail",myEmail);
+        memoList.setArguments(bundle);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.nav_main,new MainMapFragment())
+                .replace(R.id.nav_main,memoList)
                 .commit();
 
 
@@ -124,6 +126,12 @@ public class NavigationMain extends AppCompatActivity
                     .replace(R.id.nav_main,calendarFragment)
                     .commit();
             isEdit = 0;
+        } else if(isEdit==3) {
+            memoList.setArguments(bundle);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.nav_main,memoList)
+                    .commit();
+            isEdit=0;
         }
         else if(0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime){
                 super.onBackPressed();
@@ -289,7 +297,6 @@ public class NavigationMain extends AppCompatActivity
                     .commit();
             isEdit = 0;
         } else if (id == R.id.calendar) {
-
             calendarFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,calendarFragment)
@@ -301,6 +308,12 @@ public class NavigationMain extends AppCompatActivity
             intent.putExtra("myEmail",myEmail);
             isEdit = 0;
             startActivity(intent);
+        } else if( id == R.id.setting) {
+            settingFragment.setArguments(bundle);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.nav_main,settingFragment)
+                    .commit();
+            isEdit = 3;
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

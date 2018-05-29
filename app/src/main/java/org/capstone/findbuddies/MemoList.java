@@ -238,6 +238,7 @@ public class MemoList extends Fragment {
                     public void onClick(View v) {
                         Intent intent = new Intent(getContext(),FullScreenImageView.class);
                         intent.putExtra("imageUri",Memo.getPictureURI());
+                        intent.putExtra("Uploaded",1);
                         startActivity(intent);
                     }
                 });

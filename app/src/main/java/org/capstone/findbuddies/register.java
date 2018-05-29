@@ -3,6 +3,7 @@ package org.capstone.findbuddies;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -13,11 +14,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.ArrayList;
-import java.util.Date;
+import com.google.firebase.database.ValueEventListener;
 
 public class register extends AppCompatActivity {
     int check = 0;
@@ -63,45 +63,39 @@ public class register extends AppCompatActivity {
         String GetName = name.getText().toString();
         String GetEmail = email.getText().toString();
         String GetPwd = pwd.getText().toString();
-
-        Toast.makeText(getApplicationContext(),"dfsdf.",Toast.LENGTH_LONG);
-        if(GetId.getBytes().length==0){
-            Toast toast = Toast.makeText(getApplicationContext(),"dfsdf3.",Toast.LENGTH_LONG);
-            toast.show();
+        if(GetEmail.getBytes().length<5)
+            check =2;
+        if(GetPwd.getBytes().length<6)
+            check = 3;
+        if(GetId.getBytes().length==0)
             check = 1;
-        }
-        if(GetName.getBytes().length==0){
-            Toast toast = Toast.makeText(getApplicationContext(),"dfsdf1.",Toast.LENGTH_LONG);
-            toast.show();
+        if(GetName.getBytes().length==0)
             check = 1;
-        }
-        if(GetEmail.getBytes().length==0){
-            Toast toast = Toast.makeText(getApplicationContext(),"dfsdf2.",Toast.LENGTH_LONG);
-            toast.show();
+        if(GetEmail.getBytes().length==0)
             check = 1;
-        }
-        if(GetPwd.getBytes().length==0){
-            Toast toast = Toast.makeText(getApplicationContext(),"dfsdf4.",Toast.LENGTH_LONG);
-            toast.show();
+        if(GetPwd.getBytes().length==0)
             check = 1;
-        }
-
-        if(check == 1){
-            Toast toast = Toast.makeText(getApplicationContext(),"정보를 모두 입력해주세요.",Toast.LENGTH_LONG);
-            toast.show();
-        }
+        if(CheckIsExistEmail(GetEmail))
+            check = 4;
+        if(CheckIsExistID(GetId))
+            check = 5;
+        if(check == 1)
+            Toast.makeText(this, "정보를 모두 입력해주세요.", Toast.LENGTH_SHORT).show();
+        else if(check == 2)
+            Toast.makeText(this, "너무 짧은 이메일 주소입니다.", Toast.LENGTH_SHORT).show();
+        else if(check==3)
+            Toast.makeText(this, "너무 짧은 비밀번호입니다.", Toast.LENGTH_SHORT).show();
+        else if(check ==4)
+            Toast.makeText(this, "이미 존재하는 이메일 주소입니다.", Toast.LENGTH_SHORT).show();
+        else if(check ==5)
+            Toast.makeText(this, "이미 존재하는 아이디 입니다.", Toast.LENGTH_SHORT).show();
         else if (check == 0){
-            Toast toast = Toast.makeText(getApplicationContext(),"정보 입력됨.",Toast.LENGTH_LONG);
-            toast.show();
 //            CreateUser(GetEmail,GetPwd);
-            create(GetEmail,GetPwd);
-            UploadData1(GetId,GetName,GetEmail,GetPwd);
-            UploadData2(GetEmail);
-            finish();
+            create(GetId,GetName,GetEmail,GetPwd);
         }
     }
 
-    private void create(String email,String password){
+    private void create(String ID, String Name,String email,String password){
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -109,7 +103,8 @@ public class register extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
 //                            Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            Log.d("ParsingTest","와이..ㅋ");
+                            UploadData1(ID,Name,email,password);
 //                            updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -124,61 +119,64 @@ public class register extends AppCompatActivity {
                 });
     }
 
-    private void CreateUser(String email,String password){
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-//                            Log.d(TAG, "createUserWithEmail:success");
-//                            FirebaseUser user = mAuth.getCurrentUser();
-//                            updateUI(user);
-                            Toast.makeText(register.this, "등록 성공", Toast.LENGTH_SHORT).show();
-                        } else {
-                            // If sign in fails, display a message to the user.
-//                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(getApplicationContext(), "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-//                            updateUI(null);
-                        }
-
-                        // ...
-                    }
-                });
-    }
 
     public void UploadData1(String id,String name, String email,String pwd){
+        Log.d("ParsingTest","와이..");
+        Toast.makeText(this, "와이...", Toast.LENGTH_SHORT).show();
         SaveRegist saveRegist = new SaveRegist();
         saveRegist.setSavedID(id);
         saveRegist.setSavedName(name);
         saveRegist.setSavedEmail(email);
         saveRegist.setSavedPwd(pwd);
-        Toast.makeText(this, "upload", Toast.LENGTH_SHORT).show();
-
-
+        saveRegist.setNotificationOn(0);
+        Toast.makeText(this, "회원가입 완료", Toast.LENGTH_SHORT).show();
         database.getReference().child("UserInfo").push().setValue(saveRegist);
+        finish();
 
     }
 
-    public void UploadData2(String email){
-        SaveUserGPS saveUserGPS = new SaveUserGPS();
-        saveUserGPS.setUserEmail(email);
-        saveUserGPS.setGpsPermission(false);
-        ArrayList<LocationInfo> newList1 = new ArrayList<>();
-        ArrayList<Date> newList2 = new ArrayList<>();
-        saveUserGPS.setGpsList(newList1);
-        saveUserGPS.setTimeList(newList2);
+    private boolean CheckIsExistEmail(String email){
+        final boolean[] Exist = {false};
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if(value!=null){
+                        if(value.getSavedEmail().equals(email)){
+                            Exist[0] = true;
+                        }
+                    }
+                }
+            }
 
-        database.getReference().child("UserGPS").push().setValue(saveUserGPS);
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        return Exist[0];
     }
+    private boolean CheckIsExistID(String ID){
+        final boolean[] Exist = {false};
+        database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    SaveRegist value = snapshot.getValue(SaveRegist.class);
+                    if(value!=null){
+                        if(value.getSavedID().equals(ID)){
+                            Exist[0] = true;
+                        }
+                    }
+                }
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-//        updateUI(currentUser);
+            }
+        });
+        return Exist[0];
     }
 }

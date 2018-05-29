@@ -80,17 +80,17 @@ public class Group extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 int GroupNo = groups.get(position).getGroupNo();
                 if(CheckPermission(GroupNo)){
-                    int groupsize = groups.get(position).getMemberIdList().size();
-                    ArrayList<String> groupIdList= groups.get(position).getMemberIdList();
-                    ArrayList<String> groupNameList = groups.get(position).getMemeberNameList();
-                    Intent intent = new Intent(getContext(),ShowMap.class);
-                    intent.putExtra("no",GroupNo);
-                    intent.putExtra("size",groupsize);
-                    intent.putStringArrayListExtra("IdList",groupIdList);
-                    intent.putStringArrayListExtra("NameList",groupNameList);
-                    intent.putExtra("MyEmail",MyEmail);
-                    intent.putExtra("MyName",MyName);
-                    startActivity(intent);
+//                    int groupsize = groups.get(position).getMemberIdList().size();
+//                    ArrayList<String> groupIdList= groups.get(position).getMemberIdList();
+//                    ArrayList<String> groupNameList = groups.get(position).getMemeberNameList();
+//                    Intent intent = new Intent(getContext(),ShowMap.class);
+//                    intent.putExtra("no",GroupNo);
+//                    intent.putExtra("size",groupsize);
+//                    intent.putStringArrayListExtra("IdList",groupIdList);
+//                    intent.putStringArrayListExtra("NameList",groupNameList);
+//                    intent.putExtra("MyEmail",MyEmail);
+//                    intent.putExtra("MyName",MyName);
+//                    startActivity(intent);
                 }
                 else{
                     RestrainMessage(GroupNo);

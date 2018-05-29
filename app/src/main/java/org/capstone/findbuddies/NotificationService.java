@@ -51,7 +51,9 @@ public class NotificationService extends IntentService {
                 .setContentText("메모를 바로 저장해 보세요.")
                 .setShowWhen(false)
                 .addAction(replyAction)
-                .setDefaults(Notification.FLAG_NO_CLEAR);
+                .setOngoing(true)
+                .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND|Notification.DEFAULT_VIBRATE);
+
 
         NotificationManagerCompat NotificationManager = NotificationManagerCompat.from(this);
         NotificationManager.notify(NotificationId, mBuilder.build());

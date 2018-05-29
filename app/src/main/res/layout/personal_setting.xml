@@ -1,5 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ACA4FF">
 
-</RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="100dp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:layout_marginTop="100dp"
+        android:background="#FFF"
+        android:gravity="center_vertical|center_horizontal"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:id="@+id/set_first"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="30dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/Text1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:text="아이디 : "
+                android:textColor="#ACA4FF"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/MyIDText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MyIDField"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/EditMyIDText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#000"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/EditMyIDBut"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="Edit" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/set_second"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/set_first"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/Text2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이름 : "
+                android:textColor="#ACA4FF"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/MyNameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MyNameField"
+                android:textColor="#000"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/EditMyNameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#000"
+                android:textSize="16sp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/EditMyNameBut"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="Edit" />
+        </LinearLayout>
+
+
+        <Switch
+            android:id="@+id/notif_on_off_but"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/set_second"
+            android:layout_marginTop="30dp"
+            android:checked="true"
+            android:text="알림 메모 저장 기능"
+            android:textColor="#ACA4FF"
+            android:textOff="OFF"
+            android:textOn="ON"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/setting_logout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/notif_on_off_but"
+            android:layout_marginTop="30dp"
+            android:layout_centerHorizontal="true"
+            android:text="로그아웃"
+            android:textColor="#ACA4FF"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/EditBut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:text="변경"
+            android:textColor="#ACA4FF"
+            android:textSize="16sp" />
+    </RelativeLayout>
+</LinearLayout>
