@@ -79,22 +79,6 @@ public class Group extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 int GroupNo = groups.get(position).getGroupNo();
-                if(CheckPermission(GroupNo)){
-//                    int groupsize = groups.get(position).getMemberIdList().size();
-//                    ArrayList<String> groupIdList= groups.get(position).getMemberIdList();
-//                    ArrayList<String> groupNameList = groups.get(position).getMemeberNameList();
-//                    Intent intent = new Intent(getContext(),ShowMap.class);
-//                    intent.putExtra("no",GroupNo);
-//                    intent.putExtra("size",groupsize);
-//                    intent.putStringArrayListExtra("IdList",groupIdList);
-//                    intent.putStringArrayListExtra("NameList",groupNameList);
-//                    intent.putExtra("MyEmail",MyEmail);
-//                    intent.putExtra("MyName",MyName);
-//                    startActivity(intent);
-                }
-                else{
-                    RestrainMessage(GroupNo);
-                }
 
             }
         });
@@ -234,68 +218,8 @@ public class Group extends Fragment {
         }
     }
 
-    public boolean CheckPermission(final int groupNo){
-        final boolean[] bool = {true};
-        database.child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    SaveGroupList value = snapshot.getValue(SaveGroupList.class);
-                    if(value!=null&&value.getGroupNo()==groupNo){
-                        for(int i = 0 ; i<value.getMemberPermission().size();i++){
-                            if(value.getMemberPermission().get(i)==0){
-                                bool[0] = false;
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
 
 
-        return bool[0];
-    }
-
-    public void RestrainMessage(final int groupNo){
-        final String[] NotPermMembers = {""};
-        database.child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    SaveGroupList value = snapshot.getValue(SaveGroupList.class);
-                    if(value!=null&&value.getGroupNo()==groupNo){
-                        for(int i = 0 ; i<value.getMemberPermission().size();i++){
-                            if(value.getMemberPermission().get(i)==0){
-                                NotPermMembers[0] += (value.getMembers().get(i)+" ");
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        NotPermMembers[0] += "회원님이 초청을 수락하지 않으셨습니다.";
-        new AlertDialog.Builder(getContext())
-                .setTitle("Restrained")
-                .setMessage(NotPermMembers[0])
-                .setNeutralButton("확인", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                }).show();
-
-    }
 
 
 }

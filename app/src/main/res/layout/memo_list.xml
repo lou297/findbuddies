@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:title="메모장"
-        android:background="#ACA4FF"/>
+        android:background="#FFF"/>
 
     <ListView
         android:layout_below="@+id/memoList_toolbar"

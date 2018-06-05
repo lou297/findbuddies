@@ -14,19 +14,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -180,17 +177,14 @@ public class MemoList extends Fragment {
                 view = getLayoutInflater().inflate(R.layout.memo_list_item,null);
                 viewHolder = new ViewHolder();
                 viewHolder.DtContainer = view.findViewById(R.id.dt_container);
-                viewHolder.TmContainer = view.findViewById(R.id.tm_container);
-                viewHolder.AddrContainer = view.findViewById(R.id.addr_container);
+                viewHolder.MonthLoad = view.findViewById(R.id.month_load);
                 viewHolder.DtLoad = view.findViewById(R.id.dt_load);
                 viewHolder.TmLoad = view.findViewById(R.id.tm_load);
-                viewHolder.AddrLoad = view.findViewById(R.id.addr_load);
                 viewHolder.TitleLoad = view.findViewById(R.id.title_load);
                 viewHolder.ContentLoad = view.findViewById(R.id.content_load);
                 viewHolder.ShowMapBut = view.findViewById(R.id.show_map_but);
                 viewHolder.ShowPicBut = view.findViewById(R.id.show_pic_but);
                 viewHolder.EditMemoBut = view.findViewById(R.id.edit_memo_but);
-                viewHolder.PicLoad = view.findViewById(R.id.pic_load);
 
                 view.setTag(viewHolder);
             }
@@ -201,22 +195,31 @@ public class MemoList extends Fragment {
 
             if(Memo.getMonth()==0){
                 viewHolder.DtContainer.setVisibility(View.GONE);
-                viewHolder.TmContainer.setVisibility(View.GONE);
+                viewHolder.TmLoad.setVisibility(View.GONE);
+                viewHolder.ContentLoad.setPadding(0,40,0,0);
             }
             else{
                 viewHolder.DtContainer.setVisibility(View.VISIBLE);
-                viewHolder.TmContainer.setVisibility(View.VISIBLE);
-                String DT = Memo.getYear()+"."+Memo.getMonth()+"."+Memo.getDate();
-                viewHolder.DtLoad.setText(DT);
-                String TM = Memo.getHour()+"시 "+Memo.getMinute()+"분";
+                viewHolder.TmLoad.setVisibility(View.VISIBLE);
+                String Month= Memo.getMonth()+"";
+                String Dt = Memo.getDate()+"";
+                viewHolder.MonthLoad.setText(Month);
+                viewHolder.DtLoad.setText(Dt);
+                String TM = Memo.getHour()+":"+Memo.getMinute();
                 viewHolder.TmLoad.setText(TM);
+                viewHolder.ContentLoad.setPadding(0,0,0,0);
             }
             if(Memo.getLatitude()==0){
-                viewHolder.AddrContainer.setVisibility(View.GONE);
+                viewHolder.ShowMapBut.setVisibility(View.GONE);
             }
             else{
-                viewHolder.AddrContainer.setVisibility(View.VISIBLE);
-                viewHolder.AddrLoad.setText(Memo.getAddress());
+                viewHolder.ShowMapBut.setVisibility(View.VISIBLE);
+            }
+            if(Memo.getTitle()==null||Memo.getTitle().trim().length()==0){
+                viewHolder.TitleLoad.setVisibility(View.INVISIBLE);
+            }
+            else{
+                viewHolder.TitleLoad.setVisibility(View.VISIBLE);
             }
             viewHolder.TitleLoad.setText(Memo.getTitle());
             viewHolder.ContentLoad.setText(Memo.getContent());
@@ -228,12 +231,7 @@ public class MemoList extends Fragment {
             });
             if(Memo.getPictureURI()!=null){
                 viewHolder.ShowPicBut.setVisibility(View.VISIBLE);
-                StorageReference storageReference = storage.getReferenceFromUrl(Memo.getPictureURI());
-                Glide.with(getContext())
-                        .using(new FirebaseImageLoader())
-                        .load(storageReference)
-                        .into(viewHolder.PicLoad);
-                viewHolder.PicLoad.setOnClickListener(new View.OnClickListener() {
+                viewHolder.ShowPicBut.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(getContext(),FullScreenImageView.class);
@@ -242,18 +240,6 @@ public class MemoList extends Fragment {
                         startActivity(intent);
                     }
                 });
-                viewHolder.ShowPicBut.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if(viewHolder.PicLoad.getVisibility()==View.GONE){
-                            viewHolder.PicLoad.setVisibility(View.VISIBLE);
-                        }
-                        else if(viewHolder.PicLoad.getVisibility()==View.VISIBLE){
-                            viewHolder.PicLoad.setVisibility(View.GONE);
-                        }
-                    }
-                });
-
             }
             else{
                 viewHolder.ShowPicBut.setVisibility(View.GONE);
@@ -261,18 +247,15 @@ public class MemoList extends Fragment {
             return view;
         }
         class ViewHolder{
-            RelativeLayout DtContainer;
-            RelativeLayout TmContainer;
-            RelativeLayout AddrContainer;
+            LinearLayout DtContainer;
+            TextView MonthLoad;
             TextView DtLoad;
             TextView TmLoad;
-            TextView AddrLoad;
             TextView TitleLoad;
             TextView ContentLoad;
             ImageView ShowMapBut;
             ImageView ShowPicBut;
             ImageView EditMemoBut;
-            ImageView PicLoad;
         }
     }
     private void getMyID(String MyEmail) {

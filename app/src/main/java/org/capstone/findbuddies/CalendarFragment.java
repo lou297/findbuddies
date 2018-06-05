@@ -36,6 +36,7 @@ import com.prolificinteractive.materialcalendarview.DayViewDecorator;
 import com.prolificinteractive.materialcalendarview.DayViewFacade;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
+import com.prolificinteractive.materialcalendarview.OnMonthChangedListener;
 import com.prolificinteractive.materialcalendarview.spans.DotSpan;
 
 import java.io.IOException;
@@ -68,7 +69,9 @@ public class CalendarFragment extends Fragment {
     int Month=0;
     int Date=0;
     int GroupNo;
-
+    int Backend = 0;
+    int BackendMonth = 0;
+    int DateView = 0;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -130,8 +133,16 @@ public class CalendarFragment extends Fragment {
 
                 String shot_Day = Year + "," + Month + "," + Date;
                 ShowSelectedDateMemo(Year,Month,Date);
-                Toast.makeText(getContext(), shot_Day , Toast.LENGTH_SHORT).show();
+                Backend=1;
+            }
+        });
 
+        MCalendarView.setOnMonthChangedListener(new OnMonthChangedListener() {
+            @Override
+            public void onMonthChanged(MaterialCalendarView widget, CalendarDay date) {
+                ShowMonthMemo(date.getMonth()+1);
+                Backend=0;
+                BackendMonth=date.getMonth()+1;
             }
         });
 
@@ -235,10 +246,37 @@ public class CalendarFragment extends Fragment {
                         }
                     }
                 }
-                Log.d("ParsingTest","SIZE2: "+Memos.size());
                 adapter.notifyDataSetChanged();
-//                listview.invalidateViews();
-//                listview.refreshDrawableState();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+
+        });
+    }
+
+    public void ShowMonthMemo(int month){
+        database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Memos.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    SaveMemo value = snapshot.getValue(SaveMemo.class);
+                    if (value != null) {
+                        if (value.getUploaderEmail().equals(myEmail) || CheckMyEmailInGroup(value.getCheckGroupNo())) {
+                            CalendarMemoItem memoItem = null;
+
+                            if(month == value.getMonth()){
+                                memoItem = new CalendarMemoItem(value.getCheckGroupNo(),value.getUploaderEmail(),snapshot.getKey(),value.getYear(),value.getMonth(),value.getDate(),
+                                        value.getHour(),value.getMinute(),value.getTitle(),value.getMemo(),value.getImageUrl(),value.getLatitude(),value.getLongitude(),value.getAddress());
+                                Memos.add(memoItem);
+                            }
+                        }
+                    }
+                }
+                adapter.notifyDataSetChanged();
             }
 
             @Override
@@ -252,6 +290,35 @@ public class CalendarFragment extends Fragment {
 
 
     class SpecificDateMemoAdapter extends BaseAdapter {
+        SpecificDateMemoAdapter(){
+            BackendMonth = CalendarDay.today().getMonth()+1;
+            database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Memos.clear();
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        SaveMemo value = snapshot.getValue(SaveMemo.class);
+                        if (value != null) {
+                            if (value.getUploaderEmail().equals(myEmail) || CheckMyEmailInGroup(value.getCheckGroupNo())) {
+                                if(value.getMonth()==CalendarDay.today().getMonth()+1){
+                                    CalendarMemoItem memoItem = null;
+                                    memoItem = new CalendarMemoItem(value.getCheckGroupNo(),value.getUploaderEmail(),snapshot.getKey(),value.getYear(),value.getMonth(),value.getDate(),
+                                            value.getHour(),value.getMinute(),value.getTitle(),value.getMemo(),value.getImageUrl(),value.getLatitude(),value.getLongitude(),value.getAddress());
+                                    Memos.add(memoItem);
+                                }
+                            }
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+
+            });
+        }
         @Override
         public int getCount() {
             return Memos.size();
@@ -271,9 +338,14 @@ public class CalendarFragment extends Fragment {
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = convertView;
             ViewHolder viewHolder;
+            if(position==0){
+                DateView = 0;
+            }
             if(view==null){
                 view = getLayoutInflater().inflate(R.layout.calendar_memo_item,null);
                 viewHolder = new ViewHolder();
+                viewHolder.CalendarDateDot = view.findViewById(R.id.calendar_date_dot);
+                viewHolder.CalendarDate = view.findViewById(R.id.calendar_date);
                 viewHolder.CalendarTime = view.findViewById(R.id.calendar_time);
                 viewHolder.TitleOrContent = view.findViewById(R.id.title_or_content);
                 view.setTag(viewHolder);
@@ -281,11 +353,25 @@ public class CalendarFragment extends Fragment {
             else {
                 viewHolder = (ViewHolder)view.getTag();
             }
-
             CalendarMemoItem Memo = Memos.get(position);
+            if(DateView!=Memo.getDate()){
+                Log.d("ParsingTest","1:"+DateView );
+                viewHolder.CalendarDateDot.setVisibility(View.VISIBLE);
+                viewHolder.CalendarDate.setVisibility(View.VISIBLE);
+                String ShowDate = Memo.getDate()+"";
+                if(ShowDate.length()==1){
+                    ShowDate = "0"+ ShowDate;
+                }
+                viewHolder.CalendarDate.setText(ShowDate);
+                DateView = Memo.getDate();
+            }
+            else {
+                viewHolder.CalendarDateDot.setVisibility(View.INVISIBLE);
+                viewHolder.CalendarDate.setVisibility(View.INVISIBLE);
+            }
             String Date = Memo.getHour()+"h "+Memo.getMinute();
             viewHolder.CalendarTime.setText(Date);
-            if(Memo.getTitle().trim().length()==0){
+            if(Memo.getTitle()==null||Memo.getTitle().trim().length()==0){
                 viewHolder.TitleOrContent.setText(Memo.getContent());
             }
             else{
@@ -294,183 +380,13 @@ public class CalendarFragment extends Fragment {
             return view;
         }
         class ViewHolder{
+            View CalendarDateDot;
+            TextView CalendarDate;
             TextView CalendarTime;
             TextView TitleOrContent;
         }
-
-//        private SpecificDateMemoAdapter(final int year, final int month, final int dayOfMonth) {
-//            database.getReference().child("MemoList").addListenerForSingleValueEvent(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(DataSnapshot dataSnapshot) {
-//                    uidLists.clear();
-//                    Memos.clear();
-//                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-//                        SaveMemo value = snapshot.getValue(SaveMemo.class);
-//                        String uidKey = snapshot.getKey();
-//                        if(value !=null){
-//                            if(value.getUploaderEmail().equals(myEmail) || CheckMyEmailInGroup(value.getCheckGroupNo())){
-//                                MemoItem memoItem = null;
-//                                String address = null;
-//                                if(year ==0){
-//                                    if(value.getLatitude()!=0){
-//                                        address = getLocationAddress(value.getLatitude(),value.getLongitude());
-//                                    }
-//
-//                                    if(value.getMonth()==0){
-//                                        if(value.getLatitude()==0){
-//                                            memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
-//                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
-//                                        }
-//                                        else{
-//                                            memoItem = new MemoItem(value.getEditSystemTime(),null,0,0,0,value.getCheckGroupNo(),
-//                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
-//                                        }
-//
-//                                    }
-//                                    else{
-//                                        String date_label = value.getMonth()+"월 "+value.getDate()+"일";
-//                                        if(value.getLatitude()==0){
-//                                            memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-//                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
-//                                        }
-//                                        else {
-//                                            memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-//                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
-//                                        }
-//                                    }
-//                                    if(memoItem!=null){
-//                                        uidLists.add(uidKey);
-//                                        addMemo(memoItem);
-//                                    }
-//
-//                                }
-//                                else {
-//                                    if(value.getLatitude()!=0){
-//                                        address = getLocationAddress(value.getLatitude(),value.getLongitude());
-//                                    }
-//
-//                                    if(year == value.getYear()&& month == value.getMonth()&& dayOfMonth == value.getDate()){
-//                                        String date_label = value.getMonth()+"월 "+value.getDate()+"일";
-//                                        if(value.getLatitude()==0){
-//                                            memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-//                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),null,0,0);
-//                                        }
-//                                        else {
-//                                            memoItem = new MemoItem(value.getEditSystemTime(),date_label,value.getYear(),value.getMonth(),value.getDate(),value.getCheckGroupNo(),
-//                                                    value.getTitle(),value.getMemo(),value.getLastEditDate(),value.getImageUrl(),address,value.getLatitude(),value.getLongitude());
-//                                        }
-//                                    }
-//                                    uidLists.add(uidKey);
-//                                    addMemo(memoItem);
-//                                }
-//                            }
-//                        }
-//                    }
-//                    adapter.notifyDataSetChanged();
-//                }
-//
-//                @Override
-//                public void onCancelled(DatabaseError databaseError) {
-//
-//                }
-//            });
-//
-//        }
-//
-//
-//
-//        @Override
-//        public int getCount() {
-//            return Memos.size();
-//        }
-//
-//        @Override
-//        public Object getItem(int position) {
-//            return Memos.get(position);
-//        }
-//
-//        @Override
-//        public long getItemId(int position) {
-//            return position;
-//        }
-//
-//        @Override
-//        public View getView(int position, View convertView, ViewGroup parent) {
-//            View view = convertView;
-//            ViewHolder viewHolder;
-//            if(view==null){
-//                view = getLayoutInflater().inflate(R.layout.memo_item,null);
-//                viewHolder = new ViewHolder();
-//                viewHolder.date_label = view.findViewById(R.id.date_label);
-//                viewHolder.group_label = view.findViewById(R.id.group_label);
-//                viewHolder.title = view.findViewById(R.id.title);
-//                viewHolder.date = view.findViewById(R.id.date);
-//                viewHolder.content = view.findViewById(R.id.contents);
-//                viewHolder.picture = view.findViewById(R.id.picture);
-//                viewHolder.location = view.findViewById(R.id.memo_location);
-//
-//                view.setTag(viewHolder);
-//            }
-//            else {
-//                viewHolder = (ViewHolder)view.getTag();
-//            }
-//
-//            MemoItem Memo = Memos.get(position);
-//            if(Memo!=null){
-//                if(Memo.getDate_label()==null) {
-//                    viewHolder.date_label.setVisibility(View.GONE);
-//                }
-//                else{
-//                    viewHolder.date_label.setVisibility(View.VISIBLE);
-//                    viewHolder.date_label.setText(Memo.getDate_label());
-//                }
-//                if(Memo.getGroup_label()==0){
-//                    viewHolder.group_label.setVisibility(View.GONE);
-//                }
-//                else {
-//                    viewHolder.group_label.setVisibility(View.VISIBLE);
-//                }
-//
-//                viewHolder.title.setText(Memo.getTitle());
-//                viewHolder.date.setText(Memo.getDate());
-//                viewHolder.content.setText(Memo.getContents());
-//                if(Memo.getPictureURI()!=null){
-//                    viewHolder.picture.setVisibility(View.VISIBLE);
-//                    StorageReference storageReference = storage.getReferenceFromUrl(Memo.getPictureURI());
-//                    Glide.with(getContext())
-//                            .using(new FirebaseImageLoader())
-//                            .load(storageReference)
-//                            .into(viewHolder.picture);
-//                }
-//                else{
-//                    viewHolder.picture.setVisibility(View.GONE);
-//                }
-//
-//                if(Memo.getLocation()==null){
-//                    viewHolder.location.setVisibility(View.GONE);
-//                }
-//                else{
-//                    viewHolder.location.setVisibility(View.VISIBLE);
-//                    viewHolder.location.setText(Memo.getLocation());
-//                }
-//            }
-//
-//            return view;
-//        }
-//        class ViewHolder{
-//            TextView date_label;
-//            TextView group_label;
-//            TextView title;
-//            TextView date;
-//            TextView content;
-//            ImageView picture;
-//            TextView location;
-//        }
-
     }
-//    public void addMemo(MemoItem memoItem){
-//        Memos.add(memoItem);
-//    }
+
     public String getLocationAddress(double latitude,double longitude){
         String nowAddress ="현재 위치를 확인 할 수 없습니다.";
         Geocoder geocoder = new Geocoder(getContext(), Locale.KOREA);
@@ -618,7 +534,7 @@ public class CalendarFragment extends Fragment {
                 return;
             }
 
-            MCalendarView.addDecorator(new EventDecorator(Color.RED, calendarDays,getActivity()));
+            MCalendarView.addDecorator(new EventDecorator(Color.parseColor("#263687"), calendarDays,getActivity()));
         }
     }
 

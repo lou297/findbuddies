@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ACA4FF"
+    android:background="#FFF"
     tools:context=".ParsingMemo">
 
     <Toolbar
@@ -13,9 +13,88 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:background="#ACA4FF"
+        android:background="#263687"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         tools:ignore="NewApi" />
+    <GridLayout
+        android:id="@+id/grid_layout"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/ParsingToolbar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:columnCount="2">
+        <TextView
+            android:id="@+id/parsingDate2"
+            android:text="날짜"
+            android:textSize="30sp"
+            android:gravity="center"
+            android:padding="40dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_margin="5dp"
+            android:background="#263687"
+            android:textColor="#FFF"/>
+        <TextView
+            android:id="@+id/parsingTime2"
+            android:text="시간"
+            android:textSize="30sp"
+            android:padding="40dp"
+            android:gravity="center"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_margin="5dp"
+            android:background="#263687"
+            android:textColor="#FFF"/>
+        <TextView
+            android:id="@+id/parsingMapAddress"
+            android:text="지도"
+            android:textSize="30sp"
+            android:padding="40dp"
+            android:gravity="center"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_margin="5dp"
+            android:background="#263687"
+            android:textColor="#FFF"/>
+        <TextView
+            android:id="@+id/parsingImageText"
+            android:text="사진"
+            android:textSize="30sp"
+            android:padding="40dp"
+            android:gravity="center"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_margin="5dp"
+            android:background="#263687"
+            android:textColor="#FFF"/>
+        <LinearLayout
+            android:id="@+id/parsingImageContainer"
+            android:gravity="center"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_margin="5dp"
+            android:padding="5dp"
+            android:visibility="gone"
+            android:layout_row="1"
+            android:layout_column="1"
+            android:background="#263687">
+            <ImageView
+                android:id="@+id/parsingImage"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </LinearLayout>
+    </GridLayout>
+    
+    <FrameLayout
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_below="@+id/grid_layout"
+        android:layout_width="310dp"
+        android:layout_height="250dp"
+        android:background="#263687"></FrameLayout>
 
     <RelativeLayout
         android:id="@+id/date_layout"
@@ -24,7 +103,8 @@
         android:layout_below="@+id/ParsingToolbar"
         android:layout_margin="10dp"
         android:background="@drawable/clickevent"
-        android:gravity="center">
+        android:gravity="center"
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -69,7 +149,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/date_layout"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -171,7 +252,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerInParent="true"
-        android:text="저장" />
+        android:text="저장"
+        android:visibility="gone"/>
 
 
 </RelativeLayout>

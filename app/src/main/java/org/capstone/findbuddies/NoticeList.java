@@ -31,7 +31,7 @@ public class NoticeList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notice_list);
 
-        noticeList = new ArrayList<NoticeItem>();
+        noticeList = new ArrayList<>();
         database = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
         User = mAuth.getCurrentUser();
@@ -71,7 +71,7 @@ public class NoticeList extends AppCompatActivity {
                                 position++;
                             }
                             if(InGroup==1){
-                                ArrayList<Integer> permission = value.getMemberPermission();
+                                ArrayList<Integer> permission = new ArrayList<>();
                                 if(permission.get(position)==0){
                                     NotPermission=1;
 //                                permission.set(position,1);

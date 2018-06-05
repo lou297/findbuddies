@@ -114,7 +114,7 @@ public class NavigationMain extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.END)) {
             drawer.closeDrawer(GravityCompat.END);
-        }else if(isEdit==1) {
+        } else if(isEdit==1) {
             memoList.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,memoList)
@@ -132,12 +132,17 @@ public class NavigationMain extends AppCompatActivity
                     .replace(R.id.nav_main,memoList)
                     .commit();
             isEdit=0;
-        }
-        else if(0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime){
+        } else {
+            CalendarFragment calendarFragmentVar = (CalendarFragment)getSupportFragmentManager().findFragmentById(R.id.nav_main);
+            if (calendarFragmentVar.Backend == 1) {
+                calendarFragmentVar.ShowMonthMemo(calendarFragmentVar.BackendMonth);
+                calendarFragmentVar.Backend = 0;
+            } else if (0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {
                 super.onBackPressed();
-        }else{
+            } else {
                 backPressedTime = tempTime;
                 Toast.makeText(this, "한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

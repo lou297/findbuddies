@@ -1,5 +1,6 @@
 package org.capstone.findbuddies;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -20,6 +21,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,12 +32,15 @@ public class MainActivity extends AppCompatActivity {
     EditText pwd;
     private FirebaseAuth mAuth;
     FirebaseUser User;
+    String myEmail;
+    private FirebaseDatabase database;
     private FirebaseAuth.AuthStateListener mAuthListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
         User = mAuth.getCurrentUser();
         Button start = findViewById(R.id.login);
         start.setOnClickListener(new View.OnClickListener() {
@@ -69,17 +77,8 @@ public class MainActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                        NotificationChannel channelMessage  = new NotificationChannel("ChannelId","ChannelName", NotificationManager.IMPORTANCE_DEFAULT);
-                        channelMessage.setDescription("channel description");
-                        channelMessage.enableLights(true);
-                        channelMessage.setLightColor(Color.GREEN);
-                        channelMessage.enableVibration(true);
-                        channelMessage.setVibrationPattern(new long[]{100, 200, 100, 200});
-                        channelMessage.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-                        notificationManager.createNotificationChannel(channelMessage);
-                    }
+                    myEmail = user.getEmail();
+                    CreateChannelAndNotification();
                     // User is signed in
                     Toast.makeText(getApplicationContext(),"zzz",Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(getApplicationContext(),NavigationMain.class);
@@ -97,6 +96,41 @@ public class MainActivity extends AppCompatActivity {
                 // ...
             }
         };
+    }
+
+    private void CreateChannelAndNotification(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationChannel channelMessage  = new NotificationChannel("ChannelId","ChannelName", NotificationManager.IMPORTANCE_DEFAULT);
+            channelMessage.setDescription("channel description");
+            channelMessage.enableLights(true);
+            channelMessage.setLightColor(Color.GREEN);
+            channelMessage.enableVibration(true);
+            channelMessage.setVibrationPattern(new long[]{100, 200, 100, 200});
+            channelMessage.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channelMessage);
+            }
+            database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+                @SuppressLint("NewApi")
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        SaveRegist value = snapshot.getValue(SaveRegist.class);
+                        if (value != null&&value.getSavedEmail().equals(myEmail)&&value.getNotificationOn()==1) {
+                            assert notificationManager != null;
+                            if(notificationManager.getActiveNotifications().length==0){
+                                startService(new Intent(getApplicationContext(),NotificationService.class));
+                            }
+                        }
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
 

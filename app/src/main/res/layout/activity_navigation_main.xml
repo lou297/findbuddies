@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|end"
-        android:background="@drawable/rounded"
+        android:background="@drawable/nav_tail_rounded"
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_navigation_main"
         app:menu="@menu/activity_navigation_main_drawer" />

@@ -2,6 +2,7 @@ package org.capstone.findbuddies;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,27 +54,22 @@ public class AddGroup extends AppCompatActivity {
             public void onClick(View v) {
                 ArrayList<String> members = new ArrayList<>();
                 ArrayList<String> membersID = new ArrayList<>();
-                ArrayList<Integer> memberPermmision = new ArrayList<>();
-                if(MyEmail==null){
-                    Toast.makeText(AddGroup.this, "여기가 문제", Toast.LENGTH_SHORT).show();
-                }
                 members.add(MyName);
                 membersID.add(MyID);
-                memberPermmision.add(1);
                 SparseBooleanArray checkedItem = listView.getCheckedItemPositions();
                 for(int i = 0 ; i < buddies.size(); i ++){
                     if(checkedItem.get(i)){
                         Toast.makeText(AddGroup.this, buddies.get(i).getName(), Toast.LENGTH_SHORT).show();
                         members.add(buddies.get(i).getName());
                         membersID.add(buddies.get(i).getID());
-                        memberPermmision.add(0);
                     }
                 }
 
                 if(members.size()>1){
                     String GroupName = getIntent().getStringExtra("name");
                     String GroupPassword = getIntent().getStringExtra("password");
-                    AddGroupChat(MyEmail,GroupName,GroupPassword,members,membersID,memberPermmision,getNewGroupNo());
+                    Log.d("ParsingTest",GroupNo+"zz123");
+                    getNewGroupNo(GroupName,GroupPassword,members,membersID);
 //                    MyFirebaseData.searchMyIdinGPSList(MyFirebaseData.getNewGroupNo());
                 }
 
@@ -142,7 +138,7 @@ public class AddGroup extends AppCompatActivity {
         }
     }
 
-    public void AddGroupChat(String owner, String groupName, String password, ArrayList<String> members,ArrayList<String> membersID, ArrayList<Integer> memberPermission,int groupNo){
+    public void AddGroupChat(String owner, String groupName, String password, ArrayList<String> members,ArrayList<String> membersID,int groupNo){
         SaveGroupList saveGroupList = new SaveGroupList();
         saveGroupList.setGroupNo(groupNo);
         saveGroupList.setOwner(owner);
@@ -150,7 +146,6 @@ public class AddGroup extends AppCompatActivity {
         saveGroupList.setPassword(password);
         saveGroupList.setMembers(members);
         saveGroupList.setMembersID(membersID);
-        saveGroupList.setMemberPermission(memberPermission);
 
         database.child("GroupList").push().setValue(saveGroupList);
         Toast.makeText(this, "그룹 추가 완료", Toast.LENGTH_SHORT).show();
@@ -180,7 +175,7 @@ public class AddGroup extends AppCompatActivity {
         });
     }
 
-    public int getNewGroupNo(){
+    public void getNewGroupNo(String GroupName,String GroupPassword,ArrayList<String> members,ArrayList<String> membersID){
 
         database.child("LastGroupNo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -195,11 +190,14 @@ public class AddGroup extends AppCompatActivity {
                 if(existGroupNo==0){
                     GroupNo=10000;
                     database.child("LastGroupNo").setValue(GroupNo);
+                    Log.d("ParsingTest",GroupNo+"zz1");
                 }
                 else {
                     GroupNo++;
                     database.child("LastGroupNo").setValue(GroupNo);
+                    Log.d("ParsingTest",GroupNo+"zz2");
                 }
+                AddGroupChat(MyEmail,GroupName,GroupPassword,members,membersID,GroupNo);
             }
 
             @Override
@@ -207,7 +205,6 @@ public class AddGroup extends AppCompatActivity {
 
             }
         });
-        return GroupNo;
     }
 
 

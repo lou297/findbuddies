@@ -21,5 +21,13 @@
 
     <style name="AppTheme.PopupOverlay" parent="Theme.AppCompat.NoActionBar" />
 
+    <style name="CustomTextAppearance" parent="TextAppearance.MaterialCalendarWidget.Date">
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="ToolbarWhiteText" parent="Base.ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:textSize">14sp</item>
+    </style>
+
 
 </resources>

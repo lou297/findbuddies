@@ -76,7 +76,7 @@ public class MemoEditFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_memo_edit,container,false);
         toolbar = rootView.findViewById(R.id.MemoToolbar);
-//        toolbar.setTitle("Memo");
+        toolbar.setTitle("");
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         myEmail = getArguments().getString("myEmail");
         GroupNo = getArguments().getInt("GroupNo");
