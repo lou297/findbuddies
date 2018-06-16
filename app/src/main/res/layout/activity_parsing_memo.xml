@@ -15,245 +15,162 @@
         android:layout_alignParentTop="true"
         android:background="#263687"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:titleTextAppearance="@style/ParsingTitleBarTextAppearance"
         tools:ignore="NewApi" />
-    <GridLayout
-        android:id="@+id/grid_layout"
-        android:layout_marginTop="10dp"
-        android:layout_centerHorizontal="true"
+    <TextView
+        android:id="@+id/parsing_title_edit"
         android:layout_below="@id/ParsingToolbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:columnCount="2">
-        <TextView
-            android:id="@+id/parsingDate2"
-            android:text="날짜"
-            android:textSize="30sp"
-            android:gravity="center"
-            android:padding="40dp"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_margin="5dp"
-            android:background="#263687"
-            android:textColor="#FFF"/>
-        <TextView
-            android:id="@+id/parsingTime2"
-            android:text="시간"
-            android:textSize="30sp"
-            android:padding="40dp"
-            android:gravity="center"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_margin="5dp"
-            android:background="#263687"
-            android:textColor="#FFF"/>
-        <TextView
-            android:id="@+id/parsingMapAddress"
-            android:text="지도"
-            android:textSize="30sp"
-            android:padding="40dp"
-            android:gravity="center"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_margin="5dp"
-            android:background="#263687"
-            android:textColor="#FFF"/>
-        <TextView
-            android:id="@+id/parsingImageText"
-            android:text="사진"
-            android:textSize="30sp"
-            android:padding="40dp"
-            android:gravity="center"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_margin="5dp"
-            android:background="#263687"
-            android:textColor="#FFF"/>
-        <LinearLayout
-            android:id="@+id/parsingImageContainer"
-            android:gravity="center"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_margin="5dp"
-            android:padding="5dp"
-            android:visibility="gone"
-            android:layout_row="1"
-            android:layout_column="1"
-            android:background="#263687">
-            <ImageView
-                android:id="@+id/parsingImage"
-                android:gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-        </LinearLayout>
-    </GridLayout>
-    
-    <FrameLayout
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_below="@+id/grid_layout"
-        android:layout_width="310dp"
-        android:layout_height="250dp"
-        android:background="#263687"></FrameLayout>
+        android:visibility="gone"/>
 
-    <RelativeLayout
-        android:id="@+id/date_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/ParsingToolbar"
-        android:layout_margin="10dp"
-        android:background="@drawable/clickevent"
-        android:gravity="center"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/parsingDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginRight="20dp"
-                android:background="#FFF"
-                android:padding="5sp"
-                android:text="4/14 (토)"
-                android:textColor="#ACA4FF"
-                android:textSize="24sp" />
-
-            <TextView
-                android:id="@+id/parsingTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:background="#FFF"
-                android:text="오후 7: 35"
-                android:textColor="#ACA4FF"
-                android:textSize="30sp" />
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/date_unable"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:background="@drawable/ic_unable"
-            android:visibility="gone" />
-
-    </RelativeLayout>
-
-    <LinearLayout
+    <TextView
+        android:id="@+id/parsing_contents_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/date_layout"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:layout_below="@id/ParsingToolbar"
+        android:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/parsing_first_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="160dp"
+        android:layout_below="@+id/parsing_contents_edit"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/parsingDate"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:background="#263687"
+            android:fontFamily="@font/godo_m"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="날짜"
+            android:textColor="#FFF"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/parsingTime"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:background="#263687"
+            android:fontFamily="@font/godo_m"
+            android:gravity="center"
+            android:maxWidth="150dp"
+            android:minWidth="150dp"
+            android:padding="10dp"
+            android:text="시간"
+            android:textColor="#FFF"
+            android:textSize="30sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/parsing_second_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="160dp"
+        android:layout_below="@id/parsing_first_layout"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/parsing_map_address"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:background="#263687"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="지도"
+            android:textColor="#FFF"
+            android:textSize="24sp"
+            android:fontFamily="@font/godo_m"/>
+
+        <TextView
+            android:id="@+id/parsingImageText"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:background="#263687"
+            android:gravity="center"
+            android:padding="40dp"
+            android:text="사진"
+            android:textColor="#FFF"
+            android:textSize="30sp"
+            android:fontFamily="@font/godo_m"/>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
-            android:background="@drawable/rounded_border"
-            android:orientation="vertical">
-
-            <EditText
-                android:id="@+id/parsing_title_edit"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="제목"
-                android:textColor="#ACA4FF"
-                android:inputType="text"
-                android:maxLines="1" />
-
-            <EditText
-                android:id="@+id/parsing_contents_edit"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:gravity="top"
-                android:hint="내용"
-                android:textColor="#ACA4FF"
-                android:inputType="textMultiLine|textNoSuggestions"
-                android:padding="8dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:background="#FFF"
-                android:gravity="center">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:orientation="vertical">
-
-                    <FrameLayout
-                        android:id="@+id/parsing_map_fragment"
-                        android:layout_width="match_parent"
-                        android:layout_height="170dp">
-
-                        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-                            xmlns:map="http://schemas.android.com/apk/res-auto"
-                            android:id="@+id/parsing_map"
-                            android:name="com.google.android.gms.maps.MapFragment"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            map:liteMode="true"
-                            map:mapType="terrain" />
-                    </FrameLayout>
-
-                    <TextView
-                        android:id="@+id/parsing_map_address"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/parsing_map_fragment"
-                        android:layout_gravity="center"
-                        android:maxLines="3"
-                        android:maxWidth="150dp"
-                        android:text="TextView"
-                        android:textColor="#ACA4FF"/>
-                </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/map_unable"
-                    android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:layout_centerInParent="true"
-                    android:background="@drawable/ic_unable"
-                    android:visibility="gone" />
-            </RelativeLayout>
+            android:id="@+id/parsingImageContainer"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_margin="5dp"
+            android:background="#263687"
+            android:gravity="center"
+            android:padding="5dp"
+            android:visibility="gone">
 
             <ImageView
+                android:id="@+id/parsingImage"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_margin="10dp"
-                android:background="@drawable/boy" />
+                android:layout_height="match_parent"
+                android:gravity="center" />
         </LinearLayout>
-
-
     </LinearLayout>
 
 
-    <Button
-        android:id="@+id/save_parsing_memo_but"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
-        android:text="저장"
-        android:visibility="gone"/>
+    <FrameLayout
+        android:layout_width="310dp"
+        android:layout_height="210dp"
+        android:layout_below="@+id/parsing_second_layout"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:background="#263687">
+
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/parsing_map"
+            android:name="com.google.android.gms.maps.MapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            map:liteMode="true"
+            map:mapType="terrain" />
+
+        <View
+            android:id="@+id/parsing_map_cover"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#263687" />
+
+        <DatePicker
+            android:id="@+id/datePicker"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:calendarTextColor="#fff"
+            android:calendarViewShown="false"
+            android:datePickerMode="spinner" />
+
+        <TimePicker
+            android:id="@+id/timePicker"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:numbersInnerTextColor="#fff"
+            android:numbersTextColor="#fff"
+            android:timePickerMode="spinner"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/parsingImageInFrame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:visibility="invisible" />
+    </FrameLayout>
+
+
 
 
 </RelativeLayout>

@@ -39,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static org.capstone.findbuddies.NavigationMain.RETURN_SPECIAL;
 
@@ -47,6 +48,8 @@ public class MemoEditFragment extends Fragment{
     private static final int GALLERY_CODE= 1000;
     private static final int LONG_GALLERY_CODE = 1001;
     private static final int CHOOSE_DETEC_IMAGE = 1002;
+    private static final int SHOW_IMAGE = 1003;
+    private static final int SHOW_LONG_IMAGE = 1004;
     private FirebaseStorage storage;
     private FirebaseDatabase database;
     ImageView PictureView;
@@ -68,6 +71,8 @@ public class MemoEditFragment extends Fragment{
     int Year;
     int Month;
     int Date;
+    String TempURL;
+    String OriginURL;
 
 
     Toolbar toolbar;
@@ -141,6 +146,7 @@ public class MemoEditFragment extends Fragment{
                 PictureView.setVisibility(View.GONE);
                 PictureViewURI.setText(null);
                 UploadedPic = 0;
+                OriginURL = null;
                 return false;
             }
         });
@@ -195,6 +201,9 @@ public class MemoEditFragment extends Fragment{
                 PictureViewURI.setText(file.toString());
                 AddedPicture = 1;
                 UploadedPic =0;
+                Intent intent = new Intent(getContext(),ShowImageView.class);
+                intent.putExtra("imageUri",file.toString());
+                startActivityForResult(intent,SHOW_IMAGE);
             }
 
         }
@@ -203,10 +212,12 @@ public class MemoEditFragment extends Fragment{
                 PicturePath = getPath(data.getData());
                 Uri file = Uri.fromFile(new File(getPath(data.getData())));
                 PictureView.setImageURI(file);
+                PictureView.setVisibility(View.VISIBLE);
                 PictureViewURI.setText(file.toString());
-                Intent intent = new Intent(getContext(),ImageTextDetect.class);
+                TempURL = file.toString();
+                Intent intent = new Intent(getContext(),ShowImageView.class);
                 intent.putExtra("imageUri",file.toString());
-                startActivityForResult(intent,CHOOSE_DETEC_IMAGE);
+                startActivityForResult(intent,SHOW_LONG_IMAGE);
             }
 
         }
@@ -233,6 +244,7 @@ public class MemoEditFragment extends Fragment{
                         resultMemo = Memo.getText().toString();
                     }
                     resultMemo += resultText;
+                    Log.d("ParsingTest",resultMemo);
                     Memo.setText(resultMemo);
                 }
 
@@ -252,6 +264,47 @@ public class MemoEditFragment extends Fragment{
                         .commit();
             }
         }
+        else if(requestCode == SHOW_IMAGE){
+            if(resultCode== RESULT_CANCELED){
+                if(OriginURL==null) {
+                    PictureView.setVisibility(View.GONE);
+                    PictureViewURI.setText(null);
+                } else {
+                    PictureView.setVisibility(View.VISIBLE);
+                    PictureViewURI.setText(OriginURL);
+                }
+                AddedPicture = 0;
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+
+                startActivityForResult(intent,GALLERY_CODE);
+            }
+            else if(resultCode ==RESULT_OK){
+                OriginURL = PictureViewURI.getText().toString();
+            }
+        }
+        else if(requestCode == SHOW_LONG_IMAGE){
+            if(resultCode== RESULT_OK){
+                Intent intent = new Intent(getContext(),ImageTextDetect.class);
+                intent.putExtra("imageUri",TempURL);
+                OriginURL = PictureViewURI.getText().toString();
+                startActivityForResult(intent,CHOOSE_DETEC_IMAGE);
+                TempURL=null;
+            }
+            else if(resultCode== RESULT_CANCELED){
+                if(OriginURL==null) {
+                    PictureView.setVisibility(View.GONE);
+                    PictureViewURI.setText(null);
+                } else {
+                    PictureView.setVisibility(View.VISIBLE);
+                    PictureViewURI.setText(OriginURL);
+                }
+                TempURL = null;
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+                startActivityForResult(intent,LONG_GALLERY_CODE);
+            }
+        }
     }
 
 
@@ -267,28 +320,7 @@ public class MemoEditFragment extends Fragment{
         return cursor.getString(index);
     }
 
-    public void UploadUri(Uri file){
-        StorageReference storageRef = storage.getReferenceFromUrl("gs://map-api-187214.appspot.com");
-        StorageReference riversRef = storageRef.child("images/"+file.getLastPathSegment());
-        UploadTask uploadTask = riversRef.putFile(file);
 
-        // Register observers to listen for when the download is done or if it fails
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle unsuccessful uploads
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                    downloadUrl.toString();//>>이미지 path
-
-
-            }
-        });
-    }
     public void Upload(){
         if(PictureViewURI.getText()!=null){
             Log.d("ParsingTest","PIC: "+UploadedPic);
@@ -370,6 +402,10 @@ public class MemoEditFragment extends Fragment{
         intent.putExtra("title",Title.getText().toString());
         intent.putExtra("content",Memo.getText().toString());
         intent.putExtra("UploadedPic",UploadedPic);
+        intent.putExtra("CalendarAdd",CalendarAdd);
+        intent.putExtra("Year",Year);
+        intent.putExtra("Month",Month);
+        intent.putExtra("Date",Date);
         intent.putExtra("pictureViewURI",PictureViewURI.getText().toString());
         intent.putExtra("ReadYear",getArguments().getInt("ReadYear",0));
         intent.putExtra("ReadMonth",getArguments().getInt("ReadMonth",0));

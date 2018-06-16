@@ -20,6 +20,7 @@
             android:layout_marginTop="10dp"
             android:background="#FFF"
             app:mcv_dateTextAppearance="@style/CustomTextAppearance"
+            app:mcv_headerTextAppearance="@style/CustomHeaderTextAppearance"
             app:mcv_selectionColor="#263687"
             app:mcv_tileSize="50dp"/>
 

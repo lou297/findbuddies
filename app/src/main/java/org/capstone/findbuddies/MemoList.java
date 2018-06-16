@@ -2,6 +2,7 @@ package org.capstone.findbuddies;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -185,6 +186,19 @@ public class MemoList extends Fragment {
                 viewHolder.ShowMapBut = view.findViewById(R.id.show_map_but);
                 viewHolder.ShowPicBut = view.findViewById(R.id.show_pic_but);
                 viewHolder.EditMemoBut = view.findViewById(R.id.edit_memo_but);
+                viewHolder.ContentLoad.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            if(viewHolder.ContentLoad.getMaxLines()==2){
+                                viewHolder.ContentLoad.setMaxLines(20);
+                            }
+                            else {
+                                viewHolder.ContentLoad.setMaxLines(2);
+                            }
+                        }
+                    }
+                });
 
                 view.setTag(viewHolder);
             }
@@ -194,9 +208,13 @@ public class MemoList extends Fragment {
             MemoItem Memo = Memos.get(position);
 
             if(Memo.getMonth()==0){
-                viewHolder.DtContainer.setVisibility(View.GONE);
-                viewHolder.TmLoad.setVisibility(View.GONE);
-                viewHolder.ContentLoad.setPadding(0,40,0,0);
+                viewHolder.DtContainer.setVisibility(View.INVISIBLE);
+                viewHolder.TmLoad.setVisibility(View.INVISIBLE);
+                if(Memo.getTitle()==null||Memo.getTitle().trim().length()==0){
+//                    viewHolder.ContentLoad.setPadding(0, 40, 0, 0);
+                }else {
+//                    viewHolder.ContentLoad.setPadding(0,60,0,0);
+                }
             }
             else{
                 viewHolder.DtContainer.setVisibility(View.VISIBLE);
@@ -207,10 +225,10 @@ public class MemoList extends Fragment {
                 viewHolder.DtLoad.setText(Dt);
                 String TM = Memo.getHour()+":"+Memo.getMinute();
                 viewHolder.TmLoad.setText(TM);
-                viewHolder.ContentLoad.setPadding(0,0,0,0);
+//                viewHolder.ContentLoad.setPadding(0,0,0,0);
             }
             if(Memo.getLatitude()==0){
-                viewHolder.ShowMapBut.setVisibility(View.GONE);
+                viewHolder.ShowMapBut.setVisibility(View.INVISIBLE);
             }
             else{
                 viewHolder.ShowMapBut.setVisibility(View.VISIBLE);
@@ -242,7 +260,7 @@ public class MemoList extends Fragment {
                 });
             }
             else{
-                viewHolder.ShowPicBut.setVisibility(View.GONE);
+                viewHolder.ShowPicBut.setVisibility(View.INVISIBLE);
             }
             return view;
         }
@@ -269,10 +287,8 @@ public class MemoList extends Fragment {
                     }
                 }
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
     }
@@ -298,10 +314,8 @@ public class MemoList extends Fragment {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
-
         return Check;
     }
 

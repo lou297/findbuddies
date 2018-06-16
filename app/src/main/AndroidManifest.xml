@@ -63,6 +63,7 @@
             android:name=".NavigationMain"
             android:label="@string/title_activity_navigation_main"
             android:theme="@style/AppTheme" />
+
         <service
             android:name=".NotificationService"
             android:exported="false" />
@@ -71,13 +72,15 @@
             android:name=".NotificationReceiver"
             android:enabled="true"
             android:exported="false" />
+
         <activity android:name=".MemoPicker" />
         <activity android:name=".ParsingMemo" />
         <activity android:name=".GoogleVision" />
         <activity android:name=".ImageTextDetect" />
         <activity android:name=".SelectMapLocation" />
         <activity android:name=".AddGroupMemo" />
-        <activity android:name=".FullScreenImageView"></activity>
+        <activity android:name=".FullScreenImageView" />
+        <activity android:name=".ShowImageView"></activity>
     </application>
 
 </manifest>

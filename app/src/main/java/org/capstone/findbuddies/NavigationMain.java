@@ -11,9 +11,12 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +47,7 @@ public class NavigationMain extends AppCompatActivity
     TextView UserID;
     TextView UserName;
     int isEdit = 0;
+    int isCalendar = 0;
     NavigationView navigationView;
     MainMapFragment mainMapFragment = new MainMapFragment();
     MemoEditFragment memoEditFragment = new MemoEditFragment();
@@ -126,13 +130,14 @@ public class NavigationMain extends AppCompatActivity
                     .replace(R.id.nav_main,calendarFragment)
                     .commit();
             isEdit = 0;
+            isCalendar = 1;
         } else if(isEdit==3) {
             memoList.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,memoList)
                     .commit();
             isEdit=0;
-        } else {
+        } else if(isCalendar==1){
             CalendarFragment calendarFragmentVar = (CalendarFragment)getSupportFragmentManager().findFragmentById(R.id.nav_main);
             if (calendarFragmentVar.Backend == 1) {
                 calendarFragmentVar.ShowMonthMemo(calendarFragmentVar.BackendMonth);
@@ -141,8 +146,29 @@ public class NavigationMain extends AppCompatActivity
                 super.onBackPressed();
             } else {
                 backPressedTime = tempTime;
-                Toast.makeText(this, "한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
+                LayoutInflater inflater = getLayoutInflater();
+                View toast = inflater.inflate(R.layout.toastbar, (ViewGroup)findViewById(R.id.toast_root));
+                TextView text = toast.findViewById(R.id.toast_text);
+                text.setText("한번 더 누르시면 종료됩니다.");
+                Toast toastView = new Toast(this);
+                toastView.setDuration(Toast.LENGTH_LONG);
+                toastView.setGravity(Gravity.BOTTOM,0,100);
+                toastView.setView(toast);
+                toastView.show();
             }
+        } else if (0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {
+            super.onBackPressed();
+        } else {
+            backPressedTime = tempTime;
+            LayoutInflater inflater = getLayoutInflater();
+            View toast = inflater.inflate(R.layout.toastbar, (ViewGroup)findViewById(R.id.toast_root));
+            TextView text = toast.findViewById(R.id.toast_text);
+            text.setText("한번 더 누르시면 종료됩니다.");
+            Toast toastView = new Toast(this);
+            toastView.setDuration(Toast.LENGTH_LONG);
+            toastView.setGravity(Gravity.BOTTOM,0,100);
+            toastView.setView(toast);
+            toastView.show();
         }
     }
 
@@ -301,12 +327,14 @@ public class NavigationMain extends AppCompatActivity
                     .replace(R.id.nav_main,memoList)
                     .commit();
             isEdit = 0;
+            isCalendar = 0;
         } else if (id == R.id.calendar) {
             calendarFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_main,calendarFragment)
                     .commit();
             isEdit = 0;
+            isCalendar = 1;
         } else if (id == R.id.group) {
             Intent intent = new Intent(getApplicationContext(),messenger.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -319,6 +347,7 @@ public class NavigationMain extends AppCompatActivity
                     .replace(R.id.nav_main,settingFragment)
                     .commit();
             isEdit = 3;
+            isCalendar = 0;
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
