@@ -2,8 +2,10 @@ package org.capstone.findbuddies;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -11,6 +13,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -52,6 +55,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -102,9 +106,12 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
     int READ;
     int CalendarAdd;
     int UploadedPic;
+    int firstStart = 1;
     GoogleMap GoogleMap;
     FusedLocationProviderClient mFusedLocationProviderClient;
     int SELECTED_PLACE_REQUEST_CODE = 2001;
+    private static final int GALLERY_CODE= 1000;
+    private static final int SHOW_IMAGE = 1003;
 
     ArrayList<String> ParsingDateList;
     ArrayList<String> ParsingTimeList;
@@ -132,7 +139,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         asyncDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         asyncDialog.setMessage("Parsing..");
 //        asyncDialog.setCancelable(false);
-        if(READ==0) {
+        if(READ==0&&firstStart==1) {
             asyncDialog.show();
         }
         parsingImageText = findViewById(R.id.parsingImageText);
@@ -173,6 +180,22 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 timePicker.setVisibility(View.INVISIBLE);
                 parsingMapCover.setVisibility(View.INVISIBLE);
                 parsingImageInFrame.setVisibility(View.INVISIBLE);
+                if(mapunable==1){
+                    Intent intent = new Intent(getApplicationContext(),SelectMapLocation.class);
+                    intent.putExtra("ReadLatitude",latLng.latitude);
+                    intent.putExtra("ReadLongitude",latLng.longitude);
+                    startActivityForResult(intent,SELECTED_PLACE_REQUEST_CODE);
+                }
+            }
+        });
+        parsingMapAddress.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if(mapunable==0){
+                    mapunable=1;
+                    parsingMapAddress.setText("지도");
+                }
+                return false;
             }
         });
         parsingImage.setOnClickListener(new View.OnClickListener() {
@@ -194,6 +217,15 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 timePicker.setVisibility(View.INVISIBLE);
                 parsingMapCover.setVisibility(View.VISIBLE);
                 parsingImageInFrame.setVisibility(View.VISIBLE);
+            }
+        });
+        parsingImageText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+
+                startActivityForResult(intent,GALLERY_CODE);
             }
         });
 
@@ -302,6 +334,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 public void onSuccess(Void aVoid) {
 //                Toast.makeText(ParsingMemo.this, "업로드 완료!", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK, getIntent());
+                    NavigationMain navigationMain = new NavigationMain();
+                    navigationMain.isCalendar=0;
                     finish();
                 }
             });
@@ -312,6 +346,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 public void onSuccess(Void aVoid) {
 //                Toast.makeText(ParsingMemo.this, "업로드 완료!", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK, getIntent());
+                    NavigationMain navigationMain = new NavigationMain();
+                    navigationMain.isCalendar=0;
                     finish();
                 }
             });
@@ -334,6 +370,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                         if(getIntent().getDoubleExtra("ReadLatitude",0)!=0){
                             latLng = new LatLng(getIntent().getDoubleExtra("ReadLatitude",0),
                                     getIntent().getDoubleExtra("ReadLongitude",0));
+                            getLocationAddress(latLng,0);
                             mapunable=0;
                         }
                         else {
@@ -369,75 +406,112 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
             for(int i = 0 ; i<ParsingDateList.size();i++){
                 int startIndex = GetContent.indexOf(ParsingDateList.get(i));
                 int size = ParsingDateList.get(i).length();
-                stringBuilder.setSpan(new ForegroundColorSpan(Color.parseColor("#FF65DD")), startIndex, startIndex+size, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                int Index = i;
-                stringBuilder.setSpan(new ClickableSpan() {
-                    @Override
-                    public void onClick(View widget) {
-                        year = YearList.get(Index);
-                        month = MonthList.get(Index);
-                        date = DateList.get(Index);
-                        String ToStringDate = month + "월 "+date +"일";
-                        parsingDate.setText(ToStringDate);
-                        datePicker.init(year, month, date, new DatePicker.OnDateChangedListener() {
-                            @Override
-                            public void onDateChanged(DatePicker view, int Year, int monthOfYear, int dayOfMonth) {
-                                year = Year;
-                                month = monthOfYear+1;
-                                date = dayOfMonth;
-                                String ParsingDate = month+"월 "+date+"일";
-                                parsingDate.setText(ParsingDate);
-                                dateunable = 0;
+                if(startIndex!=-1&&size!=0){
+                    stringBuilder.setSpan(new ForegroundColorSpan(Color.parseColor("#FF65DD")), startIndex, startIndex+size, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    int Index = i;
+                    stringBuilder.setSpan(new ClickableSpan() {
+                        @Override
+                        public void onClick(View widget) {
+
+                            if(Index<YearList.size()-1){
+                                year = YearList.get(Index);
+                                month = MonthList.get(Index);
+                                date = DateList.get(Index);
+                                String ToStringDate = month + "월 "+date +"일";
+                                parsingDate.setText(ToStringDate);
+                                datePicker.init(year, month-1, date, new DatePicker.OnDateChangedListener() {
+                                    @Override
+                                    public void onDateChanged(DatePicker view, int Year, int monthOfYear, int dayOfMonth) {
+                                        year = Year;
+                                        month = monthOfYear+1;
+                                        date = dayOfMonth;
+                                        String ParsingDate = month+"월 "+date+"일";
+                                        parsingDate.setText(ParsingDate);
+                                        dateunable = 0;
+                                        if(hour == 0){
+                                            hour = 12;
+                                            minute  = 0;
+                                            if(hour>=12){
+                                                AMPM = "오후";
+                                                if(hour==12){
+                                                    AMPMhour = 12;
+                                                }
+                                                else{
+                                                    AMPMhour = hour-12;
+                                                }
+
+                                            }
+                                            else {
+                                                AMPM = "오전";
+                                                AMPMhour = hour;
+                                            }
+                                            String ChangedTime = AMPM+" "+AMPMhour+"시 "+minute+"분";
+                                            parsingTime.setText(ChangedTime);
+                                        }
+                                    }
+                                });
                             }
-                        });
-                    }
-                },startIndex,startIndex+size,0);
+
+                        }
+                    },startIndex,startIndex+size,0);
+                }
             }
             for(int j = 0 ; j<ParsingTimeList.size();j++){
                 int startIndex = GetContent.indexOf(ParsingTimeList.get(j));
                 int size = ParsingTimeList.get(j).length();
-                stringBuilder.setSpan(new ForegroundColorSpan(Color.parseColor("#28FF28")), startIndex, startIndex+size, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                int Index = j;
-                stringBuilder.setSpan(new ClickableSpan() {
-                    @Override
-                    public void onClick(View widget) {
-                        hour = HourList.get(Index);
-                        minute = MinuteList.get(Index);
-                        if(hour>=12){
-                            AMPM = "오후";
-                            if(hour==12){
-                                AMPMhour = 12;
-                            }
-                            else{
-                                AMPMhour = hour-12;
+                if(startIndex!=-1&&size!=0){
+                    stringBuilder.setSpan(new ForegroundColorSpan(Color.parseColor("#28FF28")), startIndex, startIndex+size, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    int Index = j;
+                    stringBuilder.setSpan(new ClickableSpan() {
+                        @Override
+                        public void onClick(View widget) {
+                            if(Index<HourList.size()-1){
+                                hour = HourList.get(Index);
+                                minute = MinuteList.get(Index);
+                                if(hour>=12){
+                                    AMPM = "오후";
+                                    if(hour==12){
+                                        AMPMhour = 12;
+                                    }
+                                    else{
+                                        AMPMhour = hour-12;
+                                    }
+
+                                }
+                                else {
+                                    AMPM = "오전";
+                                    AMPMhour = hour;
+                                }
+                                String time = AMPM + " "+ AMPMhour+"시 "+minute+"분";
+                                parsingTime.setText(time);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                    timePicker.setHour(hour);
+                                    timePicker.setMinute(minute);
+                                }
                             }
 
                         }
-                        else {
-                            AMPM = "오전";
-                            AMPMhour = hour;
-                        }
-                        String time = AMPM + " "+ AMPMhour+"시 "+minute+"분";
-                        parsingTime.setText(time);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            timePicker.setHour(hour);
-                            timePicker.setMinute(minute);
-                        }
-                    }
-                },startIndex,startIndex+size,0);
+                    },startIndex,startIndex+size,0);
+                }
+
             }
             for(int k = 0 ; k<ParsingAddrList.size();k++){
                 int startIndex = GetContent.indexOf(ParsingAddrList.get(k));
                 int size = ParsingAddrList.get(k).length();
-                stringBuilder.setSpan(new ForegroundColorSpan(Color.parseColor("#00FBFF")), startIndex, startIndex+size, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                int Index = k;
-                stringBuilder.setSpan(new ClickableSpan() {
-                    @Override
-                    public void onClick(View widget) {
-                        latLng = GPSList.get(Index);
-                        getLocationAddress(latLng,0);
-                    }
-                },startIndex,startIndex+size,0);
+                if(startIndex!=-1&&size!=0){
+                    stringBuilder.setSpan(new ForegroundColorSpan(Color.parseColor("#00FBFF")), startIndex, startIndex+size, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    int Index = k;
+                    stringBuilder.setSpan(new ClickableSpan() {
+                        @Override
+                        public void onClick(View widget) {
+                            if(Index<GPSList.size()-1){
+                                latLng = GPSList.get(Index);
+                                getLocationAddress(latLng,0);
+                            }
+                        }
+                    },startIndex,startIndex+size,0);
+                }
+
             }
             Content.setText(stringBuilder);
             Content.setMovementMethod(LinkMovementMethod.getInstance());
@@ -471,6 +545,7 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
 
         }
         else if(READ==1){
+
             if(getIntent().getIntExtra("ReadMonth",0)!=0){
                 year = getIntent().getIntExtra("ReadYear",0);
                 month = getIntent().getIntExtra("ReadMonth",0);
@@ -500,33 +575,83 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 dateunable=0;
             }
             else {
-                year = getIntent().getIntExtra("year", day.getYear());
-                month = getIntent().getIntExtra("month", day.getMonth() + 1);
-                date = getIntent().getIntExtra("day", day.getDay());
-                hour = getIntent().getIntExtra("hour", 12);
-                minute = getIntent().getIntExtra("minute", 0);
-                if(hour>=12){
-                    AMPM = "오후";
-                    if(hour==12){
-                        AMPMhour = 12;
-                    }
-                    else{
-                        AMPMhour = hour-12;
-                    }
-
-                }
-                else {
-                    AMPM = "오전";
-                    AMPMhour = hour;
-                }
-                String ParsingDate = month+"월 "+date+"일";
-                String time = AMPM + " "+ AMPMhour+"시 "+minute+"분";
-                parsingDate.setText(ParsingDate);
-                parsingTime.setText(time);
                 if(getIntent().getIntExtra("ReturnDate",0)==0) {
                     dateunable = 1;
                 }
             }
+            int tempYear = 2018;
+            int tempMonth = 6;
+            int tempDate = 21;
+
+            if(month!=0) {
+                tempYear=year;
+                tempMonth=month;
+                tempDate=date;
+            }
+            datePicker.init(tempYear, tempMonth-1, tempDate, new DatePicker.OnDateChangedListener() {
+                @Override
+                public void onDateChanged(DatePicker view, int Year, int monthOfYear, int dayOfMonth) {
+                    year = Year;
+                    month = monthOfYear+1;
+                    date = dayOfMonth;
+                    String ParsingDate = month+"월 "+date+"일";
+                    parsingDate.setText(ParsingDate);
+                    dateunable = 0;
+                    if(hour == 0){
+                        hour = 12;
+                        minute  = 0;
+                        if(hour>=12){
+                            AMPM = "오후";
+                            if(hour==12){
+                                AMPMhour = 12;
+                            }
+                            else{
+                                AMPMhour = hour-12;
+                            }
+
+                        }
+                        else {
+                            AMPM = "오전";
+                            AMPMhour = hour;
+                        }
+                        String ChangedTime = AMPM+" "+AMPMhour+"시 "+minute+"분";
+                        parsingTime.setText(ChangedTime);
+                    }
+                }
+            });
+            int tempHour = 12;
+            int tempMinute = 0;
+            if(hour !=0){
+                tempHour=hour;
+                tempMinute=minute;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                timePicker.setHour(tempHour);
+                timePicker.setMinute(tempMinute);
+            }
+            timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+                @Override
+                public void onTimeChanged(TimePicker view, int hourOfDay, int Minute) {
+                    if(hourOfDay>=12){
+                        AMPM = "오후";
+                        if(hourOfDay==12){
+                            AMPMhour = 12;
+                        }
+                        else{
+                            AMPMhour = hourOfDay-12;
+                        }
+
+                    }
+                    else {
+                        AMPM = "오전";
+                        AMPMhour = hourOfDay;
+                    }
+                    String ChangedTime = AMPM+" "+AMPMhour+"시 "+Minute+"분";
+                    parsingTime.setText(ChangedTime);
+                    hour = hourOfDay;
+                    minute = Minute;
+                }
+            });
         }
 
     }
@@ -637,6 +762,26 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 String ParsingDate = month+"월 "+date+"일";
                 parsingDate.setText(ParsingDate);
                 dateunable = 0;
+                if(hour == 0){
+                    hour = 12;
+                    minute  = 0;
+                    if(hour>=12){
+                        AMPM = "오후";
+                        if(hour==12){
+                            AMPMhour = 12;
+                        }
+                        else{
+                            AMPMhour = hour-12;
+                        }
+
+                    }
+                    else {
+                        AMPM = "오전";
+                        AMPMhour = hour;
+                    }
+                    String ChangedTime = AMPM+" "+AMPMhour+"시 "+minute+"분";
+                    parsingTime.setText(ChangedTime);
+                }
             }
         });
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -673,6 +818,8 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
             parsingTime.setText("시간");
         }
         setInitialMemo();
+        Log.d("ParsingTest","파싱 끝남");
+        firstStart=0;
         asyncDialog.dismiss();
         Log.d("ParsingTest","9");
     }
@@ -1277,6 +1424,17 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         }
     }
 
+    public String getPath(Uri uri){
+        String [] proj = {MediaStore.Images.Media.DATA};
+        CursorLoader cursorLoader = new CursorLoader(getApplicationContext(),uri,proj,null,null,null);
+
+        Cursor cursor = cursorLoader.loadInBackground();
+        int index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+
+        cursor.moveToFirst();
+
+        return cursor.getString(index);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -1289,6 +1447,33 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
                 GoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(curPoint,15));
                 getLocationAddress(curPoint,0);
                 mapunable = 0;
+            }
+        }
+        else if(requestCode == GALLERY_CODE){
+            if(data!=null){
+                String PicturePath = getPath(data.getData());
+                Uri file = Uri.fromFile(new File(getPath(data.getData())));
+                parsingImageText.setVisibility(View.GONE);
+                parsingImageContainer.setVisibility(View.VISIBLE);
+                parsingImage.setImageURI(file);
+//                UploadUri(file);
+                PictureViewURI=file.toString();
+                Intent intent = new Intent(getApplicationContext(),ShowImageView.class);
+                intent.putExtra("imageUri",file.toString());
+                startActivityForResult(intent,SHOW_IMAGE);
+            }
+
+        }
+        else if(requestCode == SHOW_IMAGE){
+            if(resultCode== RESULT_CANCELED){
+
+                PictureViewURI=null;
+                parsingImageText.setVisibility(View.VISIBLE);
+                parsingImageContainer.setVisibility(View.GONE);
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+
+                startActivityForResult(intent,GALLERY_CODE);
             }
         }
     }
@@ -1313,34 +1498,15 @@ public class ParsingMemo extends FragmentActivity implements OnMapReadyCallback 
         GoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
         GoogleMap.getUiSettings().setAllGesturesEnabled(false);
         GoogleMap.getUiSettings().setMapToolbarEnabled(false);
+
         Log.d("ParsingTest","맵 준비 됨");
 //        getLocationAddress(latLng);
-        if(READ==0) {
+        Log.d("ParsingTest","read : "+READ+"firststart = "+ firstStart);
+        if(READ==0&&firstStart==1) {
             InitialParsing();
+            Log.d("ParsingTest","파싱 들어옴");
         }
-        GoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-//                if(mapunable==0){
-                    Log.d("ParsingTest","맵 클릭 됨");
-                    Intent intent = new Intent(getApplicationContext(),SelectMapLocation.class);
-                    intent.putExtra("ReadLatitude",latLng.latitude);
-                    intent.putExtra("ReadLongitude",latLng.longitude);
-                    startActivityForResult(intent,SELECTED_PLACE_REQUEST_CODE);
-//                }
-            }
-        });
-        GoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng latLng) {
-                if(mapunable==0){
-                    mapunable=1;
-                }
-                else if(mapunable==1){
-                    mapunable=0;
-                }
-            }
-        });
+
     }
 
     @Override

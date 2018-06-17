@@ -14,5 +14,7 @@
     <ListView
         android:id="@+id/listView2"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:divider="#1E90FF"
+        android:dividerHeight="1dp"/>
 </LinearLayout>

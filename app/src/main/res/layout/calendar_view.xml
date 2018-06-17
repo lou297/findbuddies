@@ -11,18 +11,19 @@
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:orientation="vertical">
+
         <com.prolificinteractive.materialcalendarview.MaterialCalendarView
             android:id="@+id/MCalendarView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.55"
             android:layout_alignParentTop="true"
             android:layout_marginTop="10dp"
+            android:layout_weight="0.42"
             android:background="#FFF"
             app:mcv_dateTextAppearance="@style/CustomTextAppearance"
             app:mcv_headerTextAppearance="@style/CustomHeaderTextAppearance"
             app:mcv_selectionColor="#263687"
-            app:mcv_tileSize="50dp"/>
+            app:mcv_tileSize="50dp" />
 
         <ListView
             android:id="@+id/SpecificDateMemoList"
@@ -30,9 +31,7 @@
             android:layout_height="0dp"
             android:layout_weight="0.45"
             android:layout_below="@+id/MCalendarView"
-            android:layout_margin="7dp"
-            android:background="#263687"
-            android:divider="#FFFFFF" />
+            android:divider="#FFF" />
     </LinearLayout>
 
 

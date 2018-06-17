@@ -228,7 +228,6 @@ public class Buddy extends Fragment {
             BuddyItem buddy = buddies.get(i);
             itemview.setName(buddy.getName());
             itemview.setID(buddy.getID());
-            itemview.setImage(buddy.getResId());
 
             return itemview;
         }

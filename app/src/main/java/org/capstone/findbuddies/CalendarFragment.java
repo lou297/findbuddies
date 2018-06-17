@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +44,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -71,7 +74,6 @@ public class CalendarFragment extends Fragment {
     int GroupNo;
     int Backend = 0;
     int BackendMonth = 0;
-    int DateView = 0;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -246,7 +248,9 @@ public class CalendarFragment extends Fragment {
                         }
                     }
                 }
+                Collections.sort(Memos,sortByHourAndMinute);
                 adapter.notifyDataSetChanged();
+
             }
 
             @Override
@@ -276,6 +280,7 @@ public class CalendarFragment extends Fragment {
                         }
                     }
                 }
+                Collections.sort(Memos,sortByDate);
                 adapter.notifyDataSetChanged();
             }
 
@@ -309,6 +314,7 @@ public class CalendarFragment extends Fragment {
                             }
                         }
                     }
+                    Collections.sort(Memos,sortByDate);
                     adapter.notifyDataSetChanged();
                 }
 
@@ -338,15 +344,12 @@ public class CalendarFragment extends Fragment {
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = convertView;
             ViewHolder viewHolder;
-            if(position==0){
-                DateView = 0;
-            }
             if(view==null){
                 view = getLayoutInflater().inflate(R.layout.calendar_memo_item,null);
                 viewHolder = new ViewHolder();
-                viewHolder.CalendarDateDot = view.findViewById(R.id.calendar_date_dot);
                 viewHolder.CalendarDate = view.findViewById(R.id.calendar_date);
-                viewHolder.CalendarTime = view.findViewById(R.id.calendar_time);
+                viewHolder.MapIcon = view.findViewById(R.id.map_icon);
+                viewHolder.GroupIcon = view.findViewById(R.id.group_icon);
                 viewHolder.TitleOrContent = view.findViewById(R.id.title_or_content);
                 view.setTag(viewHolder);
             }
@@ -354,23 +357,29 @@ public class CalendarFragment extends Fragment {
                 viewHolder = (ViewHolder)view.getTag();
             }
             CalendarMemoItem Memo = Memos.get(position);
-            if(DateView!=Memo.getDate()){
-                Log.d("ParsingTest","1:"+DateView );
-                viewHolder.CalendarDateDot.setVisibility(View.VISIBLE);
+            String ShowDate = Memo.getDate()+"";
+            String ShowTime = Memo.getHour() +":"+Memo.getMinute();
+            if(ShowDate.length()==1){
+                ShowDate = "0"+ ShowDate;
+            }
+            if(Backend==1){
                 viewHolder.CalendarDate.setVisibility(View.VISIBLE);
-                String ShowDate = Memo.getDate()+"";
-                if(ShowDate.length()==1){
-                    ShowDate = "0"+ ShowDate;
-                }
+                viewHolder.CalendarDate.setText(ShowTime);
+            }
+            else if(Backend==0){
+                viewHolder.CalendarDate.setVisibility(View.VISIBLE);
                 viewHolder.CalendarDate.setText(ShowDate);
-                DateView = Memo.getDate();
             }
-            else {
-                viewHolder.CalendarDateDot.setVisibility(View.INVISIBLE);
-                viewHolder.CalendarDate.setVisibility(View.INVISIBLE);
+            if(Memo.getLatitude()!=0){
+                viewHolder.MapIcon.setVisibility(View.VISIBLE);
+            } else {
+                viewHolder.MapIcon.setVisibility(View.GONE);
             }
-            String Date = Memo.getHour()+"h "+Memo.getMinute();
-            viewHolder.CalendarTime.setText(Date);
+            if(Memo.getGroupNo()!=0) {
+                viewHolder.GroupIcon.setVisibility(View.VISIBLE);
+            } else {
+                viewHolder.GroupIcon.setVisibility(View.GONE);
+            }
             if(Memo.getTitle()==null||Memo.getTitle().trim().length()==0){
                 viewHolder.TitleOrContent.setText(Memo.getContent());
             }
@@ -380,9 +389,9 @@ public class CalendarFragment extends Fragment {
             return view;
         }
         class ViewHolder{
-            View CalendarDateDot;
             TextView CalendarDate;
-            TextView CalendarTime;
+            ImageView MapIcon;
+            TextView GroupIcon;
             TextView TitleOrContent;
         }
     }
@@ -486,6 +495,44 @@ public class CalendarFragment extends Fragment {
 
         return Check;
     }
+
+    private final static Comparator<CalendarMemoItem> sortByHourAndMinute = new Comparator<CalendarMemoItem>() {
+        @Override
+        public int compare(CalendarMemoItem o1, CalendarMemoItem o2) {
+            int ret = 0;
+            if(o1.getHour()>o2.getHour()){
+                ret = 1;
+            }
+            else if(o1.getHour()==o2.getHour()){
+                if(o1.getMinute()>o2.getMinute()){
+                    ret = 1;
+                }
+                else if(o1.getMinute()==o2.getMinute()){
+                    ret = 0;
+                }
+                else {
+                    ret = -1;
+                }
+            }
+            else {
+                ret = -1;
+            }
+            return ret;
+        }
+    };
+    private final static Comparator<CalendarMemoItem> sortByDate = new Comparator<CalendarMemoItem>() {
+        @Override
+        public int compare(CalendarMemoItem o1, CalendarMemoItem o2) {
+            if(o1.getDate()>o2.getDate()){
+                Log.d("ParsingTest","o1크다. 리턴값 : "+Integer.compare(o1.getDate(),o2.getDate()));
+            }
+            else if(o1.getDate()<o2.getDate()){
+                Log.d("ParsingTest","o1작다. 리턴값 : "+Integer.compare(o1.getDate(),o2.getDate()));
+            }
+
+            return Integer.compare(o1.getDate(),o2.getDate());
+        }
+    };
 
     private class ApiSimulator extends AsyncTask<Void, Void, List<CalendarDay>> {
 

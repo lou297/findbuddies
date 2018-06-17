@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:background="#263687"
+        android:background="#1E90FF"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:titleTextAppearance="@style/ParsingTitleBarTextAppearance"
         tools:ignore="NewApi" />
@@ -24,54 +24,60 @@
         android:layout_height="wrap_content"
         android:visibility="gone"/>
 
-    <TextView
-        android:id="@+id/parsing_contents_edit"
+    <ScrollView
+        android:id="@+id/contents_scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/ParsingToolbar"
-        android:visibility="visible" />
+        android:layout_height="180dp"
+        android:layout_below="@id/ParsingToolbar">
 
+        <TextView
+            android:id="@+id/parsing_contents_edit"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/godo_m"
+            android:padding="10dp"
+            android:textSize="16sp"
+            android:visibility="visible" />
+    </ScrollView>
     <LinearLayout
         android:id="@+id/parsing_first_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="160dp"
-        android:layout_below="@+id/parsing_contents_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/contents_scroll"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/parsingDate"
-            android:layout_width="150dp"
-            android:layout_height="match_parent"
-            android:layout_margin="5dp"
-            android:background="#263687"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="1dp"
+            android:background="#1E90FF"
             android:fontFamily="@font/godo_m"
             android:gravity="center"
             android:padding="10dp"
             android:text="날짜"
             android:textColor="#FFF"
-            android:textSize="30sp" />
+            android:textSize="26sp" />
 
         <TextView
             android:id="@+id/parsingTime"
-            android:layout_width="150dp"
-            android:layout_height="match_parent"
-            android:layout_margin="5dp"
-            android:background="#263687"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="1dp"
+            android:background="#1E90FF"
             android:fontFamily="@font/godo_m"
             android:gravity="center"
-            android:maxWidth="150dp"
-            android:minWidth="150dp"
             android:padding="10dp"
             android:text="시간"
             android:textColor="#FFF"
-            android:textSize="30sp" />
+            android:textSize="26sp" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/parsing_second_layout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="160dp"
         android:layout_below="@id/parsing_first_layout"
         android:layout_centerHorizontal="true"
@@ -79,36 +85,39 @@
 
         <TextView
             android:id="@+id/parsing_map_address"
-            android:layout_width="150dp"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_margin="5dp"
-            android:background="#263687"
+            android:layout_weight="1"
+            android:background="#1E90FF"
+            android:fontFamily="@font/godo_m"
             android:gravity="center"
             android:padding="10dp"
             android:text="지도"
             android:textColor="#FFF"
-            android:textSize="24sp"
-            android:fontFamily="@font/godo_m"/>
+            android:textSize="20sp" />
+        <View
+            android:layout_width="1dp"
+            android:layout_height="160dp"/>
 
         <TextView
             android:id="@+id/parsingImageText"
-            android:layout_width="150dp"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_margin="5dp"
-            android:background="#263687"
+            android:layout_weight="1"
+            android:background="#1E90FF"
+            android:fontFamily="@font/godo_m"
             android:gravity="center"
             android:padding="40dp"
             android:text="사진"
             android:textColor="#FFF"
-            android:textSize="30sp"
-            android:fontFamily="@font/godo_m"/>
+            android:textSize="20sp" />
 
         <LinearLayout
             android:id="@+id/parsingImageContainer"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_margin="5dp"
-            android:background="#263687"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#1E90FF"
             android:gravity="center"
             android:padding="5dp"
             android:visibility="gone">
@@ -120,15 +129,19 @@
                 android:gravity="center" />
         </LinearLayout>
     </LinearLayout>
-
+    <View
+        android:id="@+id/second_layout_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/parsing_second_layout"/>
 
     <FrameLayout
-        android:layout_width="310dp"
-        android:layout_height="210dp"
-        android:layout_below="@+id/parsing_second_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/second_layout_line"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:background="#263687">
+        android:background="#FFF">
 
         <fragment xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -143,7 +156,7 @@
             android:id="@+id/parsing_map_cover"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#263687" />
+            android:background="#FFF" />
 
         <DatePicker
             android:id="@+id/datePicker"
@@ -151,7 +164,8 @@
             android:layout_height="match_parent"
             android:calendarTextColor="#fff"
             android:calendarViewShown="false"
-            android:datePickerMode="spinner" />
+            android:datePickerMode="spinner"
+            android:visibility="invisible" />
 
         <TimePicker
             android:id="@+id/timePicker"
@@ -166,6 +180,7 @@
             android:id="@+id/parsingImageInFrame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="1dp"
             android:gravity="center"
             android:visibility="invisible" />
     </FrameLayout>

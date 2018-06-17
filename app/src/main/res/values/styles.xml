@@ -48,7 +48,7 @@
     <style name="TitleBarTextAppearance" parent="android:TextAppearance">
         <item name="android:textSize">24sp</item>
         <item name="android:fontFamily">@font/godo_m</item>
-        <item name="android:textColor">#263687</item>
+        <item name="android:textColor">#1E90FF</item>
     </style>
 
     <style name="ParsingTitleBarTextAppearance" parent="android:TextAppearance">

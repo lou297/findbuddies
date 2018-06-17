@@ -212,7 +212,6 @@ public class Group extends Fragment {
             GroupItem group = groups.get(i);
             itemview.setName(group.getName());
             itemview.setMember(group.getMember());
-            itemview.setImage(group.getResId());
 
             return itemview;
         }

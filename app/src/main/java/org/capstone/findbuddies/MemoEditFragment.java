@@ -147,13 +147,14 @@ public class MemoEditFragment extends Fragment{
                 PictureViewURI.setText(null);
                 UploadedPic = 0;
                 OriginURL = null;
+                Log.d("ParsingTest","url : "+PictureViewURI.getText().toString()+" UploadedPic : "+UploadedPic);
                 return false;
             }
         });
         PictureView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(PictureViewURI.getText()!=null){
+                if(PictureViewURI.getText().toString()!=null){
                     Intent intent = new Intent(getContext(),FullScreenImageView.class);
                     if(UploadedPic==1){
                         intent.putExtra("Uploaded",1);
@@ -193,14 +194,12 @@ public class MemoEditFragment extends Fragment{
         if(requestCode == GALLERY_CODE){
             if(data!=null){
                 PicturePath = getPath(data.getData());
-                Toast.makeText(getContext(), ""+PicturePath, Toast.LENGTH_SHORT).show();
                 Uri file = Uri.fromFile(new File(getPath(data.getData())));
                 PictureView.setImageURI(file);
                 PictureView.setVisibility(View.VISIBLE);
 //                UploadUri(file);
                 PictureViewURI.setText(file.toString());
-                AddedPicture = 1;
-                UploadedPic =0;
+                TempURL = file.toString();
                 Intent intent = new Intent(getContext(),ShowImageView.class);
                 intent.putExtra("imageUri",file.toString());
                 startActivityForResult(intent,SHOW_IMAGE);
@@ -273,7 +272,6 @@ public class MemoEditFragment extends Fragment{
                     PictureView.setVisibility(View.VISIBLE);
                     PictureViewURI.setText(OriginURL);
                 }
-                AddedPicture = 0;
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
 
@@ -281,15 +279,20 @@ public class MemoEditFragment extends Fragment{
             }
             else if(resultCode ==RESULT_OK){
                 OriginURL = PictureViewURI.getText().toString();
+                AddedPicture = 1;
+                UploadedPic =0;
             }
         }
         else if(requestCode == SHOW_LONG_IMAGE){
             if(resultCode== RESULT_OK){
                 Intent intent = new Intent(getContext(),ImageTextDetect.class);
+                Log.d("ParsingTest","tempurl : "+TempURL);
                 intent.putExtra("imageUri",TempURL);
                 OriginURL = PictureViewURI.getText().toString();
                 startActivityForResult(intent,CHOOSE_DETEC_IMAGE);
                 TempURL=null;
+                AddedPicture = 1;
+                UploadedPic =0;
             }
             else if(resultCode== RESULT_CANCELED){
                 if(OriginURL==null) {
@@ -322,7 +325,8 @@ public class MemoEditFragment extends Fragment{
 
 
     public void Upload(){
-        if(PictureViewURI.getText()!=null){
+        Log.d("ParsingTest","url : "+PictureViewURI.getText().toString()+" UploadedPic : "+UploadedPic);
+        if(!PictureViewURI.getText().toString().equals("")){
             Log.d("ParsingTest","PIC: "+UploadedPic);
             if(UploadedPic==1){
                 mofidifyMemo(PictureViewURI.getText().toString());

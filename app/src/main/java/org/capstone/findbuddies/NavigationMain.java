@@ -49,7 +49,6 @@ public class NavigationMain extends AppCompatActivity
     int isEdit = 0;
     int isCalendar = 0;
     NavigationView navigationView;
-    MainMapFragment mainMapFragment = new MainMapFragment();
     MemoEditFragment memoEditFragment = new MemoEditFragment();
     MemoList memoList = new MemoList();
     CalendarFragment calendarFragment = new CalendarFragment();
@@ -312,15 +311,7 @@ public class NavigationMain extends AppCompatActivity
 
 
         int id = item.getItemId();
-        if(id == R.id.map) {
-
-            mainMapFragment.setArguments(bundle);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.nav_main,mainMapFragment)
-                    .commit();
-            isEdit = 0;
-        }
-        else if (id == R.id.note) {
+        if (id == R.id.note) {
 
             memoList.setArguments(bundle);
             getSupportFragmentManager().beginTransaction()

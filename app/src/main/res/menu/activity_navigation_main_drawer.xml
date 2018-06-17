@@ -5,10 +5,6 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/map"
-            android:icon="@drawable/ic_map"
-            android:title="Map"/>
-        <item
             android:id="@+id/note"
             android:icon="@drawable/ic_note"
             android:title="Note" />

@@ -92,6 +92,7 @@ public class messenger extends AppCompatActivity {
                 mAuth.signOut();
                 finish();
                 Intent out = new Intent(getApplication(),MainActivity.class);
+                out.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(out);
                 return super.onOptionsItemSelected(item);
 

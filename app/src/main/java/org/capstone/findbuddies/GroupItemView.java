@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -13,7 +12,6 @@ import android.widget.TextView;
  */
 
 public class GroupItemView extends LinearLayout {
-    ImageView imageView;
     TextView textView;
     TextView textView2;
 
@@ -35,7 +33,6 @@ public class GroupItemView extends LinearLayout {
         inflater.inflate(R.layout.group_item,this,true);
         textView = findViewById(R.id.textView);
         textView2 = findViewById(R.id.textView2);
-        imageView = findViewById(R.id.imageView);
     }
 
     public void setName(String name){
@@ -46,7 +43,4 @@ public class GroupItemView extends LinearLayout {
         textView2.setText(member);
     }
 
-    public void setImage(int resId) {
-        imageView.setImageResource(resId);
-    }
 }

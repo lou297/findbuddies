@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -16,7 +15,6 @@ public class BuddyItemView extends LinearLayout {
 
     TextView textView;
     TextView textView2;
-    ImageView imageView;
     
 
     public BuddyItemView(Context context) {
@@ -39,7 +37,6 @@ public class BuddyItemView extends LinearLayout {
         inflater.inflate(R.layout.buddy_item,this,true);
         textView = findViewById(R.id.textView);
         textView2 = findViewById(R.id.textView2);
-        imageView = findViewById(R.id.imageView);
     }
 
     public void setName(String name){
@@ -49,7 +46,4 @@ public class BuddyItemView extends LinearLayout {
         textView2.setText(ID);
     }
 
-    public void setImage(int resId){
-        imageView.setImageResource(resId);
-    }
 }

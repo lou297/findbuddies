@@ -41,6 +41,8 @@ public class MemoList extends Fragment {
     FloatingActionButton fab;
     private static final int GROUP_MEMO_NO = 3000;
     int GroupNo;
+    String GroupName=null;
+    String UploaderName=null;
 
     @Nullable
     @Override
@@ -52,6 +54,12 @@ public class MemoList extends Fragment {
         getMyID(myEmail);
         fab = rootView.findViewById(R.id.fab);
         ListView listview = rootView.findViewById(R.id.MemoListView);
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ReadMemo(position);
+            }
+        });
 
         adapter = new MemoAdapter();
 
@@ -178,14 +186,13 @@ public class MemoList extends Fragment {
                 view = getLayoutInflater().inflate(R.layout.memo_list_item,null);
                 viewHolder = new ViewHolder();
                 viewHolder.DtContainer = view.findViewById(R.id.dt_container);
-                viewHolder.MonthLoad = view.findViewById(R.id.month_load);
                 viewHolder.DtLoad = view.findViewById(R.id.dt_load);
                 viewHolder.TmLoad = view.findViewById(R.id.tm_load);
                 viewHolder.TitleLoad = view.findViewById(R.id.title_load);
                 viewHolder.ContentLoad = view.findViewById(R.id.content_load);
                 viewHolder.ShowMapBut = view.findViewById(R.id.show_map_but);
                 viewHolder.ShowPicBut = view.findViewById(R.id.show_pic_but);
-                viewHolder.EditMemoBut = view.findViewById(R.id.edit_memo_but);
+                viewHolder.ShowGroup = view.findViewById(R.id.show_group);
                 viewHolder.ContentLoad.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -200,35 +207,47 @@ public class MemoList extends Fragment {
                     }
                 });
 
+
                 view.setTag(viewHolder);
             }
             else {
                 viewHolder = (ViewHolder)view.getTag();
             }
             MemoItem Memo = Memos.get(position);
-
-            if(Memo.getMonth()==0){
-                viewHolder.DtContainer.setVisibility(View.INVISIBLE);
-                viewHolder.TmLoad.setVisibility(View.INVISIBLE);
-                if(Memo.getTitle()==null||Memo.getTitle().trim().length()==0){
-//                    viewHolder.ContentLoad.setPadding(0, 40, 0, 0);
-                }else {
-//                    viewHolder.ContentLoad.setPadding(0,60,0,0);
+            viewHolder.ContentLoad.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ReadMemo(position);
                 }
+            });
+            viewHolder.ShowMapBut.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(viewHolder.ContentLoad.getText().toString().equals(Memos.get(position).getContent())){
+                        viewHolder.ContentLoad.setText(Memos.get(position).getAddress());
+                        Log.d("ParsingTest",Memos.get(position).getAddress());
+                        Log.d("ParsingTest","position: "+position);
+                    } else {
+                        viewHolder.ContentLoad.setText(Memos.get(position).getContent());
+                        Log.d("ParsingTest",Memos.get(position).getContent());
+                        Log.d("ParsingTest","position: "+position);
+                    }
+                }
+            });
+            if(Memo.getMonth()==0){
+                viewHolder.DtLoad.setVisibility(View.INVISIBLE);
+                viewHolder.TmLoad.setVisibility(View.INVISIBLE);
             }
             else{
-                viewHolder.DtContainer.setVisibility(View.VISIBLE);
+                viewHolder.DtLoad.setVisibility(View.VISIBLE);
                 viewHolder.TmLoad.setVisibility(View.VISIBLE);
-                String Month= Memo.getMonth()+"";
-                String Dt = Memo.getDate()+"";
-                viewHolder.MonthLoad.setText(Month);
+                String Dt = Memo.getMonth()+"월 "+Memo.getDate()+"일";
                 viewHolder.DtLoad.setText(Dt);
                 String TM = Memo.getHour()+":"+Memo.getMinute();
                 viewHolder.TmLoad.setText(TM);
-//                viewHolder.ContentLoad.setPadding(0,0,0,0);
             }
             if(Memo.getLatitude()==0){
-                viewHolder.ShowMapBut.setVisibility(View.INVISIBLE);
+                viewHolder.ShowMapBut.setVisibility(View.GONE);
             }
             else{
                 viewHolder.ShowMapBut.setVisibility(View.VISIBLE);
@@ -241,12 +260,6 @@ public class MemoList extends Fragment {
             }
             viewHolder.TitleLoad.setText(Memo.getTitle());
             viewHolder.ContentLoad.setText(Memo.getContent());
-            viewHolder.EditMemoBut.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    ReadMemo(position);
-                }
-            });
             if(Memo.getPictureURI()!=null){
                 viewHolder.ShowPicBut.setVisibility(View.VISIBLE);
                 viewHolder.ShowPicBut.setOnClickListener(new View.OnClickListener() {
@@ -260,22 +273,58 @@ public class MemoList extends Fragment {
                 });
             }
             else{
-                viewHolder.ShowPicBut.setVisibility(View.INVISIBLE);
+                viewHolder.ShowPicBut.setVisibility(View.GONE);
+            }
+            if(Memo.getGroupNo()!=0){
+                database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                            SaveRegist value = snapshot.getValue(SaveRegist.class);
+                            if (value != null && (value.getSavedEmail()).equals(Memo.getUploader())) {
+                                UploaderName = value.getSavedName();
+                            }
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+                database.getReference().child("GroupList").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for(DataSnapshot snapshot :dataSnapshot.getChildren()){
+                            SaveGroupList value = snapshot.getValue(SaveGroupList.class);
+                            if (value != null && (value.getGroupNo()==Memo.getGroupNo())) {
+                                GroupName = value.getGroupName();
+                            }
+                        }
+                        String GroupInfo = GroupName+"("+UploaderName+")";
+                        viewHolder.ShowGroup.setText(GroupInfo);
+                        viewHolder.ShowGroup.setVisibility(View.VISIBLE);
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+            } else{
+                viewHolder.ShowGroup.setVisibility(View.GONE);
             }
             return view;
         }
         class ViewHolder{
             LinearLayout DtContainer;
-            TextView MonthLoad;
             TextView DtLoad;
             TextView TmLoad;
             TextView TitleLoad;
             TextView ContentLoad;
             ImageView ShowMapBut;
             ImageView ShowPicBut;
-            ImageView EditMemoBut;
+            TextView ShowGroup;
         }
     }
+
+
     private void getMyID(String MyEmail) {
         database.getReference().child("UserInfo").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
                     myEmail = user.getEmail();
                     CreateChannelAndNotification();
                     // User is signed in
-                    Toast.makeText(getApplicationContext(),"zzz",Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(getApplicationContext(),NavigationMain.class);
 //                    Intent intent = new Intent(getApplicationContext(),SelectMapLocation.class);
                     intent.putExtra("myEmail",user.getEmail());
@@ -89,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
                     finish();
 //                Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 } else {
-                    Toast.makeText(getApplicationContext(),"dddd",Toast.LENGTH_LONG).show();
                     // User is signed out
 //                Log.d(TAG, "onAuthStateChanged:signed_out");
                 }
@@ -144,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
 //                            Log.d(TAG, "signInWithEmail:success");
 //                            FirebaseUser user = mAuth.getCurrentUser();
 //                            updateUI(user);
-                            Toast.makeText(MainActivity.this, "성공!", Toast.LENGTH_SHORT).show();
 
                         } else {
                             // If sign in fails, display a message to the user.
